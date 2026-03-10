@@ -6,7 +6,7 @@ duplication.
 ## Tree
 
 ```
-brain-protocol/
+cerveau.dev/
 ├── _protocol_/                          # Shared protocol (single source of truth)
 │   ├── CLAUDE.md                        # Brain protocol template (__PROJECT__ placeholders)
 │   ├── mcp-reference.md                 # MCP tool reference

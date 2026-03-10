@@ -7,7 +7,7 @@ Each project gets its own brain with selective rules, hooks, and agents loaded
 from a shared protocol. MDPlanner is the single source of truth for tasks,
 notes, decisions, and progress.
 
-Bug Tracker: https://github.com/studiowebux/brain-protocol/issues
+Bug Tracker: https://github.com/studiowebux/cerveau.dev/issues
 <br>
 Discord: https://discord.gg/BG5Erm9fNv
 
