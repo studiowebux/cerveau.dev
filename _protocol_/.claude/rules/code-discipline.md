@@ -42,8 +42,18 @@ For every piece of code:
 - No partial features — everything works end-to-end
 - Solution matches problem scale
 
+## Consistency — Read Before You Write
+
+Before implementing anything that might already exist elsewhere in the codebase — input handling, error patterns, API calls, UI interactions — grep for it first.
+
+**Read every existing implementation of the same pattern. Match it exactly.**
+
+If implementations are inconsistent, normalize them all in the same commit. Never add a third variant when two already exist.
+
+This applies universally: copy/paste handling, form inputs, network calls, state mutations, event handlers, modal lifecycle — everything. "I'll do it quickly" is how inconsistency accumulates. The cost of grepping first is zero. The cost of a codebase with three ways to do the same thing compounds forever.
+
 ## Red Flags — Stop Immediately
 
-"I'll clean this up later." "This is just temporary." "Let me add a TODO." "Just need one more workaround." "This will work for now."
+"I'll clean this up later." "This is just temporary." "Let me add a TODO." "Just need one more workaround." "This will work for now." "I'll just do it the quick way this time."
 
 If you think these thoughts: stop. Fix it properly or do not do it.

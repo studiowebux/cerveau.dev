@@ -244,6 +244,11 @@ sync-shareable:
 		".claude/rules/goal-discipline.md" \
 		".claude/rules/workflow/local-dev.md" \
 		".claude/rules/workflow/mdplanner-tasks.md" \
+		".claude/rules/workflow/doc-minimaldoc.md" \
+		".claude/rules/workflow/minimaldoc-ci.md" \
+		".claude/rules/practices/minimaldoc.md" \
+		".claude/agents/minimaldoc-writer.md" \
+		".claude/skills/release/SKILL.md" \
 		"CLAUDE.md" \
 		"Makefile" \
 		"mcp-reference.md" \
