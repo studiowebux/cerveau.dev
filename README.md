@@ -67,12 +67,12 @@ commits (<type>: <subject>), no force push to main, and PR-based merges."
 
 Save each rule as a `.md` file in the appropriate directory:
 
-| Rule type | Directory | Example |
-|-----------|-----------|---------|
-| Stack | `_protocol_/.claude/rules/stack/` | `go.md`, `typescript.md` |
-| Practice | `_protocol_/.claude/rules/practices/` | `testing.md`, `code-review.md` |
-| Workflow | `_protocol_/.claude/rules/workflow/` | `git.md`, `changelog.md` |
-| Core | `_protocol_/.claude/rules/` | Always loaded for every brain |
+| Rule type | Directory                             | Example                        |
+| --------- | ------------------------------------- | ------------------------------ |
+| Stack     | `_protocol_/.claude/rules/stack/`     | `go.md`, `typescript.md`       |
+| Practice  | `_protocol_/.claude/rules/practices/` | `testing.md`, `code-review.md` |
+| Workflow  | `_protocol_/.claude/rules/workflow/`  | `git.md`, `changelog.md`       |
+| Core      | `_protocol_/.claude/rules/`           | Always loaded for every brain  |
 
 Agents go in `_protocol_/.claude/agents/` (YAML frontmatter + markdown body).
 Skills go in `_protocol_/.claude/skills/`.
@@ -99,6 +99,11 @@ Edit `_configs_/brains.json`:
 
 Array values must match filenames (without `.md`) in the protocol rules
 directories. Empty array = link entire directory.
+
+> [!TIP]
+> Yes, you can ask Claude to do all of these steps for you.
+> My experience so far, create a first pass, draft your skills, agents & rules, then ask Claude to ask questions and refine, once happy with it, ask Claude to save them in the brain protocol.
+> Then prompt: `Create Project: GIT_REPO, Name: MyApp`, it should figure out and setup the whole thing (including the steps below), the `local-dev.md`, must be accurate. On a new project you gonna have to guide it to set the proper stacks, practices, workflows & agents. And if the project already exists it can scan it and automate that as well, and even propose rules!
 
 ### 4. Spawn the Brain
 
@@ -148,9 +153,9 @@ write progress, close.
 
 ```
 _protocol_/          _configs_/brains.json        Your code repo
-(rules, hooks,               │                         │
+(rules, hooks,               │                           │
  templates)         rebuild-brain-rules.sh               │
-       │                     │                          │
+       │                     │                           │
        ├──symlinks──> _brains_/myapp-brain/              │
        │              └── .claude/                       │
        │                  ├── settings.json ──links to───┘
@@ -167,12 +172,12 @@ See `ARCHITECTURE.md` for the full structure.
 
 Every brain session follows four phases defined in the brain CLAUDE.md:
 
-| Phase | What happens |
-|-------|-------------|
-| **Boot** | Load context from MDPlanner (tasks, notes, architecture, decisions) |
-| **Work** | Ticket before work, one task at a time, commit flow |
-| **Write Back** | Decisions, bugs, progress written as MDPlanner notes |
-| **Close** | Progress note, unfinished tasks back to Todo |
+| Phase          | What happens                                                        |
+| -------------- | ------------------------------------------------------------------- |
+| **Boot**       | Load context from MDPlanner (tasks, notes, architecture, decisions) |
+| **Work**       | Ticket before work, one task at a time, commit flow                 |
+| **Write Back** | Decisions, bugs, progress written as MDPlanner notes                |
+| **Close**      | Progress note, unfinished tasks back to Todo                        |
 
 Hooks enforce the discipline: boot reminders on session start, checkpoint
 reminders every 20 tool calls, commit format validation, progress checks
@@ -197,15 +202,18 @@ Keep rules short (under 100 lines), opinionated, and actionable. No prose,
 no tutorials — just rules. Claude loads these into context every session, so
 every line costs tokens.
 
+> [!TIP]
+> So far I noticed that having many small rules is better than large/generic ones. So loading specific rules in every brains gonna yield more focused output.
+
 ## Makefile Targets
 
-| Target | Usage |
-|--------|-------|
-| `make spawn NAME=X PROJECT=/path` | Create a new brain |
-| `make list` | List all brains |
-| `make status NAME=X` | Show brain install status |
-| `make validate NAME=X` | Check for leftover `__PROJECT__` placeholders |
-| `make diff NAME=X` | Show changes between brain and protocol template |
+| Target                            | Usage                                            |
+| --------------------------------- | ------------------------------------------------ |
+| `make spawn NAME=X PROJECT=/path` | Create a new brain                               |
+| `make list`                       | List all brains                                  |
+| `make status NAME=X`              | Show brain install status                        |
+| `make validate NAME=X`            | Check for leftover `__PROJECT__` placeholders    |
+| `make diff NAME=X`                | Show changes between brain and protocol template |
 
 ## License
 
