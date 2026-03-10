@@ -1,0 +1,20 @@
+# Brain Protocol
+
+- [GitHub](https://github.com/studiowebux/cerveau.dev)
+- [Discord](https://discord.gg/BG5Erm9fNv)
+
+- [Home](index.md)
+- Getting Started
+  - [Installation](01-getting-started/01-installation.md)
+  - [Quick Start](01-getting-started/02-quick-start.md)
+  - [First Brain](01-getting-started/03-first-brain.md)
+  - [Features](01-getting-started/04-features.md)
+- Guides
+  - [How It Works](02-guides/01-how-it-works.md)
+  - [Writing Rules](02-guides/02-writing-rules.md)
+  - [MDPlanner Setup](02-guides/03-mdplanner.md)
+  - [Hooks](02-guides/04-hooks.md)
+- Reference
+  - [Makefile Targets](03-reference/01-makefile.md)
+  - [brains.json Schema](03-reference/02-brains-json.md)
+  - [Session Phases](03-reference/03-session-phases.md)

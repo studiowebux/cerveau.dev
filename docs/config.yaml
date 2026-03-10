@@ -1,0 +1,141 @@
+title: Brain Protocol
+description: Multi-brain system for Claude Code. One protocol, many projects, zero duplication.
+base_url: https://cerveau.dev
+author: Studio Webux
+theme: default
+dark_mode: false
+enable_llms: true
+enable_search: true
+clean_urls: false
+
+changelog:
+  enabled: true
+  title: "Changelog"
+  path: "changelog"
+  rss_enabled: true
+  repository: "https://github.com/studiowebux/cerveau.dev"
+
+stale_warning:
+  enabled: true
+  threshold_days: 365
+  show_update_date: true
+
+landing:
+  enabled: true
+  nav:
+    - text: "Docs"
+      url: "/01-getting-started/01-installation.html"
+    - text: "GitHub"
+      url: "https://github.com/studiowebux/cerveau.dev"
+    - text: "Discord"
+      url: "https://discord.gg/BG5Erm9fNv"
+  hero:
+    title: "Brain Protocol"
+    subtitle: "Multi-brain system for Claude Code. One protocol, many projects, zero duplication. MDPlanner keeps every session on track."
+    buttons:
+      - text: "Get Started"
+        url: "/01-getting-started/01-installation.html"
+        primary: true
+      - text: "View on GitHub"
+        url: "https://github.com/studiowebux/cerveau.dev"
+        primary: false
+
+  features:
+    title: "Why Brain Protocol?"
+    items:
+      - emoji: "~"
+        title: "Multi-Brain"
+        description: "One protocol, many projects. Each brain gets selective rules, hooks, and agents — no duplication, no drift."
+      - emoji: "@"
+        title: "Selective Loading"
+        description: "Only load what each brain needs. Declare stacks, practices, and workflows per project. Every saved token is faster context."
+      - emoji: "#"
+        title: "MDPlanner Integration"
+        description: "Single source of truth for tasks, notes, decisions, and progress. Claude reads and writes it every session."
+      - emoji: "$"
+        title: "Hooks Enforcement"
+        description: "Boot reminders, commit validation, checkpoint checks, and progress gates. The protocol runs whether Claude remembers or not."
+      - emoji: "%"
+        title: "Protocol-Driven Workflow"
+        description: "Four phases, sixteen hard rules. Boot → Work → Write Back → Close. Zero drift between sessions."
+      - emoji: "&"
+        title: "Zero Footprint"
+        description: "No files added to your project repos. The brain lives outside your code. Your codebase stays clean."
+      - emoji: "+"
+        title: "Bring Your Own Rules"
+        description: "No rules ship by default. Generate stack, practice, and workflow rules with a single Claude prompt."
+      - emoji: "*"
+        title: "Open Source"
+        description: "AGPL-3.0. Self-host everything. MDPlanner runs in Docker. No external dependencies required."
+
+  links:
+    title: "Resources"
+    items:
+      - icon: "github"
+        title: "GitHub"
+        description: "Source code and issues"
+        url: "https://github.com/studiowebux/cerveau.dev"
+      - icon: "discord"
+        title: "Discord"
+        description: "Join the community"
+        url: "https://discord.gg/BG5Erm9fNv"
+
+  opensource:
+    title: "Open Source"
+    description: "AGPL-3.0 Licensed. Self-host everything. No telemetry, no accounts, no subscriptions. Built by Studio Webux."
+    links:
+      - text: "GitHub Repository"
+        url: "https://github.com/studiowebux/cerveau.dev"
+      - text: "Report Issues"
+        url: "https://github.com/studiowebux/cerveau.dev/issues"
+
+footer:
+  copyright: "2026 Studio Webux. AGPL-3.0 License."
+  links:
+    - title: "Documentation"
+      items:
+        - text: "Installation"
+          url: "/01-getting-started/01-installation.html"
+        - text: "Quick Start"
+          url: "/01-getting-started/02-quick-start.html"
+        - text: "First Brain"
+          url: "/01-getting-started/03-first-brain.html"
+        - text: "Features"
+          url: "/01-getting-started/04-features.html"
+    - title: "Guides"
+      items:
+        - text: "How It Works"
+          url: "/02-guides/01-how-it-works.html"
+        - text: "Writing Rules"
+          url: "/02-guides/02-writing-rules.html"
+        - text: "MDPlanner Setup"
+          url: "/02-guides/03-mdplanner.html"
+        - text: "Hooks"
+          url: "/02-guides/04-hooks.html"
+    - title: "Reference"
+      items:
+        - text: "Makefile Targets"
+          url: "/03-reference/01-makefile.html"
+        - text: "brains.json Schema"
+          url: "/03-reference/02-brains-json.html"
+        - text: "Session Phases"
+          url: "/03-reference/03-session-phases.html"
+        - text: "Changelog"
+          url: "/changelog/"
+    - title: "Support"
+      items:
+        - text: "Buy Me a Coffee"
+          url: "https://buymeacoffee.com/studiowebux"
+        - text: "GitHub Sponsors"
+          url: "https://github.com/sponsors/studiowebux"
+        - text: "Patreon"
+          url: "https://www.patreon.com/studiowebux"
+  social:
+    - name: GitHub
+      url: https://github.com/studiowebux/cerveau.dev
+      icon: github
+
+social_links:
+  - name: GitHub
+    url: https://github.com/studiowebux/cerveau.dev
+    icon: github
