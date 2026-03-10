@@ -227,6 +227,7 @@ sync-shareable:
 	@PROTO="$(TEMPLATE_DIR)"; \
 	SHARE="$$PROTO/../_shareable_"; \
 	SCRIPTS_DIR="$$PROTO/../_scripts_"; \
+	if echo "$$PROTO" | grep -q "_shareable_"; then echo "Error: run this from the monorepo _protocol_/, not from _shareable_/_protocol_/"; exit 1; fi; \
 	if [ ! -d "$$SHARE" ]; then echo "Error: _shareable_ not found at $$SHARE"; exit 1; fi; \
 	echo "Syncing _protocol_ → _shareable_..."; \
 	changed=0; \
