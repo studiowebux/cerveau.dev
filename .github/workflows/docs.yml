@@ -33,13 +33,13 @@ jobs:
 
       - name: Build Documentation
         run: |
-          minimaldoc build ./docs --output _site
-          echo "cerveau.dev" > _site/CNAME
+          minimaldoc build docs -o public
+          echo "cerveau.dev" > public/CNAME
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: ./public/
 
   deploy:
     needs: build
