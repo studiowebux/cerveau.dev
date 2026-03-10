@@ -1,0 +1,26 @@
+services:
+  mdplanner:
+    image: ghcr.io/studiowebux/mdplanner:latest
+    ports:
+      - "8003:8003"
+    volumes:
+      - ./data:/data
+      - ./backups:/backups
+    environment:
+      - MDPLANNER_MCP_TOKEN=${MDPLANNER_MCP_TOKEN:-}
+      - MDPLANNER_CACHE=${MDPLANNER_CACHE:-}
+      - MDPLANNER_WEBDAV=${MDPLANNER_WEBDAV:-1}
+      - MDPLANNER_WEBDAV_USER=${MDPLANNER_WEBDAV_USER:-}
+      - MDPLANNER_WEBDAV_PASS=${MDPLANNER_WEBDAV_PASS:-}
+      - MDPLANNER_READ_ONLY=${MDPLANNER_READ_ONLY:-}
+      - MDPLANNER_SECRET_KEY=${MDPLANNER_SECRET_KEY:-}
+      - MDPLANNER_BACKUP_DIR=${MDPLANNER_BACKUP_DIR:-}
+      - MDPLANNER_BACKUP_INTERVAL=${MDPLANNER_BACKUP_INTERVAL:-}
+      - MDPLANNER_BACKUP_PUBLIC_KEY=${MDPLANNER_BACKUP_PUBLIC_KEY:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8003/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s

@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "mdplanner": {
+      "type": "http",
+      "url": "http://<host>:<port>/mcp",
+      "headers": {
+        "Authorization": "Bearer <your-token-here>"
+      }
+    }
+  },
+  "additionalDirectories": [
+    "/path/to/<project-name>-brain"
+  ],
+  "permissions": {
+    "allow": []
+  }
+}

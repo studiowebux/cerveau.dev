@@ -1,0 +1,13 @@
+{
+  "brains": [
+    {
+      "name": "MyApp",
+      "path": "_brains_/myapp-brain",
+      "isCore": false,
+      "stacks": [],
+      "practices": [],
+      "workflows": ["local-dev", "mdplanner-tasks"],
+      "agents": []
+    }
+  ]
+}
