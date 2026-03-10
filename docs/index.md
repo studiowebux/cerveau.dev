@@ -2,7 +2,7 @@
 title: Home
 ---
 
-# Brain Protocol
+# Cerveau.dev
 
 Multi-brain system for Claude Code. One protocol, many projects, zero duplication.
 

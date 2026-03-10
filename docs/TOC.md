@@ -1,4 +1,4 @@
-# Brain Protocol
+# Cerveau.dev
 
 - [GitHub](https://github.com/studiowebux/cerveau.dev)
 - [Discord](https://discord.gg/BG5Erm9fNv)
