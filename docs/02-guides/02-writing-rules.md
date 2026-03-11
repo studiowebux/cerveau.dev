@@ -16,6 +16,29 @@ Code can write them for you.
 | **Workflow** | `_protocol_/.claude/rules/workflow/` | Brain declares the workflow |
 | **Core** | `_protocol_/.claude/rules/` | Always — every brain |
 
+## Scoping Rules to File Patterns
+
+By default a rule loads every session. Add `paths:` frontmatter to scope it so
+Claude Code only loads it when a matching file is open in context:
+
+```yaml
+---
+paths:
+  - "**/*_test.go"
+  - "**/*.test.ts"
+  - "**/tests/**"
+---
+
+Write useful tests. Do not over-test...
+```
+
+Rules without `paths:` load in every session regardless of what files are open.
+Rules with `paths:` load only when a matching file is active.
+
+Use path-scoped rules for concerns tied to specific file types: testing rules for
+test files, CI rules for workflow files, keybinding rules for keymap files.
+Keep general practices (error handling, architecture, security) as always-loaded.
+
 ## Generate with Claude
 
 Open Claude Code anywhere (not inside a brain) and use these prompts:

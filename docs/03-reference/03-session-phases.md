@@ -20,8 +20,6 @@ Every brain session follows four phases defined in the brain CLAUDE.md.
 The `session-context` hook fires on `SessionStart` and reminds Claude to run
 Phase 1 before any work.
 
-### New flow — `get_context_pack` (recommended)
-
 A single MCP call loads everything needed to start the session:
 
 ```
@@ -48,25 +46,6 @@ task at hand.
 
 After `get_context_pack`, check git state: current branch, last 5 commits,
 open PRs.
-
-### Fallback flow — 8 calls (old MDPlanner or unavailable `get_context_pack`)
-
-If `get_context_pack` is unavailable (old server version), run the full
-sequence manually:
-
-```
-list_tasks { section: "In Progress", project: "<name>" }
-list_tasks { section: "Todo", project: "<name>", ready: true }
-list_milestones { project: "<name>", status: "open" }
-list_notes { search: "[progress] <project>" }
-  → get_note for the most recent one (by updatedAt)
-list_notes { search: "[architecture] <project>" }
-list_notes { search: "[decision] <project>" }
-list_notes { search: "[constraint] <project>" }
-list_people
-```
-
-Then check git state as above.
 
 ## Phase 2 — Work
 
