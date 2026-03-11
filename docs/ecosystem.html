@@ -367,7 +367,7 @@ const nodes = [
     desc: 'Streamable HTTP + SSE interface. Bridges AI agents to MDPlanner.',
     type: 'Model Context Protocol', status: 'Production', tag: 'AI Bridge',
     url: 'https://modelcontextprotocol.io/docs/getting-started/intro',
-    x: 68, y: 68,
+    x: 70, y: 65,
     connects: ['mdplanner', 'claude', 'ezra']
   },
   {
@@ -375,21 +375,21 @@ const nodes = [
     desc: 'Boots from MDPlanner. Picks tasks, commits code, writes progress notes.',
     type: 'Anthropic', status: 'Active', tag: 'AI Agent',
     url: 'https://claude.ai',
-    x: 69, y: 41,
+    x: 70, y: 40,
     connects: ['brain', 'mcp']
   },
   {
     id: 'ezra', title: 'Ezra', category: 'ai',
     desc: 'Go AI agent powered by local LLMs via Ollama. Autonomous task loop over MCP.',
     type: 'Self-hosted / Go', status: 'Active', tag: 'AI Agent',
-    x: 85, y: 87,
+    x: 87, y: 78,
     connects: ['mcp']
   },
   {
     id: 'aichat', title: 'AI Chat', category: 'ai',
     desc: 'Self-hosted AI chat. Ollama + SearXNG search + Chatterbox TTS.',
     type: 'Self-hosted / Offline', status: 'Active', tag: 'Local AI',
-    x: 55, y: 88,
+    x: 58, y: 85,
     connects: ['mdplanner']
   },
   {
@@ -405,7 +405,7 @@ const nodes = [
     desc: 'Knowledge view. Reads and edits MDPlanner data as a vault via WebDAV.',
     type: 'Client', status: 'Active', tag: 'Knowledge',
     url: 'https://obsidian.md',
-    x: 7, y: 62,
+    x: 5, y: 62,
     connects: ['webdav', 'markdown']
   },
   {
@@ -420,14 +420,14 @@ const nodes = [
     id: 'markdown', title: 'Markdown Files', category: 'data',
     desc: 'All data on disk as .md files. Tasks, notes, decisions. You own everything.',
     type: 'File System', status: 'Always on', tag: 'Storage',
-    x: 41, y: 88,
+    x: 38, y: 85,
     connects: ['mdplanner', 'webdav']
   },
   {
     id: 'webdav', title: 'WebDAV', category: 'data',
     desc: 'Exposes markdown files as a remote vault. Obsidian mounts and syncs.',
     type: 'Protocol', status: 'Production', tag: 'Sync',
-    x: 8, y: 86,
+    x: 7, y: 83,
     connects: ['mdplanner', 'markdown', 'obsidian']
   },
   {
@@ -435,7 +435,7 @@ const nodes = [
     desc: 'Go static site generator for docs. Markdown in, clean HTML out. Powers this site.',
     type: 'Self-hosted / Go', status: 'Production', tag: 'Docs',
     url: 'https://github.com/studiowebux/minimaldoc',
-    x: 22, y: 51,
+    x: 22, y: 50,
     connects: ['brain', 'github', 'markdown']
   },
   {
@@ -443,7 +443,7 @@ const nodes = [
     desc: 'Terminal multiplexer built with Ebitengine. Used daily for all dev work.',
     type: 'Desktop / Go', status: 'Active', tag: 'Terminal',
     url: 'https://zurm.dev',
-    x: 73, y: 13,
+    x: 74, y: 11,
     connects: ['brain']
   },
   {
@@ -451,7 +451,7 @@ const nodes = [
     desc: 'Docker management API and dashboard. Containers, logs, control from one place.',
     type: 'Self-hosted / Go', status: 'Beta', tag: 'DevOps',
     url: 'https://dockward.com',
-    x: 88, y: 41,
+    x: 90, y: 30,
     connects: ['brain']
   },
 ];

@@ -13,7 +13,7 @@ to.
 The `compose.yml` is in `_protocol_/setup/`:
 
 ```bash
-cd ~/brains/_protocol_/setup
+cd cerveau.dev/_protocol_/setup
 cp .env.example .env
 ```
 
@@ -21,9 +21,14 @@ Edit `.env`:
 
 ```env
 MDPLANNER_MCP_TOKEN=replace-with-a-random-secret
+MDPLANNER_BRAINS_CONFIG=/cerveau/_configs_/brains.json  # enables Brain Manager UI
 MDPLANNER_CACHE=1              # enables SQLite FTS5 full-text search
 MDPLANNER_BACKUP_INTERVAL=24   # daily backups
 ```
+
+`MDPLANNER_BRAINS_CONFIG` points to `brains.json` inside the container.
+The `compose.yml` mounts `cerveau.dev/` at `/cerveau` and `~/.claude` at
+`/root/.claude`, so the path above works out of the box.
 
 Generate a token:
 
@@ -50,7 +55,7 @@ Open http://localhost:8003 to confirm the UI loads.
 Run this from inside your brain directory:
 
 ```bash
-cd ~/brains/_brains_/myapp-brain
+cd cerveau.dev/_brains_/myapp-brain
 
 claude mcp add --transport http mdplanner \
   http://localhost:8003/mcp \
@@ -111,6 +116,7 @@ Optional environment variables:
 | Variable | Default | Description |
 |---|---|---|
 | `MDPLANNER_MCP_TOKEN` | — | Required — Bearer token for MCP endpoint |
+| `MDPLANNER_BRAINS_CONFIG` | — | Path to `brains.json` inside container — enables Brain Manager UI |
 | `MDPLANNER_CACHE` | `0` | Enable SQLite FTS5 full-text search cache |
 | `MDPLANNER_BACKUP_INTERVAL` | — | Hours between automatic backups |
 | `MDPLANNER_WEBDAV` | `1` | Enable WebDAV endpoint |
