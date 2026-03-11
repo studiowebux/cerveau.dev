@@ -14,6 +14,9 @@
   - [Writing Rules](02-guides/02-writing-rules.md)
   - [MDPlanner Setup](02-guides/03-mdplanner.md)
   - [Hooks](02-guides/04-hooks.md)
+  - [Status Line](02-guides/05-statusline.md)
+  - [Agents](02-guides/06-agents.md)
+  - [Skills](02-guides/07-skills.md)
 - Reference
   - [Makefile Targets](03-reference/01-makefile.md)
   - [brains.json Schema](03-reference/02-brains-json.md)

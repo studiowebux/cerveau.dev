@@ -13,6 +13,17 @@ make help
 
 ## Targets
 
+### onboard
+
+Spawn + connect MCP + rebuild rules in one step. The fastest path to a working brain.
+
+```bash
+make onboard NAME=MyApp PROJECT=/absolute/path/to/your/code
+```
+
+Runs `spawn`, then `rebuild-brain-rules.sh`, then `claude mcp add` automatically.
+Use this for new brains. Use `spawn` + manual steps if you need more control.
+
 ### spawn
 
 Create a new brain and wire `.claude` into it.
@@ -87,16 +98,13 @@ Then `cd _shareable_` and commit + push to GitHub.
 ## Workflow
 
 ```bash
-# 1. Create a brain
-make spawn NAME=MyApp PROJECT=/path/to/myapp
+# Fast path — all in one
+make onboard NAME=MyApp PROJECT=/path/to/myapp
 
-# 2. Connect MCP
+# Manual path — step by step
+make spawn NAME=MyApp PROJECT=/path/to/myapp
 cd ../_brains_/myapp-brain && claude mcp add --transport http mdplanner \
   http://localhost:8003/mcp --header "Authorization: Bearer <token>"
-
-# 3. Rebuild selective rules
 cd ~/brains && ./_scripts_/rebuild-brain-rules.sh MyApp
-
-# 4. Launch
 cd ~/brains/_brains_/myapp-brain && claude
 ```
