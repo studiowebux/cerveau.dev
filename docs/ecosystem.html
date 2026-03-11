@@ -63,6 +63,7 @@
     bottom: 48px;
     background: var(--surface);
     overflow: hidden;
+    cursor: grab;
   }
   #canvas::before {
     content: '';
@@ -459,12 +460,14 @@ let activeNode = null;
 let activeFilter = 'all';
 let drag = null;
 let zoom = 0.85;
+let panX = 0, panY = 0;
+let panning = null;
 const ZOOM_MIN = 0.3;
 const ZOOM_MAX = 2.0;
 const ZOOM_STEP = 0.1;
 
 function applyZoom() {
-  document.getElementById('viewport').style.transform = `scale(${zoom})`;
+  document.getElementById('viewport').style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
   document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
 }
 function adjustZoom(delta) {
@@ -472,7 +475,7 @@ function adjustZoom(delta) {
   applyZoom();
 }
 function resetZoom() {
-  zoom = 0.85;
+  zoom = 0.85; panX = 0; panY = 0;
   applyZoom();
 }
 
@@ -647,10 +650,29 @@ window.addEventListener('load', () => {
   const saved = localStorage.getItem('ecosystem-theme');
   const isDark = (saved || 'dark') === 'dark';
   document.getElementById('theme-label').textContent = isDark ? 'Light' : 'Dark';
-  document.getElementById('canvas').addEventListener('wheel', (e) => {
+  const canvas = document.getElementById('canvas');
+  canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     adjustZoom(e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP);
   }, { passive: false });
+
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.node,.zoom-controls,.canvas-brand,#detail-panel')) return;
+    panning = { startX: e.clientX - panX, startY: e.clientY - panY };
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!panning) return;
+    panX = e.clientX - panning.startX;
+    panY = e.clientY - panning.startY;
+    applyZoom();
+  });
+  document.addEventListener('mouseup', () => {
+    if (!panning) return;
+    panning = null;
+    canvas.style.cursor = '';
+  });
 });
 window.addEventListener('resize', () => renderLines());
 </script>
