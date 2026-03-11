@@ -42,9 +42,6 @@ landing:
       - text: "Get Started"
         url: "/getting-started/installation.html"
         primary: true
-      - text: "Ecosystem"
-        url: "/ecosystem.html"
-        primary: false
       - text: "View on GitHub"
         url: "https://github.com/studiowebux/cerveau.dev"
         primary: false
@@ -66,7 +63,7 @@ landing:
         description: "Boot reminders, commit validation, checkpoint checks, and progress gates. The protocol runs whether Claude remembers or not."
       - emoji: "%"
         title: "Protocol-Driven Workflow"
-        description: "Four phases, sixteen hard rules. Boot → Work → Write Back → Close. Zero drift between sessions."
+        description: "Claude picks up exactly where it left off. Every session starts with full context — tasks, decisions, and progress loaded from MDPlanner."
       - emoji: "&"
         title: "Zero Footprint"
         description: "No files added to your project repos. The brain lives outside your code. Your codebase stays clean."
@@ -75,7 +72,7 @@ landing:
         description: "No rules ship by default. Generate stack, practice, and workflow rules with a single Claude prompt."
       - emoji: "*"
         title: "Open Source"
-        description: "AGPL-3.0. Self-host everything. MDPlanner runs in Docker. No external dependencies required."
+        description: "AGPL-3.0. Self-host everything. MDPlanner runs in a container. No external dependencies required."
 
   links:
     title: "Resources"
@@ -84,6 +81,10 @@ landing:
         title: "GitHub"
         description: "Source code and issues"
         url: "https://github.com/studiowebux/cerveau.dev"
+      - icon: "github"
+        title: "MDPlanner"
+        description: "Task and note backend"
+        url: "https://github.com/studiowebux/mdplanner"
       - icon: "discord"
         title: "Discord"
         description: "Join the community"

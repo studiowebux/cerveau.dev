@@ -13,7 +13,7 @@ title: Features
 | **Protocol-Driven Workflow** | Four phases, sixteen hard rules. Boot → Work → Write Back → Close. Zero drift between sessions. |
 | **Zero Footprint** | No files added to your project repos. The brain lives outside your code. Your codebase stays clean. |
 | **Bring Your Own Rules** | No rules ship by default. Generate stack, practice, and workflow rules with a single Claude prompt. |
-| **Open Source** | AGPL-3.0. Self-host everything. MDPlanner runs in Docker. No external dependencies required. |
+| **Open Source** | AGPL-3.0. Self-host everything. MDPlanner runs in a container. No external dependencies required. |
 | **Context Efficiency** | Selective loading cuts token usage dramatically. A typical brain loads ~800 lines instead of ~4,000. |
 | **Agent Support** | Define custom agents in YAML. Declare which agents each brain loads. Agents live in the protocol. |
 | **Skills Support** | Reusable skill definitions (slash commands) shared across all brains from the protocol. |

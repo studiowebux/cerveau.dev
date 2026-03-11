@@ -15,7 +15,7 @@ Discord: https://discord.gg/BG5Erm9fNv
 
 - `python3` — used by Makefile and rebuild script for path calculations
 - `jq` — used by hooks and statusline for JSON parsing
-- `docker` + `docker compose` — for running MDPlanner (optional if self-hosting)
+- `podman` + `podman compose` — for running MDPlanner (optional if self-hosting)
 - `gh` — GitHub CLI for PR workflows (optional)
 
 ## Quick Start
@@ -26,7 +26,7 @@ Discord: https://discord.gg/BG5Erm9fNv
 cd _protocol_/setup
 cp .env.example .env
 # Edit .env — set MDPLANNER_MCP_TOKEN (generate with: openssl rand -hex 32)
-docker compose up -d
+podman compose up -d
 ```
 
 Open http://localhost:8003 to verify it's running.

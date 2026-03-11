@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light" data-base-path="" class="no-js">
+<head>
+<script>
+document.documentElement.classList.remove('no-js');
+(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}})();
+</script>
+<style>
+:root{--bg-primary:#fafafa;--text-primary:#1a1a1a;--text-secondary:#4a4a4a;--link-color:#2563eb}
+:root[data-theme="dark"]{--bg-primary:#1a1a1a;--text-primary:#fff;--text-secondary:#e8e8e8;--link-color:#7bb3ff}
+html,body{background-color:var(--bg-primary);color:var(--text-primary)}
+a{color:var(--link-color)}
+.toc-link,.nav-link{color:var(--text-secondary);text-decoration:none}
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Session Phases | Cerveau.dev</title>
+<meta name="title" content="Session Phases">
+<meta name="description" content="Multi-brain system for Claude Code. One protocol, many projects, zero duplication.">
+<meta name="author" content="">
+
+
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Session Phases">
+<meta property="og:description" content="">
+
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="Session Phases">
+<meta property="twitter:description" content="">
+
+<link rel="stylesheet" href="/css/tokens.css?v=1.3.0">
+<link rel="stylesheet" href="/css/base.css?v=1.3.0">
+<link rel="stylesheet" href="/css/main.css?v=1.3.0">
+<link rel="stylesheet" href="/css/print.css?v=1.3.0" media="print">
+
+
+
+
+<link rel="stylesheet" href="/css/custom-theme.css?v=1.3.0">
+
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar-left">
+<span></span>
+</button>
+<div class="mobile-menu-backdrop" id="mobile-menu-backdrop" aria-hidden="true"></div>
+<div class="search-modal" id="search-modal" role="dialog" aria-modal="true" aria-label="Search documentation" aria-hidden="true">
+<div class="search-modal-content">
+<div class="search-header">
+<label for="search-input" class="sr-only">Search documentation</label>
+<input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="search-results" aria-expanded="false">
+<button class="search-close" id="search-close" aria-label="Close search">×</button>
+</div>
+<div class="search-results" id="search-results" role="listbox" aria-label="Search results"></div>
+</div>
+</div>
+<div class="container">
+
+<aside class="sidebar sidebar-left" id="sidebar-left" aria-label="Site navigation">
+<div class="sidebar-header">
+<p class="site-title"><a href="/">Cerveau.dev</a></p>
+<button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+<span class="theme-icon"></span>
+</button>
+</div>
+
+
+<button class="search-button" id="search-button" aria-label="Search documentation">
+<span class="search-icon">⌕</span>
+<span class="search-text">Search</span>
+<kbd class="search-kbd-hint">⌘K</kbd>
+</button>
+<nav class="navigation"><ul class="nav-list"><li class="nav-item"><a href="https://github.com/studiowebux/cerveau.dev" class="nav-link nav-link-external" target="_blank" rel="noopener noreferrer">GitHub<svg class="external-icon" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 1.5L1.5 10.5M10.5 1.5H4.5M10.5 1.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="nav-item"><a href="https://discord.gg/BG5Erm9fNv" class="nav-link nav-link-external" target="_blank" rel="noopener noreferrer">Discord<svg class="external-icon" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 1.5L1.5 10.5M10.5 1.5H4.5M10.5 1.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="nav-item"><a href="/index.html" class="nav-link">Home</a></li><li class="nav-item collapsed"><div class="nav-item-with-children">
+<button type="button" class="nav-toggle-btn" aria-label="Toggle Getting Started" aria-expanded="false">
+<span class="nav-toggle-icon">▶</span>
+</button><span class="nav-section">Getting Started</span></div><ul class="nav-list nav-list-nested"><li class="nav-item"><a href="/getting-started/installation.html" class="nav-link">Installation</a></li><li class="nav-item"><a href="/getting-started/quick-start.html" class="nav-link">Quick Start</a></li><li class="nav-item"><a href="/getting-started/first-brain.html" class="nav-link">First Brain</a></li><li class="nav-item"><a href="/getting-started/features.html" class="nav-link">Features</a></li></ul></li><li class="nav-item collapsed"><div class="nav-item-with-children">
+<button type="button" class="nav-toggle-btn" aria-label="Toggle Guides" aria-expanded="false">
+<span class="nav-toggle-icon">▶</span>
+</button><span class="nav-section">Guides</span></div><ul class="nav-list nav-list-nested"><li class="nav-item"><a href="/guides/how-it-works.html" class="nav-link">How It Works</a></li><li class="nav-item"><a href="/guides/writing-rules.html" class="nav-link">Writing Rules</a></li><li class="nav-item"><a href="/guides/mdplanner.html" class="nav-link">MDPlanner Setup</a></li><li class="nav-item"><a href="/guides/hooks.html" class="nav-link">Hooks</a></li><li class="nav-item"><a href="/guides/statusline.html" class="nav-link">Status Line</a></li><li class="nav-item"><a href="/guides/agents.html" class="nav-link">Agents</a></li><li class="nav-item"><a href="/guides/skills.html" class="nav-link">Skills</a></li></ul></li><li class="nav-item collapsed"><div class="nav-item-with-children">
+<button type="button" class="nav-toggle-btn" aria-label="Toggle Reference" aria-expanded="false">
+<span class="nav-toggle-icon">▶</span>
+</button><span class="nav-section">Reference</span></div><ul class="nav-list nav-list-nested"><li class="nav-item"><a href="/reference/makefile.html" class="nav-link">Makefile Targets</a></li><li class="nav-item"><a href="/reference/brains-json.html" class="nav-link">brains.json Schema</a></li><li class="nav-item"><a href="/reference/session-phases.html" class="nav-link">Session Phases</a></li></ul></li></ul></nav>
+
+
+
+<div class="changelog-link-separator"></div>
+<a href="/changelog/" class="changelog-page-link">
+<span class="changelog-icon">&#9998;</span>
+<span class="changelog-text">Changelog</span>
+</a>
+
+
+
+<div class="social-links" role="list" aria-label="Social links">
+
+<a href="https://github.com/studiowebux/cerveau.dev" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="GitHub (opens in new tab)" role="listitem">
+<svg class="social-icon social-icon-github" aria-hidden="true" focusable="false"><use href="/icons.svg#icon-github"></use></svg>
+</a>
+
+</div>
+
+<div class="sidebar-footer">
+<a href="/llms.txt" class="sidebar-footer-link">llms.txt</a>
+<a href="https://minimaldoc.com" target="_blank" rel="noopener noreferrer">minimaldoc v1.3.0</a>
+</div>
+</aside>
+<script>
+(function(){
+var s=document.getElementById('sidebar-left');
+if(!s)return;
+
+try{
+var c=JSON.parse(localStorage.getItem('navCollapsedSections')||'[]');
+s.querySelectorAll('.nav-item-with-children').forEach(function(el){
+var t=el.querySelector('.nav-section,.nav-link-parent');
+var n=el.closest('.nav-item');
+var b=el.querySelector('.nav-toggle-btn');
+if(t&&n){
+if(n.classList.contains('active')){n.classList.remove('collapsed');if(b)b.setAttribute('aria-expanded','true');}
+else if(c.includes(t.textContent.trim())){n.classList.add('collapsed');if(b)b.setAttribute('aria-expanded','false');}
+else{n.classList.remove('collapsed');if(b)b.setAttribute('aria-expanded','true');}
+}
+});
+}catch(e){}
+
+var v=sessionStorage.getItem('sidebarScroll');
+if(v)s.scrollTop=parseInt(v,10);
+
+document.addEventListener('click',function(e){if(e.target.closest('a'))sessionStorage.setItem('sidebarScroll',s.scrollTop)},true);
+})();
+</script>
+
+<main class="main-content" id="main-content">
+<article class="page-content">
+<header class="page-header">
+<div class="page-title-row">
+<h1>Session Phases</h1>
+<div class="page-title-actions">
+
+
+<button class="copy-md-btn" id="copy-md-btn" aria-label="Copy as Markdown" data-slug="reference/session-phases">Copy MD</button>
+</div>
+</div>
+
+<p class="page-updated">Last updated: March 11, 2026</p>
+
+</header>
+<div class="markdown-body">
+<h1 id="session-phases">Session Phases</h1>
+<p>Every brain session follows four phases defined in the brain CLAUDE.md.</p>
+<h2 id="phases">Phases</h2>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Phase 1 — Boot</strong></td>
+<td>Load context from MDPlanner: most recent progress note, open tasks, architecture, decisions</td>
+</tr>
+<tr>
+<td><strong>Phase 2 — Work</strong></td>
+<td>Ticket before work, one task at a time, implement, commit, update task, move to Done</td>
+</tr>
+<tr>
+<td><strong>Phase 3 — Write Back</strong></td>
+<td>Record decisions, bugs, learnings as MDPlanner notes</td>
+</tr>
+<tr>
+<td><strong>Phase 4 — Close</strong></td>
+<td>Write progress note, move unfinished tasks back to Todo</td>
+</tr>
+</tbody>
+</table>
+<h2 id="phase-1--boot">Phase 1 — Boot</h2>
+<p>The <code>session-context</code> hook fires on <code>SessionStart</code> and reminds Claude to run<br />
+Phase 1 before any work.</p>
+<p>A single MCP call loads everything needed to start the session:</p>
+<pre><code>get_context_pack { project: &quot;&lt;project-name&gt;&quot; }
+</code></pre>
+<p>Returns in one round-trip:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>What Claude extracts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>people</code></td>
+<td>Claude&rsquo;s person ID + owner&rsquo;s person ID</td>
+</tr>
+<tr>
+<td><code>milestone</code></td>
+<td>Active open milestone — name and ID</td>
+</tr>
+<tr>
+<td><code>inProgress</code></td>
+<td>Tasks already in progress — resume these first</td>
+</tr>
+<tr>
+<td><code>todo</code></td>
+<td>Top 10 ready tasks sorted by priority</td>
+</tr>
+<tr>
+<td><code>recentProgress</code></td>
+<td>Most recent <code>[progress]</code> note excerpt</td>
+</tr>
+<tr>
+<td><code>decisions</code></td>
+<td>Decision note titles and IDs</td>
+</tr>
+<tr>
+<td><code>architecture</code></td>
+<td>Architecture note titles and IDs</td>
+</tr>
+<tr>
+<td><code>constraints</code></td>
+<td>Constraint note titles and IDs</td>
+</tr>
+</tbody>
+</table>
+<p>If <code>inProgress</code> is non-empty, resume those tasks. If the <code>recentProgress</code><br />
+excerpt is not enough context, follow up with <code>get_note { id }</code> for the full<br />
+note. Load decision or architecture notes only when directly relevant to the<br />
+task at hand.</p>
+<p>After <code>get_context_pack</code>, check git state: current branch, last 5 commits,<br />
+open PRs.</p>
+<h2 id="phase-2--work">Phase 2 — Work</h2>
+<h3 id="commit-flow">Commit Flow</h3>
+<p>After implementing a task:</p>
+<ol>
+<li>Stage changes: <code>git add &lt;files&gt;</code></li>
+<li>Commit: <code>git commit -m &quot;type: subject&quot;</code></li>
+<li>Push: <code>git push</code></li>
+<li>Add progress comment to the MDPlanner task</li>
+<li>Move task to Done in MDPlanner</li>
+</ol>
+<p>The <code>commit-validator</code> hook blocks commits that:</p>
+<ul>
+<li>Don&rsquo;t follow conventional commit format</li>
+<li>Have staged files containing secret patterns</li>
+</ul>
+<h3 id="conventional-commits">Conventional Commits</h3>
+<pre><code>feat: add login endpoint
+fix: resolve nil pointer in auth handler
+chore: update dependencies
+docs: add API reference
+test: add unit tests for validator
+refactor: extract shared config loader
+</code></pre>
+<h2 id="phase-3--write-back">Phase 3 — Write Back</h2>
+<p>After completing a task or making a significant decision:</p>
+<ul>
+<li><strong>Decision notes</strong>: <code>[decision] &lt;title&gt; — &lt;rationale&gt;</code> — never edit, supersede</li>
+<li><strong>Bug notes</strong>: <code>[bug] &lt;title&gt; — &lt;description&gt;</code> — discovered during work</li>
+<li><strong>Architecture updates</strong>: update <code>[architecture]</code> notes when structure changes</li>
+</ul>
+<h2 id="phase-4--close">Phase 4 — Close</h2>
+<p>Before ending the session:</p>
+<ol>
+<li>Write a progress note: <code>[progress] &lt;date&gt; — &lt;summary of what was done&gt;</code></li>
+<li>Move any unfinished In Progress tasks back to Todo</li>
+<li>The <code>stop-progress-check</code> hook verifies a progress note was written</li>
+</ol>
+<h2 id="hard-rules">Hard Rules</h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ticket before work</td>
+<td>No code changes without an MDPlanner task</td>
+</tr>
+<tr>
+<td>One task at a time</td>
+<td>Only one task in In Progress</td>
+</tr>
+<tr>
+<td>Branch before commit</td>
+<td>Create a feature branch before starting work</td>
+</tr>
+<tr>
+<td>Push after commit</td>
+<td>Always push immediately after committing</td>
+</tr>
+<tr>
+<td>Never mark complete</td>
+<td>Only the human sets <code>completed: true</code></td>
+</tr>
+<tr>
+<td>Never edit decisions</td>
+<td>Create a superseding note instead</td>
+</tr>
+<tr>
+<td>Progress before close</td>
+<td>Must write a progress note before session ends</td>
+</tr>
+<tr>
+<td>No unilateral deferrals</td>
+<td>Deferring tasks requires owner approval</td>
+</tr>
+<tr>
+<td>Continue means work</td>
+<td><code>continue</code> resumes the current task, not exploration</td>
+</tr>
+<tr>
+<td>Backlog ownership</td>
+<td>Claude owns the backlog — keeps it clean and up to date</td>
+</tr>
+<tr>
+<td>Brain stays external</td>
+<td>Brain directory never lives inside a project repo</td>
+</tr>
+<tr>
+<td>One-task-at-a-time</td>
+<td>Never work on multiple tasks simultaneously</td>
+</tr>
+<tr>
+<td>No force push to main</td>
+<td>Protected branch — PR workflow only</td>
+</tr>
+<tr>
+<td>Context compaction note</td>
+<td>Write handoff note before context is compacted</td>
+</tr>
+<tr>
+<td>Secrets gate</td>
+<td>Commit validator scans for secrets — blocked if found</td>
+</tr>
+<tr>
+<td>Checkpoint acknowledgement</td>
+<td>Respond to checkpoint hooks before continuing</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+
+
+
+<nav class="page-nav">
+<a href="/reference/brains-json.html" class="page-nav-link page-nav-prev">
+<span class="page-nav-label">Previous</span>
+<span class="page-nav-title">brains.json Schema</span>
+</a>
+
+</nav>
+</article>
+</main>
+<aside class="sidebar sidebar-right" aria-label="Page table of contents">
+<div class="toc-header" id="toc-heading">On this page</div>
+<nav class="toc" aria-labelledby="toc-heading"><ul class="toc-list" role="list"><li class="toc-item toc-level-1"><a href="#session-phases" class="toc-link">Session Phases</a><ul class="toc-list toc-list-nested"><li class="toc-item toc-level-2"><a href="#phases" class="toc-link">Phases</a></li><li class="toc-item toc-level-2"><a href="#phase-1--boot" class="toc-link">Phase 1 — Boot</a></li><li class="toc-item toc-level-2"><a href="#phase-2--work" class="toc-link">Phase 2 — Work</a><ul class="toc-list toc-list-nested"><li class="toc-item toc-level-3"><a href="#commit-flow" class="toc-link">Commit Flow</a></li><li class="toc-item toc-level-3"><a href="#conventional-commits" class="toc-link">Conventional Commits</a></li></ul></li><li class="toc-item toc-level-2"><a href="#phase-3--write-back" class="toc-link">Phase 3 — Write Back</a></li><li class="toc-item toc-level-2"><a href="#phase-4--close" class="toc-link">Phase 4 — Close</a></li><li class="toc-item toc-level-2"><a href="#hard-rules" class="toc-link">Hard Rules</a></li></ul></li></ul></nav>
+</aside>
+</div>
+<script defer src="/js/theme-toggle.js?v=1.3.0"></script>
+<script defer src="/js/scrollspy.js?v=1.3.0"></script>
+<script defer src="/js/mobile-menu.js?v=1.3.0"></script>
+<script defer src="/js/nav-collapse.js?v=1.3.0"></script>
+<script defer src="/js/anchor-links.js?v=1.3.0"></script>
+<script defer src="/js/external-links.js?v=1.3.0"></script>
+<script defer src="/js/search.js?v=1.3.0"></script>
+<script defer src="/js/code-copy.js?v=1.3.0"></script>
+
+
+
+
+<script defer src="/js/copy-markdown.js?v=1.3.0"></script>
+
+</body>
+</html>

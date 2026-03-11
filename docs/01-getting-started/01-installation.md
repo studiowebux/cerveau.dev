@@ -11,7 +11,7 @@ Install the following tools before starting:
 ```bash
 python3 --version   # any version — used by Makefile path calculations
 jq --version        # brew install jq  /  apt install jq
-docker compose version
+podman compose version
 ```
 
 `gh` (GitHub CLI) is optional — needed for PR workflows only.

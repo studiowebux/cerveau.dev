@@ -30,7 +30,7 @@ openssl rand -hex 32
 Start the container:
 
 ```bash
-docker compose up -d
+podman compose up -d
 ```
 
 Verify:

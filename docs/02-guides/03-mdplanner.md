@@ -5,12 +5,12 @@ title: MDPlanner Setup
 # MDPlanner Setup
 
 MDPlanner is the single source of truth for tasks, notes, decisions, and
-progress. It runs in Docker and exposes an MCP endpoint that Claude connects
+progress. It runs in a container and exposes an MCP endpoint that Claude connects
 to.
 
-## Docker Setup
+## Container Setup
 
-The `docker-compose.yml` is in `_protocol_/setup/`:
+The `compose.yml` is in `_protocol_/setup/`:
 
 ```bash
 cd ~/brains/_protocol_/setup
@@ -34,7 +34,7 @@ openssl rand -hex 32
 Start:
 
 ```bash
-docker compose up -d
+podman compose up -d
 ```
 
 Verify:
@@ -103,7 +103,7 @@ Claude uses MDPlanner throughout every session:
 
 MDPlanner is open source: https://github.com/studiowebux/mdplanner
 
-The Docker image is `ghcr.io/studiowebux/mdplanner:latest`. Data persists in
+The container image is `ghcr.io/studiowebux/mdplanner:latest`. Data persists in
 the `./data` volume.
 
 Optional environment variables:

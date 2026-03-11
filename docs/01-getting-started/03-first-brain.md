@@ -61,11 +61,11 @@ cd cerveau.dev/_protocol_ && claude
 
 | Symptom | Fix |
 |---|---|
-| `curl health` fails | `docker compose up -d` from `_protocol_/setup/` |
+| `curl health` fails | `podman compose up -d` from `_protocol_/setup/` |
 | `claude mcp list` shows nothing | Re-run `claude mcp add` from inside the brain directory |
 | Claude doesn't run Boot | Check `.claude/CLAUDE.md` exists in the brain dir |
 | `__PROJECT__` still in files | `make validate NAME=X` shows where, re-run `make onboard` |
 | Rules not loading | Re-run `rebuild-brain-rules.sh`, check names match filenames in `brains.json` |
 | Hook errors about `jq` | `brew install jq` or `apt install jq` |
 | MCP auth fails (401) | Token in `claude mcp add` must match `MDPLANNER_MCP_TOKEN` in `.env` |
-| Port 8003 already in use | Edit `docker-compose.yml` to change the host port |
+| Port 8003 already in use | Edit `compose.yml` to change the host port |

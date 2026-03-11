@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light" data-base-path="" class="no-js">
+<head>
+<script>
+document.documentElement.classList.remove('no-js');
+(function(){var t=localStorage.getItem('theme');if(t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.setAttribute('data-theme','dark');}})();
+</script>
+<style>
+:root{--bg-primary:#fafafa;--text-primary:#1a1a1a;--text-secondary:#4a4a4a;--link-color:#2563eb}
+:root[data-theme="dark"]{--bg-primary:#1a1a1a;--text-primary:#fff;--text-secondary:#e8e8e8;--link-color:#7bb3ff}
+html,body{background-color:var(--bg-primary);color:var(--text-primary)}
+a{color:var(--link-color)}
+.toc-link,.nav-link{color:var(--text-secondary);text-decoration:none}
+</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Writing Rules | Cerveau.dev</title>
+<meta name="title" content="Writing Rules">
+<meta name="description" content="Multi-brain system for Claude Code. One protocol, many projects, zero duplication.">
+<meta name="author" content="">
+
+
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Writing Rules">
+<meta property="og:description" content="">
+
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:title" content="Writing Rules">
+<meta property="twitter:description" content="">
+
+<link rel="stylesheet" href="/css/tokens.css?v=1.3.0">
+<link rel="stylesheet" href="/css/base.css?v=1.3.0">
+<link rel="stylesheet" href="/css/main.css?v=1.3.0">
+<link rel="stylesheet" href="/css/print.css?v=1.3.0" media="print">
+
+
+
+
+<link rel="stylesheet" href="/css/custom-theme.css?v=1.3.0">
+
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar-left">
+<span></span>
+</button>
+<div class="mobile-menu-backdrop" id="mobile-menu-backdrop" aria-hidden="true"></div>
+<div class="search-modal" id="search-modal" role="dialog" aria-modal="true" aria-label="Search documentation" aria-hidden="true">
+<div class="search-modal-content">
+<div class="search-header">
+<label for="search-input" class="sr-only">Search documentation</label>
+<input type="text" class="search-input" id="search-input" placeholder="Search documentation..." autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="search-results" aria-expanded="false">
+<button class="search-close" id="search-close" aria-label="Close search">×</button>
+</div>
+<div class="search-results" id="search-results" role="listbox" aria-label="Search results"></div>
+</div>
+</div>
+<div class="container">
+
+<aside class="sidebar sidebar-left" id="sidebar-left" aria-label="Site navigation">
+<div class="sidebar-header">
+<p class="site-title"><a href="/">Cerveau.dev</a></p>
+<button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+<span class="theme-icon"></span>
+</button>
+</div>
+
+
+<button class="search-button" id="search-button" aria-label="Search documentation">
+<span class="search-icon">⌕</span>
+<span class="search-text">Search</span>
+<kbd class="search-kbd-hint">⌘K</kbd>
+</button>
+<nav class="navigation"><ul class="nav-list"><li class="nav-item"><a href="https://github.com/studiowebux/cerveau.dev" class="nav-link nav-link-external" target="_blank" rel="noopener noreferrer">GitHub<svg class="external-icon" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 1.5L1.5 10.5M10.5 1.5H4.5M10.5 1.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="nav-item"><a href="https://discord.gg/BG5Erm9fNv" class="nav-link nav-link-external" target="_blank" rel="noopener noreferrer">Discord<svg class="external-icon" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10.5 1.5L1.5 10.5M10.5 1.5H4.5M10.5 1.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a></li><li class="nav-item"><a href="/index.html" class="nav-link">Home</a></li><li class="nav-item collapsed"><div class="nav-item-with-children">
+<button type="button" class="nav-toggle-btn" aria-label="Toggle Getting Started" aria-expanded="false">
+<span class="nav-toggle-icon">▶</span>
+</button><span class="nav-section">Getting Started</span></div><ul class="nav-list nav-list-nested"><li class="nav-item"><a href="/getting-started/installation.html" class="nav-link">Installation</a></li><li class="nav-item"><a href="/getting-started/quick-start.html" class="nav-link">Quick Start</a></li><li class="nav-item"><a href="/getting-started/first-brain.html" class="nav-link">First Brain</a></li><li class="nav-item"><a href="/getting-started/features.html" class="nav-link">Features</a></li></ul></li><li class="nav-item collapsed"><div class="nav-item-with-children">
+<button type="button" class="nav-toggle-btn" aria-label="Toggle Guides" aria-expanded="false">
+<span class="nav-toggle-icon">▶</span>
+</button><span class="nav-section">Guides</span></div><ul class="nav-list nav-list-nested"><li class="nav-item"><a href="/guides/how-it-works.html" class="nav-link">How It Works</a></li><li class="nav-item"><a href="/guides/writing-rules.html" class="nav-link">Writing Rules</a></li><li class="nav-item"><a href="/guides/mdplanner.html" class="nav-link">MDPlanner Setup</a></li><li class="nav-item"><a href="/guides/hooks.html" class="nav-link">Hooks</a></li><li class="nav-item"><a href="/guides/statusline.html" class="nav-link">Status Line</a></li><li class="nav-item"><a href="/guides/agents.html" class="nav-link">Agents</a></li><li class="nav-item"><a href="/guides/skills.html" class="nav-link">Skills</a></li></ul></li><li class="nav-item collapsed"><div class="nav-item-with-children">
+<button type="button" class="nav-toggle-btn" aria-label="Toggle Reference" aria-expanded="false">
+<span class="nav-toggle-icon">▶</span>
+</button><span class="nav-section">Reference</span></div><ul class="nav-list nav-list-nested"><li class="nav-item"><a href="/reference/makefile.html" class="nav-link">Makefile Targets</a></li><li class="nav-item"><a href="/reference/brains-json.html" class="nav-link">brains.json Schema</a></li><li class="nav-item"><a href="/reference/session-phases.html" class="nav-link">Session Phases</a></li></ul></li></ul></nav>
+
+
+
+<div class="changelog-link-separator"></div>
+<a href="/changelog/" class="changelog-page-link">
+<span class="changelog-icon">&#9998;</span>
+<span class="changelog-text">Changelog</span>
+</a>
+
+
+
+<div class="social-links" role="list" aria-label="Social links">
+
+<a href="https://github.com/studiowebux/cerveau.dev" target="_blank" rel="noopener noreferrer" class="social-link" aria-label="GitHub (opens in new tab)" role="listitem">
+<svg class="social-icon social-icon-github" aria-hidden="true" focusable="false"><use href="/icons.svg#icon-github"></use></svg>
+</a>
+
+</div>
+
+<div class="sidebar-footer">
+<a href="/llms.txt" class="sidebar-footer-link">llms.txt</a>
+<a href="https://minimaldoc.com" target="_blank" rel="noopener noreferrer">minimaldoc v1.3.0</a>
+</div>
+</aside>
+<script>
+(function(){
+var s=document.getElementById('sidebar-left');
+if(!s)return;
+
+try{
+var c=JSON.parse(localStorage.getItem('navCollapsedSections')||'[]');
+s.querySelectorAll('.nav-item-with-children').forEach(function(el){
+var t=el.querySelector('.nav-section,.nav-link-parent');
+var n=el.closest('.nav-item');
+var b=el.querySelector('.nav-toggle-btn');
+if(t&&n){
+if(n.classList.contains('active')){n.classList.remove('collapsed');if(b)b.setAttribute('aria-expanded','true');}
+else if(c.includes(t.textContent.trim())){n.classList.add('collapsed');if(b)b.setAttribute('aria-expanded','false');}
+else{n.classList.remove('collapsed');if(b)b.setAttribute('aria-expanded','true');}
+}
+});
+}catch(e){}
+
+var v=sessionStorage.getItem('sidebarScroll');
+if(v)s.scrollTop=parseInt(v,10);
+
+document.addEventListener('click',function(e){if(e.target.closest('a'))sessionStorage.setItem('sidebarScroll',s.scrollTop)},true);
+})();
+</script>
+
+<main class="main-content" id="main-content">
+<article class="page-content">
+<header class="page-header">
+<div class="page-title-row">
+<h1>Writing Rules</h1>
+<div class="page-title-actions">
+
+
+<button class="copy-md-btn" id="copy-md-btn" aria-label="Copy as Markdown" data-slug="guides/writing-rules">Copy MD</button>
+</div>
+</div>
+
+<p class="page-updated">Last updated: March 11, 2026</p>
+
+</header>
+<div class="markdown-body">
+<h1 id="writing-rules">Writing Rules</h1>
+<p>The protocol ships with no rules — you generate them for your stack. Claude<br />
+Code can write them for you.</p>
+<h2 id="rule-types">Rule Types</h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Directory</th>
+<th>Loaded when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stack</strong></td>
+<td><code>_protocol_/.claude/rules/stack/</code></td>
+<td>Brain declares the stack</td>
+</tr>
+<tr>
+<td><strong>Practice</strong></td>
+<td><code>_protocol_/.claude/rules/practices/</code></td>
+<td>Brain declares the practice</td>
+</tr>
+<tr>
+<td><strong>Workflow</strong></td>
+<td><code>_protocol_/.claude/rules/workflow/</code></td>
+<td>Brain declares the workflow</td>
+</tr>
+<tr>
+<td><strong>Core</strong></td>
+<td><code>_protocol_/.claude/rules/</code></td>
+<td>Always — every brain</td>
+</tr>
+</tbody>
+</table>
+<h2 id="scoping-rules-to-file-patterns">Scoping Rules to File Patterns</h2>
+<p>By default a rule loads every session. Add <code>paths:</code> frontmatter to scope it so<br />
+Claude Code only loads it when a matching file is open in context:</p>
+<pre class="chroma"><code><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">paths</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="s2">&#34;**/*_test.go&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="s2">&#34;**/*.test.ts&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span>- <span class="s2">&#34;**/tests/**&#34;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nn">---</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="l">Write useful tests. Do not over-test...</span><span class="w">
+</span></span></span></code></pre><p>Rules without <code>paths:</code> load in every session regardless of what files are open.<br />
+Rules with <code>paths:</code> load only when a matching file is active.</p>
+<p>Use path-scoped rules for concerns tied to specific file types: testing rules for<br />
+test files, CI rules for workflow files, keybinding rules for keymap files.<br />
+Keep general practices (error handling, architecture, security) as always-loaded.</p>
+<h2 id="generate-with-claude">Generate with Claude</h2>
+<p>Open Claude Code anywhere (not inside a brain) and use these prompts:</p>
+<h3 id="stack-rules">Stack rules</h3>
+<pre><code>Create a Claude Code rule file for Go development.
+Enforce: explicit error handling, table-driven tests, slog for logging,
+no global mutable state, go fmt before every commit.
+Keep under 80 lines. Rules only — no examples, no prose.
+</code></pre>
+<pre><code>Create a Claude Code rule file for TypeScript with Deno.
+Enforce: Zod for validation, explicit return types on exports,
+no any, Deno.test for tests, deno fmt before commits.
+Keep under 80 lines. Rules only — no examples, no prose.
+</code></pre>
+<h3 id="practice-rules">Practice rules</h3>
+<pre><code>Create a Claude Code rule file for code review practices.
+Enforce: security-first review, error handling coverage, flag dead code,
+require PR descriptions with test plans.
+Keep under 80 lines. Rules only — no examples, no prose.
+</code></pre>
+<pre><code>Create a Claude Code rule file for testing practices.
+Enforce: unit tests for all exported functions, table-driven tests,
+no test-only logic in production code, mocks over real dependencies in unit tests.
+Keep under 80 lines. Rules only — no examples, no prose.
+</code></pre>
+<h3 id="workflow-rules">Workflow rules</h3>
+<pre><code>Create a Claude Code rule file for git workflow.
+Enforce: feature branches, conventional commits (feat/fix/chore/docs/test),
+no force push to main, PR-based merges only.
+Keep under 80 lines. Rules only — no examples, no prose.
+</code></pre>
+<h2 id="save-the-rule">Save the Rule</h2>
+<p>Save each generated file to the appropriate directory:</p>
+<pre class="chroma"><code><span class="line"><span class="cl"><span class="c1"># Stack rule example</span>
+</span></span><span class="line"><span class="cl">vim ~/brains/_protocol_/.claude/rules/stack/go.md
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Practice rule example</span>
+</span></span><span class="line"><span class="cl">vim ~/brains/_protocol_/.claude/rules/practices/testing.md
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Workflow rule example</span>
+</span></span><span class="line"><span class="cl">vim ~/brains/_protocol_/.claude/rules/workflow/git.md
+</span></span></code></pre><h2 id="declare-in-brainsjson">Declare in brains.json</h2>
+<p>Add the rule name (filename without <code>.md</code>) to the brain&rsquo;s array:</p>
+<pre class="chroma"><code><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;MyApp&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;stacks&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;go&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;practices&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;testing&#34;</span><span class="p">,</span> <span class="s2">&#34;code-review&#34;</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">  <span class="nt">&#34;workflows&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;git&#34;</span><span class="p">,</span> <span class="s2">&#34;mdplanner-tasks&#34;</span><span class="p">,</span> <span class="s2">&#34;local-dev&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre><p>Then rebuild:</p>
+<pre class="chroma"><code><span class="line"><span class="cl">./_scripts_/rebuild-brain-rules.sh MyApp
+</span></span></code></pre><h2 id="evolving-rules">Evolving Rules</h2>
+<p>As your project evolves, ask Claude to refine:</p>
+<pre><code>Read my codebase and create a stack rule that captures the patterns and
+conventions we're using. Focus on what's unique to this project.
+</code></pre>
+<pre><code>We keep making the same mistakes in PRs. Create a code-review practice rule
+that catches [specific issues].
+</code></pre>
+<h2 id="best-practices">Best Practices</h2>
+<ul>
+<li>Keep rules short — under 80 lines per file</li>
+<li>Rules only — no examples, no tutorials, no prose</li>
+<li>One file per concern — many small rules beats one large generic rule</li>
+<li>Language-agnostic practices — put language tips in stack rules</li>
+<li>Every line costs tokens — eliminate anything that doesn&rsquo;t enforce a rule</li>
+</ul>
+
+</div>
+
+
+
+
+<nav class="page-nav">
+<a href="/guides/how-it-works.html" class="page-nav-link page-nav-prev">
+<span class="page-nav-label">Previous</span>
+<span class="page-nav-title">How It Works</span>
+</a>
+<a href="/guides/mdplanner.html" class="page-nav-link page-nav-next">
+<span class="page-nav-label">Next</span>
+<span class="page-nav-title">MDPlanner Setup</span>
+</a>
+</nav>
+</article>
+</main>
+<aside class="sidebar sidebar-right" aria-label="Page table of contents">
+<div class="toc-header" id="toc-heading">On this page</div>
+<nav class="toc" aria-labelledby="toc-heading"><ul class="toc-list" role="list"><li class="toc-item toc-level-1"><a href="#writing-rules" class="toc-link">Writing Rules</a><ul class="toc-list toc-list-nested"><li class="toc-item toc-level-2"><a href="#rule-types" class="toc-link">Rule Types</a></li><li class="toc-item toc-level-2"><a href="#scoping-rules-to-file-patterns" class="toc-link">Scoping Rules to File Patterns</a></li><li class="toc-item toc-level-2"><a href="#generate-with-claude" class="toc-link">Generate with Claude</a><ul class="toc-list toc-list-nested"><li class="toc-item toc-level-3"><a href="#stack-rules" class="toc-link">Stack rules</a></li><li class="toc-item toc-level-3"><a href="#practice-rules" class="toc-link">Practice rules</a></li><li class="toc-item toc-level-3"><a href="#workflow-rules" class="toc-link">Workflow rules</a></li></ul></li><li class="toc-item toc-level-2"><a href="#save-the-rule" class="toc-link">Save the Rule</a></li><li class="toc-item toc-level-2"><a href="#declare-in-brainsjson" class="toc-link">Declare in brains.json</a></li><li class="toc-item toc-level-2"><a href="#evolving-rules" class="toc-link">Evolving Rules</a></li><li class="toc-item toc-level-2"><a href="#best-practices" class="toc-link">Best Practices</a></li></ul></li></ul></nav>
+</aside>
+</div>
+<script defer src="/js/theme-toggle.js?v=1.3.0"></script>
+<script defer src="/js/scrollspy.js?v=1.3.0"></script>
+<script defer src="/js/mobile-menu.js?v=1.3.0"></script>
+<script defer src="/js/nav-collapse.js?v=1.3.0"></script>
+<script defer src="/js/anchor-links.js?v=1.3.0"></script>
+<script defer src="/js/external-links.js?v=1.3.0"></script>
+<script defer src="/js/search.js?v=1.3.0"></script>
+<script defer src="/js/code-copy.js?v=1.3.0"></script>
+
+
+
+
+<script defer src="/js/copy-markdown.js?v=1.3.0"></script>
+
+</body>
+</html>

@@ -1,0 +1,1272 @@
+# Cerveau.dev
+
+> Multi-brain system for Claude Code. One protocol, many projects, zero duplication.
+>
+> This file contains the complete documentation.
+
+## Installation
+
+
+### Installation
+
+#### Prerequisites
+
+Install the following tools before starting:
+
+```bash
+python3 --version   # any version — used by Makefile path calculations
+jq --version        # brew install jq  /  apt install jq
+docker compose version
+```
+
+`gh` (GitHub CLI) is optional — needed for PR workflows only.
+
+#### Shell Setup
+
+Add to your `~/.zshrc` or `~/.bashrc` and reload:
+
+```bash
+alias claude='claude --verbose'
+```
+
+Install the status line:
+
+```bash
+cp cerveau.dev/_protocol_/statusline.sh ~/.claude/statusline.sh
+chmod +x ~/.claude/statusline.sh
+```
+
+#### Clone
+
+```bash
+git clone https://github.com/studiowebux/cerveau.dev
+```
+
+You should have:
+
+```
+cerveau.dev/
+  _protocol_/       ← shared rules, hooks, templates (source of truth)
+  _configs_/        ← brains.json registry
+  _brains_/         ← created by make onboard (empty for now)
+  _scripts_/        ← rebuild-brain-rules.sh, backup-claude.sh
+  README.md
+  ARCHITECTURE.md
+  SETUP.md
+```
+
+> [!TIP]
+> Keep `cerveau.dev/` outside any project repo. The brain directory links to
+> your project repos — it doesn't live inside them.
+
+#### Next
+
+→ [Quick Start](02-quick-start.md)
+
+
+## How It Works
+
+
+### How It Works
+
+#### Architecture
+
+```
+_protocol_/          _configs_/brains.json        Your code repo
+(rules, hooks,               │                           │
+ templates)         rebuild-brain-rules.sh               │
+       │                     │                           │
+       ├──symlinks──> _brains_/myapp-brain/              │
+       │              └── .claude/                       │
+       │                  ├── settings.json ──links to───┘
+       │                  ├── rules/   (selective symlinks)
+       │                  ├── agents/  (selective symlinks)
+       │                  └── hooks    (wholesale symlink)
+       │
+       └──────────── MDPlanner (MCP) ── tasks, notes, decisions
+```
+
+#### Components
+
+| Component | Role |
+|---|---|
+| `_protocol_/` | Source of truth — rules, hooks, templates, Makefile |
+| `_configs_/brains.json` | Brain registry — declares what each brain loads |
+| `_brains_/<name>/` | Per-project brain directory (created by `/import-project`) |
+| `_scripts_/rebuild-brain-rules.sh` | Builds selective symlinks from `brains.json` |
+| MDPlanner (MCP) | External task/note store — Claude reads and writes via MCP tools |
+
+#### Selective Loading
+
+Each brain declares exactly what it needs in `brains.json`:
+
+```json
+{
+  "name": "MyProject",
+  "stacks": ["go", "docker"],
+  "practices": ["testing", "error-handling"],
+  "workflows": ["git", "mdplanner-tasks", "local-dev"],
+  "agents": ["goal-planner"]
+}
+```
+
+`rebuild-brain-rules.sh` reads this and creates selective symlinks. Only the
+declared rules load into Claude Code's context.
+
+| Layer | Behavior |
+|---|---|
+| **Core rules** | Always loaded — any `.md` at the rules root level |
+| **Stack rules** | Only declared stacks |
+| **Practice rules** | Only declared practices |
+| **Workflow rules** | Only declared workflows |
+| **Agents** | Only declared agents |
+| **Hooks** | Always loaded — wholesale symlink to protocol |
+
+##### Context savings
+
+A brain using 2 stacks, 3 practices, 3 workflows, and 2 agents typically loads
+~800 lines instead of ~4,000+. Every token saved is faster and cheaper.
+
+#### How a Session Flows
+
+1. Claude Code starts in the brain directory
+2. `settings.json` adds the code repo via `additionalDirectories`
+3. `session-context` hook fires — reminds Claude to run Phase 1
+4. Claude calls `get_context_pack` — one MCP call loads tasks, notes, milestone, and progress in a single round-trip
+5. Claude picks a task, implements, commits with validated message
+6. `checkpoint-counter` hook fires every 20 tool calls — keeps Claude on track
+7. At session end: progress note written, unfinished tasks returned to Todo
+8. `stop-progress-check` hook verifies progress was written before exit
+
+#### File Ownership
+
+| File | Owned by | Modified by |
+|---|---|---|
+| `_protocol_/**` | Protocol | Human (templates and rules) |
+| `_brains_/<brain>/.claude/CLAUDE.md` | Protocol | Symlink — auto-updated |
+| `_brains_/<brain>/.claude/settings.json` | Brain | `make onboard` (generated) |
+| `_brains_/<brain>/.claude/rules/**` | Protocol | `rebuild-brain-rules.sh` (symlinks) |
+| `_brains_/<brain>/.claude/rules/workflow/local-dev.md` | Brain | Human (real file, not symlinked) |
+| `_configs_/brains.json` | Config | Human |
+
+
+## Makefile Targets
+
+
+### Makefile Targets
+
+All targets run from `~/brains/_protocol_/`:
+
+```bash
+cd ~/brains/_protocol_
+make help
+```
+
+#### Targets
+
+##### onboard
+
+Spawn + connect MCP + rebuild rules in one step. The fastest path to a working brain.
+
+```bash
+make onboard NAME=MyApp PROJECT=/absolute/path/to/your/code
+```
+
+Runs `spawn`, then `rebuild-brain-rules.sh`, then `claude mcp add` automatically.
+Use this for new brains. Use `spawn` + manual steps if you need more control.
+
+##### spawn
+
+Create a new brain and wire `.claude` into it.
+
+```bash
+make spawn NAME=MyApp PROJECT=/absolute/path/to/your/code
+```
+
+- `NAME` — brain name (creates `_brains_/myapp-brain/`)
+- `PROJECT` — absolute path to your code repo
+
+What it does:
+- Creates `_brains_/myapp-brain/` with all templates
+- Replaces `__PROJECT__` placeholders with `NAME`
+- Creates selective symlinks for rules, agents, hooks
+- Generates `settings.json` with `additionalDirectories` pointing to `PROJECT`
+- Adds an entry to `_configs_/brains.json`
+
+##### status
+
+Show install status for a brain.
+
+```bash
+make status NAME=MyApp
+```
+
+Reports: symlink status for rules/hooks/agents, settings.json validity,
+presence of CLAUDE.md files.
+
+##### list
+
+List all existing brains.
+
+```bash
+make list
+```
+
+Scans `_brains_/` and prints all `*-brain` directories with their paths.
+
+##### validate
+
+Check a brain has no remaining `__PROJECT__` placeholders.
+
+```bash
+make validate NAME=MyApp
+### expected: OK: No __PROJECT__ placeholders found
+```
+
+Run this after `make spawn` to confirm the template was fully substituted.
+
+##### diff
+
+Show what changed between the protocol template and a brain.
+
+```bash
+make diff NAME=MyApp
+```
+
+Useful for reviewing customizations made to a brain after spawning.
+
+##### sync-shareable
+
+Copy changed protocol files to `_shareable_/`. Only updates files that differ.
+
+```bash
+make sync-shareable
+```
+
+Run this from the monorepo `_protocol_/` (not from `_shareable_/_protocol_/`).
+Then `cd _shareable_` and commit + push to GitHub.
+
+#### Workflow
+
+```bash
+### Fast path — all in one
+make onboard NAME=MyApp PROJECT=/path/to/myapp
+
+### Manual path — step by step
+make spawn NAME=MyApp PROJECT=/path/to/myapp
+cd ../_brains_/myapp-brain && claude mcp add --transport http mdplanner \
+  http://localhost:8003/mcp --header "Authorization: Bearer <token>"
+cd ~/brains && ./_scripts_/rebuild-brain-rules.sh MyApp
+cd ~/brains/_brains_/myapp-brain && claude
+```
+
+
+## Quick Start
+
+
+### Quick Start
+
+Five steps from zero to a running brain session.
+
+---
+
+#### Step 1 — Start MDPlanner
+
+```bash
+cd cerveau.dev/_protocol_/setup
+cp .env.example .env
+```
+
+Edit `.env` and set at minimum:
+
+```env
+MDPLANNER_MCP_TOKEN=replace-with-a-random-secret
+```
+
+Generate a token:
+
+```bash
+openssl rand -hex 32
+```
+
+Start the container:
+
+```bash
+docker compose up -d
+```
+
+Verify:
+
+```bash
+curl -s http://localhost:8003/health
+### expected: {"status":"ok"}
+```
+
+---
+
+#### Step 2 — Write Your Rules
+
+The protocol ships with no project rules — you write them for your stack.
+
+Open Claude Code anywhere and ask:
+
+```
+Create a Claude Code rule file for Go development.
+Enforce: explicit error handling, table-driven tests, slog for logging,
+no global mutable state, go fmt before every commit.
+Keep under 80 lines. Rules only — no examples, no prose.
+```
+
+Save each file to the appropriate directory under `cerveau.dev/`:
+
+| Rule type | Directory |
+|---|---|
+| Stack (language/framework) | `_protocol_/.claude/rules/stack/go.md` |
+| Practice (how you work) | `_protocol_/.claude/rules/practices/testing.md` |
+| Workflow (process) | `_protocol_/.claude/rules/workflow/git.md` |
+| Core (always loaded) | `_protocol_/.claude/rules/code-discipline.md` |
+
+See [Writing Rules](../02-guides/02-writing-rules.md) for more prompts.
+
+---
+
+#### Step 3 — Onboard a Project
+
+Open cerveau.dev in Claude Code and run the import skill:
+
+```bash
+cd cerveau.dev/_protocol_ && claude
+```
+
+Then inside the session:
+
+```
+/import-project NAME=MyApp PROJECT=/absolute/path/to/your/code
+```
+
+This spawns the brain, connects MCP, and rebuilds selective rules in one step.
+
+When done, Claude prints the brain path and tells you to launch it.
+
+---
+
+#### Step 4 — Launch the Brain
+
+```bash
+cd cerveau.dev/_brains_/myapp-brain && claude
+```
+
+---
+
+#### Step 5 — Complete Setup
+
+Inside the brain session, run the skill again:
+
+```
+/import-project
+```
+
+Claude will explore the codebase, fill `local-dev.md`, and create the full
+MDPlanner state: portfolio item, brief, architecture note, milestones, and
+tasks.
+
+From the second session on, Boot happens automatically and Claude picks up
+where it left off.
+
+---
+
+#### Next
+
+→ [First Brain](03-first-brain.md) — what happens inside the first session
+
+
+## Writing Rules
+
+
+### Writing Rules
+
+The protocol ships with no rules — you generate them for your stack. Claude
+Code can write them for you.
+
+#### Rule Types
+
+| Type | Directory | Loaded when |
+|---|---|---|
+| **Stack** | `_protocol_/.claude/rules/stack/` | Brain declares the stack |
+| **Practice** | `_protocol_/.claude/rules/practices/` | Brain declares the practice |
+| **Workflow** | `_protocol_/.claude/rules/workflow/` | Brain declares the workflow |
+| **Core** | `_protocol_/.claude/rules/` | Always — every brain |
+
+#### Scoping Rules to File Patterns
+
+By default a rule loads every session. Add `paths:` frontmatter to scope it so
+Claude Code only loads it when a matching file is open in context:
+
+```yaml
+---
+paths:
+  - "**/*_test.go"
+  - "**/*.test.ts"
+  - "**/tests/**"
+---
+
+Write useful tests. Do not over-test...
+```
+
+Rules without `paths:` load in every session regardless of what files are open.
+Rules with `paths:` load only when a matching file is active.
+
+Use path-scoped rules for concerns tied to specific file types: testing rules for
+test files, CI rules for workflow files, keybinding rules for keymap files.
+Keep general practices (error handling, architecture, security) as always-loaded.
+
+#### Generate with Claude
+
+Open Claude Code anywhere (not inside a brain) and use these prompts:
+
+##### Stack rules
+
+```
+Create a Claude Code rule file for Go development.
+Enforce: explicit error handling, table-driven tests, slog for logging,
+no global mutable state, go fmt before every commit.
+Keep under 80 lines. Rules only — no examples, no prose.
+```
+
+```
+Create a Claude Code rule file for TypeScript with Deno.
+Enforce: Zod for validation, explicit return types on exports,
+no any, Deno.test for tests, deno fmt before commits.
+Keep under 80 lines. Rules only — no examples, no prose.
+```
+
+##### Practice rules
+
+```
+Create a Claude Code rule file for code review practices.
+Enforce: security-first review, error handling coverage, flag dead code,
+require PR descriptions with test plans.
+Keep under 80 lines. Rules only — no examples, no prose.
+```
+
+```
+Create a Claude Code rule file for testing practices.
+Enforce: unit tests for all exported functions, table-driven tests,
+no test-only logic in production code, mocks over real dependencies in unit tests.
+Keep under 80 lines. Rules only — no examples, no prose.
+```
+
+##### Workflow rules
+
+```
+Create a Claude Code rule file for git workflow.
+Enforce: feature branches, conventional commits (feat/fix/chore/docs/test),
+no force push to main, PR-based merges only.
+Keep under 80 lines. Rules only — no examples, no prose.
+```
+
+#### Save the Rule
+
+Save each generated file to the appropriate directory:
+
+```bash
+### Stack rule example
+vim ~/brains/_protocol_/.claude/rules/stack/go.md
+
+### Practice rule example
+vim ~/brains/_protocol_/.claude/rules/practices/testing.md
+
+### Workflow rule example
+vim ~/brains/_protocol_/.claude/rules/workflow/git.md
+```
+
+#### Declare in brains.json
+
+Add the rule name (filename without `.md`) to the brain's array:
+
+```json
+{
+  "name": "MyApp",
+  "stacks": ["go"],
+  "practices": ["testing", "code-review"],
+  "workflows": ["git", "mdplanner-tasks", "local-dev"]
+}
+```
+
+Then rebuild:
+
+```bash
+./_scripts_/rebuild-brain-rules.sh MyApp
+```
+
+#### Evolving Rules
+
+As your project evolves, ask Claude to refine:
+
+```
+Read my codebase and create a stack rule that captures the patterns and
+conventions we're using. Focus on what's unique to this project.
+```
+
+```
+We keep making the same mistakes in PRs. Create a code-review practice rule
+that catches [specific issues].
+```
+
+#### Best Practices
+
+- Keep rules short — under 80 lines per file
+- Rules only — no examples, no tutorials, no prose
+- One file per concern — many small rules beats one large generic rule
+- Language-agnostic practices — put language tips in stack rules
+- Every line costs tokens — eliminate anything that doesn't enforce a rule
+
+
+## brains.json Schema
+
+
+### brains.json Schema
+
+Located at `_configs_/brains.json`. Registers all brains and declares what
+each one loads.
+
+#### Full Example
+
+```json
+{
+  "brains": [
+    {
+      "name": "MyApp",
+      "path": "_brains_/myapp-brain",
+      "codebase": "_projects_/myapp",
+      "isCore": false,
+      "stacks": ["go", "docker"],
+      "practices": ["testing", "code-review"],
+      "workflows": ["git", "local-dev", "mdplanner-tasks"],
+      "agents": ["goal-planner"]
+    }
+  ]
+}
+```
+
+#### Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | yes | Brain name. Used by Makefile (`NAME=`) and rebuild script. Case-sensitive. |
+| `path` | string | yes | Relative path to the brain directory from the monorepo root. |
+| `codebase` | string | no | Relative path to the code repo. Added by `make onboard` automatically. |
+| `isCore` | boolean | no | Reserved for the protocol's own brain. Set `false` for all project brains. |
+| `stacks` | array | yes | Stack rule filenames (without `.md`) to symlink from `_protocol_/.claude/rules/stack/`. |
+| `practices` | array | yes | Practice rule filenames to symlink from `_protocol_/.claude/rules/practices/`. |
+| `workflows` | array | yes | Workflow rule filenames to symlink from `_protocol_/.claude/rules/workflow/`. |
+| `agents` | array | yes | Agent filenames (without `.md`) to symlink from `_protocol_/.claude/agents/`. |
+
+#### Empty Arrays
+
+An empty array (`[]`) links the **entire directory** for backward compatibility:
+
+```json
+"stacks": []
+```
+
+This causes `rebuild-brain-rules.sh` to symlink the whole `stack/` directory
+instead of selective files. Useful during initial setup before you know which
+rules you need.
+
+#### Selective Loading Rules
+
+Array values must exactly match filenames in the protocol directories
+(without `.md`):
+
+```
+_protocol_/.claude/rules/stack/go.md    →  "stacks": ["go"]
+_protocol_/.claude/rules/stack/go.md    →  "stacks": ["go", "docker"]
+                                                               ↑
+                                              also needs docker.md to exist
+```
+
+If a declared rule filename doesn't exist in the protocol, the rebuild script
+skips it with a warning.
+
+#### local-dev.md
+
+`local-dev.md` is always a **real file** in the brain (never a symlink), even
+if `workflows` includes it. It contains brain-specific configuration:
+
+- MCP project name
+- Server URL
+- Person ID
+- Active milestone
+
+The rebuild script preserves real files and only replaces symlinks.
+
+#### After Editing
+
+Always run the rebuild script after modifying `brains.json`:
+
+```bash
+./_scripts_/rebuild-brain-rules.sh MyApp
+```
+
+
+## First Brain
+
+
+### First Brain
+
+What happens when you launch your first session.
+
+#### Launch
+
+```bash
+cd cerveau.dev/_brains_/myapp-brain && claude
+```
+
+#### Phase 1 — Boot
+
+The `session-context` hook fires automatically on startup and reminds Claude
+to run Phase 1. Claude will:
+
+1. Read the most recent progress note from MDPlanner
+2. Check git status in the project repo
+3. List open tasks for the active milestone
+
+#### First-Session Setup
+
+On the very first session, `local-dev.md` contains empty placeholders. Claude
+will detect this and prompt you to confirm:
+
+| Field | What it is |
+|---|---|
+| MCP project name | The MDPlanner project scope (e.g. "MyApp") |
+| Server URL | Default: `http://localhost:8003` |
+| Person ID | Your MDPlanner person ID (Claude creates one if needed) |
+| Milestone | The active milestone name |
+
+Claude then creates your first MDPlanner notes:
+- `[project] MyApp` — project overview
+- `[architecture] MyApp — ...` — one per subsystem you describe
+
+#### Every Session After
+
+```
+Boot  → Claude reads tasks, notes, architecture from MDPlanner
+Work  → Pick a ticket, implement, commit, add progress comment, move to Done
+Write → Record decisions / bugs / learnings as MDPlanner notes
+Close → Write progress note, move unfinished back to Todo
+```
+
+#### Adding a Second Brain
+
+Same two-session flow as the first. From `cerveau.dev/_protocol_`:
+
+```bash
+cd cerveau.dev/_protocol_ && claude
+### then: /import-project NAME=ApiServer PROJECT=/path/to/api
+### then: cd ../../_brains_/api-brain && claude
+### then: /import-project
+```
+
+#### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `curl health` fails | `docker compose up -d` from `_protocol_/setup/` |
+| `claude mcp list` shows nothing | Re-run `claude mcp add` from inside the brain directory |
+| Claude doesn't run Boot | Check `.claude/CLAUDE.md` exists in the brain dir |
+| `__PROJECT__` still in files | `make validate NAME=X` shows where, re-run `make onboard` |
+| Rules not loading | Re-run `rebuild-brain-rules.sh`, check names match filenames in `brains.json` |
+| Hook errors about `jq` | `brew install jq` or `apt install jq` |
+| MCP auth fails (401) | Token in `claude mcp add` must match `MDPLANNER_MCP_TOKEN` in `.env` |
+| Port 8003 already in use | Edit `docker-compose.yml` to change the host port |
+
+
+## MDPlanner Setup
+
+
+### MDPlanner Setup
+
+MDPlanner is the single source of truth for tasks, notes, decisions, and
+progress. It runs in Docker and exposes an MCP endpoint that Claude connects
+to.
+
+#### Docker Setup
+
+The `docker-compose.yml` is in `_protocol_/setup/`:
+
+```bash
+cd ~/brains/_protocol_/setup
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+MDPLANNER_MCP_TOKEN=replace-with-a-random-secret
+MDPLANNER_CACHE=1              # enables SQLite FTS5 full-text search
+MDPLANNER_BACKUP_INTERVAL=24   # daily backups
+```
+
+Generate a token:
+
+```bash
+openssl rand -hex 32
+```
+
+Start:
+
+```bash
+docker compose up -d
+```
+
+Verify:
+
+```bash
+curl -s http://localhost:8003/health
+```
+
+Open http://localhost:8003 to confirm the UI loads.
+
+#### Connect the Brain
+
+Run this from inside your brain directory:
+
+```bash
+cd ~/brains/_brains_/myapp-brain
+
+claude mcp add --transport http mdplanner \
+  http://localhost:8003/mcp \
+  --header "Authorization: Bearer YOUR_TOKEN_HERE"
+```
+
+Replace `YOUR_TOKEN_HERE` with the value from `.env`.
+
+Verify:
+
+```bash
+claude mcp list
+### mdplanner  http  http://localhost:8003/mcp
+```
+
+#### Session Workflow
+
+Claude uses MDPlanner throughout every session:
+
+##### Boot
+- Calls `get_context_pack` — single MCP call returning active milestone,
+  in-progress tasks, top todo tasks, most recent progress note, and decision
+  and architecture note titles
+- Falls back to 8 individual calls if `get_context_pack` is unavailable
+- Checks git state: current branch, recent commits, open PRs
+
+##### Work
+- Creates/updates task comments as work progresses
+- Moves tasks to Done after commit
+
+##### Write Back
+- Records decisions as MDPlanner notes
+- Logs bugs discovered during work
+- Updates architecture notes when structure changes
+
+##### Close
+- Writes a progress note (required by `stop-progress-check` hook)
+- Moves unfinished tasks back to Todo
+
+#### Hard Rules
+
+| Rule | Description |
+|---|---|
+| Ticket before work | No code changes without an MDPlanner task |
+| One task at a time | Only one task in In Progress |
+| Never mark complete | Only the human sets `completed: true` |
+| Never edit decisions | Supersede decision notes; never modify them |
+
+#### Self-Hosting
+
+MDPlanner is open source: https://github.com/studiowebux/mdplanner
+
+The Docker image is `ghcr.io/studiowebux/mdplanner:latest`. Data persists in
+the `./data` volume.
+
+Optional environment variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `MDPLANNER_MCP_TOKEN` | — | Required — Bearer token for MCP endpoint |
+| `MDPLANNER_CACHE` | `0` | Enable SQLite FTS5 full-text search cache |
+| `MDPLANNER_BACKUP_INTERVAL` | — | Hours between automatic backups |
+| `MDPLANNER_WEBDAV` | `1` | Enable WebDAV endpoint |
+| `MDPLANNER_READ_ONLY` | — | Disable write operations |
+
+
+## Session Phases
+
+
+### Session Phases
+
+Every brain session follows four phases defined in the brain CLAUDE.md.
+
+#### Phases
+
+| Phase | What happens |
+|---|---|
+| **Phase 1 — Boot** | Load context from MDPlanner: most recent progress note, open tasks, architecture, decisions |
+| **Phase 2 — Work** | Ticket before work, one task at a time, implement, commit, update task, move to Done |
+| **Phase 3 — Write Back** | Record decisions, bugs, learnings as MDPlanner notes |
+| **Phase 4 — Close** | Write progress note, move unfinished tasks back to Todo |
+
+#### Phase 1 — Boot
+
+The `session-context` hook fires on `SessionStart` and reminds Claude to run
+Phase 1 before any work.
+
+A single MCP call loads everything needed to start the session:
+
+```
+get_context_pack { project: "<project-name>" }
+```
+
+Returns in one round-trip:
+
+| Field | What Claude extracts |
+|---|---|
+| `people` | Claude's person ID + owner's person ID |
+| `milestone` | Active open milestone — name and ID |
+| `inProgress` | Tasks already in progress — resume these first |
+| `todo` | Top 10 ready tasks sorted by priority |
+| `recentProgress` | Most recent `[progress]` note excerpt |
+| `decisions` | Decision note titles and IDs |
+| `architecture` | Architecture note titles and IDs |
+| `constraints` | Constraint note titles and IDs |
+
+If `inProgress` is non-empty, resume those tasks. If the `recentProgress`
+excerpt is not enough context, follow up with `get_note { id }` for the full
+note. Load decision or architecture notes only when directly relevant to the
+task at hand.
+
+After `get_context_pack`, check git state: current branch, last 5 commits,
+open PRs.
+
+#### Phase 2 — Work
+
+##### Commit Flow
+
+After implementing a task:
+
+1. Stage changes: `git add <files>`
+2. Commit: `git commit -m "type: subject"`
+3. Push: `git push`
+4. Add progress comment to the MDPlanner task
+5. Move task to Done in MDPlanner
+
+The `commit-validator` hook blocks commits that:
+- Don't follow conventional commit format
+- Have staged files containing secret patterns
+
+##### Conventional Commits
+
+```
+feat: add login endpoint
+fix: resolve nil pointer in auth handler
+chore: update dependencies
+docs: add API reference
+test: add unit tests for validator
+refactor: extract shared config loader
+```
+
+#### Phase 3 — Write Back
+
+After completing a task or making a significant decision:
+
+- **Decision notes**: `[decision] <title> — <rationale>` — never edit, supersede
+- **Bug notes**: `[bug] <title> — <description>` — discovered during work
+- **Architecture updates**: update `[architecture]` notes when structure changes
+
+#### Phase 4 — Close
+
+Before ending the session:
+
+1. Write a progress note: `[progress] <date> — <summary of what was done>`
+2. Move any unfinished In Progress tasks back to Todo
+3. The `stop-progress-check` hook verifies a progress note was written
+
+#### Hard Rules
+
+| Rule | Description |
+|---|---|
+| Ticket before work | No code changes without an MDPlanner task |
+| One task at a time | Only one task in In Progress |
+| Branch before commit | Create a feature branch before starting work |
+| Push after commit | Always push immediately after committing |
+| Never mark complete | Only the human sets `completed: true` |
+| Never edit decisions | Create a superseding note instead |
+| Progress before close | Must write a progress note before session ends |
+| No unilateral deferrals | Deferring tasks requires owner approval |
+| Continue means work | `continue` resumes the current task, not exploration |
+| Backlog ownership | Claude owns the backlog — keeps it clean and up to date |
+| Brain stays external | Brain directory never lives inside a project repo |
+| One-task-at-a-time | Never work on multiple tasks simultaneously |
+| No force push to main | Protected branch — PR workflow only |
+| Context compaction note | Write handoff note before context is compacted |
+| Secrets gate | Commit validator scans for secrets — blocked if found |
+| Checkpoint acknowledgement | Respond to checkpoint hooks before continuing |
+
+
+## Features
+
+
+### Features
+
+| Feature | Description |
+|---|---|
+| **Multi-Brain** | One protocol, many projects. Each brain gets selective rules, hooks, and agents — no duplication, no drift. |
+| **Selective Loading** | Declare exactly which stacks, practices, and workflows each brain needs. Only those rules load into context. |
+| **MDPlanner Integration** | Single source of truth for tasks, notes, decisions, and progress. Claude reads and writes it every session. |
+| **Hooks Enforcement** | Boot reminders, commit validation, checkpoint checks, and progress gates. The protocol runs automatically. |
+| **Protocol-Driven Workflow** | Four phases, sixteen hard rules. Boot → Work → Write Back → Close. Zero drift between sessions. |
+| **Zero Footprint** | No files added to your project repos. The brain lives outside your code. Your codebase stays clean. |
+| **Bring Your Own Rules** | No rules ship by default. Generate stack, practice, and workflow rules with a single Claude prompt. |
+| **Open Source** | AGPL-3.0. Self-host everything. MDPlanner runs in Docker. No external dependencies required. |
+| **Context Efficiency** | Selective loading cuts token usage dramatically. A typical brain loads ~800 lines instead of ~4,000. |
+| **Agent Support** | Define custom agents in YAML. Declare which agents each brain loads. Agents live in the protocol. |
+| **Skills Support** | Reusable skill definitions (slash commands) shared across all brains from the protocol. |
+| **Commit Validation** | Hook validates conventional commit format and scans staged files for secret patterns before every commit. |
+
+
+## Hooks
+
+
+### Hooks
+
+Hooks enforce the protocol automatically. They run at specific Claude Code
+lifecycle events and fire regardless of whether Claude remembers the rules.
+
+All hooks live in `_protocol_/.claude/hooks/` and are symlinked wholesale into
+every brain.
+
+#### Hooks Overview
+
+| Hook | Trigger | What it does |
+|---|---|---|
+| `session-context.sh` | Session start | Reminds Claude to run Phase 1 Boot |
+| `checkpoint-counter.sh` | Every tool call | Fires a checkpoint reminder every 20 tool calls |
+| `post-edit-reminder.sh` | After file edits | Reminds Claude to stay on the current task |
+| `commit-validator.sh` | Before Bash tool (git commit) | Validates conventional commit format; scans staged files for secrets |
+| `pre-compact-handoff.sh` | Before context compaction | Instructs Claude to write a handoff note before context is cleared |
+| `stop-progress-check.sh` | Session stop | Checks that a progress note was written before allowing exit |
+
+#### Hook Details
+
+##### session-context
+
+Fires on `SessionStart`. Injects the Phase 1 Boot reminder so Claude always
+loads project context from MDPlanner at the start of every session.
+
+##### checkpoint-counter
+
+Fires on every `PostToolUse`. Counts tool calls and emits a checkpoint
+reminder at every 20th call. Prevents Claude from drifting off-task during
+long work sessions.
+
+##### post-edit-reminder
+
+Fires after file edits. Reminds Claude to finish the current task before
+starting new work. Enforces the one-task-at-a-time rule.
+
+##### commit-validator
+
+Fires on `PreToolUse` when a Bash `git commit` command is detected. Checks:
+
+1. **Conventional commit format** — `type: subject` (feat, fix, chore, docs, test, refactor, etc.)
+2. **Secret patterns** — scans staged files for `sk-`, `ghp_`, `AKIA`, `password=` patterns
+
+Blocks the commit if either check fails.
+
+##### pre-compact-handoff
+
+Fires before context compaction. Instructs Claude to write a handoff note to
+MDPlanner so the next session can resume without losing in-progress context.
+
+##### stop-progress-check
+
+Fires on `Stop`. Checks whether Claude wrote a progress note during this
+session. If not, prompts Claude to write one before the session closes.
+
+#### Customizing Hooks
+
+Hooks are plain bash scripts. You can modify them in `_protocol_/.claude/hooks/`
+and all brains pick up the change immediately (they symlink to the protocol).
+
+All hook input parsing uses `jq` with error guards:
+
+```bash
+input=$(cat)
+tool_name=$(echo "$input" | jq -r '.tool_name // empty' 2>/dev/null || echo "")
+```
+
+#### Hook JSON Schema
+
+Hooks receive JSON on stdin from Claude Code. See the
+[Claude Code hooks documentation](https://docs.anthropic.com/en/docs/claude-code/hooks)
+for the full schema.
+
+Key fields:
+
+| Field | Available in | Description |
+|---|---|---|
+| `tool_name` | PreToolUse, PostToolUse | Name of the tool being called |
+| `tool_input` | PreToolUse | Tool input parameters |
+| `tool_response` | PostToolUse | Tool output |
+| `session_id` | All | Current session identifier |
+
+Output fields by hook type:
+
+| Hook type | Output field |
+|---|---|
+| PreToolUse, PostToolUse, UserPromptSubmit | `hookSpecificOutput` |
+| Stop, SessionStart | `reason`, `stopReason` |
+
+
+## Status Line
+
+
+### Status Line
+
+The status line shows brain name, codebase path, context window usage, and
+session cost in the Claude Code terminal. It reads live JSON from Claude Code
+and renders a two-line display.
+
+#### Installation
+
+```bash
+cp _protocol_/statusline.sh ~/.claude/statusline.sh
+chmod +x ~/.claude/statusline.sh
+```
+
+Claude Code looks for `~/.claude/statusline.sh` automatically. No further
+configuration needed.
+
+Add `--verbose` to your shell alias so the status line is always visible:
+
+```bash
+### ~/.zshrc or ~/.bashrc
+alias claude='claude --verbose'
+```
+
+#### What It Shows
+
+```
+myapp-brain  codebase: /path/to/myapp
+▓▓▓▓░░░░░░ 40%  cost: $0.0123
+```
+
+Line 1: brain name (directory basename) + codebase path read from
+`local-dev.md`.
+
+Line 2: context bar (color-coded: green < 70%, yellow < 90%, red 90%+) +
+usage percentage + session cost in USD.
+
+The codebase path is read from the `| Absolute path |` row in the Code
+Repository table of `local-dev.md`. If the table has unresolved placeholders
+(first session), the path shows `n/a`.
+
+#### Requirements
+
+- `jq` — parses the JSON input from Claude Code
+- `bash` — the script uses bash syntax
+
+Both are listed as prerequisites in the setup guide.
+
+
+## Agents
+
+
+### Agents
+
+Agents are specialized sub-Claude instances that Claude Code can spawn for
+focused tasks — code review, bug fixing, architecture planning, etc. They run
+with their own system prompt and a restricted tool set.
+
+#### File Format
+
+Agents live in `_protocol_/.claude/agents/`. Each agent is a single `.md` file
+with YAML frontmatter:
+
+```yaml
+---
+name: code-reviewer
+description: Reviews code for security, correctness, and consistency. Use when you want an independent review of a PR or implementation.
+tools: Read, Grep, Glob
+model: sonnet
+---
+
+Your agent system prompt goes here.
+```
+
+| Field | Description |
+|---|---|
+| `name` | Agent identifier — must match the filename (without `.md`) |
+| `description` | When Claude Code uses this agent. Be specific — Claude reads this to decide. |
+| `tools` | Comma-separated list of allowed tools. Restrict to what the agent actually needs. |
+| `model` | `sonnet`, `opus`, or `haiku` |
+
+#### Declaring Agents in a Brain
+
+In `_configs_/brains.json`, list agent names (without `.md`) in the `agents`
+array:
+
+```json
+{
+  "name": "MyApp",
+  "agents": ["code-reviewer", "bug-fixer"]
+}
+```
+
+An empty array (`[]`) links all agents from `_protocol_/.claude/agents/` into
+the brain.
+
+After editing `brains.json`, run `rebuild-brain-rules.sh MyApp` to update the
+symlinks.
+
+#### Writing Agents with Claude
+
+Ask Claude to generate an agent for a specific task:
+
+```
+Create a Claude Code agent for reviewing database migrations.
+It should check for missing indexes, unsafe column drops, and
+missing rollback steps. Restrict tools to Read and Glob.
+Save it to _protocol_/.claude/agents/migration-reviewer.md
+```
+
+Keep agent system prompts focused. An agent that does one thing well is more
+reliable than a general-purpose one.
+
+#### Included Agent
+
+The protocol ships with one agent as a reference:
+
+- `minimaldoc-writer` — writes documentation in MinimalDoc format
+
+Use it as a template when creating your own.
+
+#### Ideas to Get Started
+
+Create agents for your stack. Some examples:
+
+```
+Create a Claude Code agent for reviewing database migrations.
+It should check for missing indexes, unsafe column drops, and missing
+rollback steps. Restrict tools to Read and Glob.
+Save it to _protocol_/.claude/agents/migration-reviewer.md
+
+Create a Claude Code agent for Go architecture decisions.
+It should enforce the repository pattern, OpenTelemetry instrumentation,
+and the provider pattern for external services.
+Restrict tools to Read, Grep, Glob.
+Save it to _protocol_/.claude/agents/golang-architect.md
+
+Create a Claude Code agent for code review.
+It should check for security issues, missing error handling, dead code,
+and consistency with existing patterns.
+Restrict tools to Read, Grep, Glob.
+Save it to _protocol_/.claude/agents/code-reviewer.md
+```
+
+
+## Skills
+
+
+### Skills
+
+Skills are slash commands — reusable, multi-step workflows Claude executes on
+demand. They are plain markdown files that Claude reads and follows as
+instructions.
+
+#### File Format
+
+Skills live in `_protocol_/.claude/skills/<name>/SKILL.md`:
+
+```
+_protocol_/.claude/skills/
+  release/
+    SKILL.md
+  deploy/
+    SKILL.md
+```
+
+The skill name is the directory name. Invoke it with `/release`, `/deploy`, etc.
+
+A `SKILL.md` is a markdown document describing what Claude should do step by
+step. No special syntax — just clear instructions.
+
+#### Included Skills
+
+The protocol ships with two skills:
+
+- `/release` — full release workflow: version bump, changelog, build
+  verification, tag, push, GitHub release, MDPlanner progress note.
+- `/import-project` — onboard a codebase into MDPlanner and spawn its brain
+  in one automated flow. Accepts `NAME=MyApp PROJECT=/path/to/code` as
+  arguments. Run this from the cerveau.dev root session to bootstrap a new
+  project.
+
+Read the `SKILL.md` files in `_protocol_/.claude/skills/` for the full
+procedures and use them as templates when writing your own.
+
+#### Writing Skills
+
+Skills work best for workflows you run repeatedly that have a fixed sequence
+of steps. Examples:
+
+```
+Create a skill for deploying to staging.
+Steps: build, run smoke tests, push image to registry, update the
+deployment, verify health endpoint returns 200.
+Save it to _protocol_/.claude/skills/deploy-staging/SKILL.md
+```
+
+```
+Create a skill for cutting a hotfix.
+Steps: checkout main, create hotfix branch, confirm the fix is committed,
+bump patch version, changelog entry, tag, push, PR.
+Save it to _protocol_/.claude/skills/hotfix/SKILL.md
+```
+
+Keep skills focused. One workflow per skill. If a skill branches based on
+conditions, split it into two skills.
+
+#### Skills vs. Agents
+
+| | Skills | Agents |
+|---|---|---|
+| Invocation | `/skill-name` by user | Called by Claude when needed |
+| Purpose | Multi-step workflow | Specialized sub-instance |
+| Format | Plain markdown steps | YAML frontmatter + system prompt |
+| Tool access | Inherits all tools | Restricted to declared tools |
+
+
+## Home
+
+
+### Cerveau.dev
+
+Multi-brain system for Claude Code. One protocol, many projects, zero duplication.
+
+Each project gets its own brain with selective rules, hooks, and agents loaded
+from a shared protocol. MDPlanner is the single source of truth for tasks,
+notes, decisions, and progress.
+
+#### Get Started
+
+→ [Installation](01-getting-started/01-installation.md) — prerequisites and setup
+→ [Quick Start](01-getting-started/02-quick-start.md) — 7 steps to your first session
+→ [How It Works](02-guides/01-how-it-works.md) — architecture and selective loading
+
+#### Community
+
+- Bug Tracker: https://github.com/studiowebux/cerveau.dev/issues
+- Discord: https://discord.gg/BG5Erm9fNv
+
+

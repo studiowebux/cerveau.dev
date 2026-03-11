@@ -1,0 +1,31 @@
+{
+  "title": "Changelog",
+  "description": "All notable changes to this project",
+  "releases": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-10",
+      "title": "Initial Release",
+      "url": "/changelog/1.0.0.html",
+      "categories": [
+        {
+          "type": "Added",
+          "entries": [
+            "Multi-brain system with selective rule loading",
+            "Six enforcement hooks (session-context, checkpoint-counter, post-edit-reminder, commit-validator, pre-compact-handoff, stop-progress-check)",
+            "MDPlanner integration via MCP (Streamable HTTP transport)",
+            "`make spawn` — creates new brains from templates",
+            "`rebuild-brain-rules.sh` — selective symlinks from `brains.json`",
+            "Core rules: `code-discipline.md`, `goal-discipline.md`",
+            "Workflow rules: `local-dev.md`, `mdplanner-tasks.md`",
+            "Brain CLAUDE.md with 4-phase session protocol",
+            "`.claude/CLAUDE.md` with mandatory gates and routing table",
+            "Docker Compose setup for MDPlanner",
+            "`ARCHITECTURE.md`, `README.md`, `SETUP.md`"
+          ]
+        }
+      ]
+    }
+  ],
+  "last_updated": "2026-03-11T19:21:34.198016-04:00"
+}
