@@ -32,7 +32,7 @@ each one loads.
 |---|---|---|---|
 | `name` | string | yes | Brain name. Used by Makefile (`NAME=`) and rebuild script. Case-sensitive. |
 | `path` | string | yes | Relative path to the brain directory from the monorepo root. |
-| `codebase` | string | no | Relative path to the code repo. Added by `make spawn` automatically. |
+| `codebase` | string | no | Relative path to the code repo. Added by `make onboard` automatically. |
 | `isCore` | boolean | no | Reserved for the protocol's own brain. Set `false` for all project brains. |
 | `stacks` | array | yes | Stack rule filenames (without `.md`) to symlink from `_protocol_/.claude/rules/stack/`. |
 | `practices` | array | yes | Practice rule filenames to symlink from `_protocol_/.claude/rules/practices/`. |

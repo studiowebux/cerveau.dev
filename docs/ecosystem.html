@@ -7,22 +7,32 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 <script>(function(){const t=localStorage.getItem('ecosystem-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
 <style>
+  /* ── Font-size scale (rem, min 0.75rem = 12px) ── */
+  :root {
+    --fs-xs:   0.75rem;    /* 12px — labels, tags, captions */
+    --fs-sm:   0.8125rem;  /* 13px — brand name, meta values */
+    --fs-base: 0.875rem;   /* 14px — node title, dp value */
+    --fs-lg:   0.9375rem;  /* 15px — stat numbers */
+    --fs-xl:   1rem;       /* 16px — canvas brand h1, bar brand */
+    --fs-2xl:  1.125rem;   /* 18px — detail panel name */
+  }
+
   :root[data-theme="dark"] {
-    --bg: #0a0a0a;
-    --surface: #111;
-    --border: #2e2e2e;
-    --border-hi: #444;
+    --bg: #080808;
+    --surface: #0d0d0d;
+    --border: #303030;
+    --border-hi: #4a4a4a;
     --text: #ededed;
-    --muted: #9e9e9e;
-    --dim: #c8c8c8;
-    --node-bg: #181818;
-    --node-border: #333;
-    --node-hover: #202020;
-    --line: rgba(255,255,255,0.07);
+    --muted: #b8b8b8;
+    --dim: #e0e0e0;
+    --node-bg: #232323;
+    --node-border: #3c3c3c;
+    --node-hover: #2c2c2c;
+    --line: rgba(255,255,255,0.06);
     --line-active: rgba(255,255,255,0.45);
-    --tag-bg: #1e1e1e;
-    --bar-bg: #0f0f0f;
-    --detail-bg: #0f0f0f;
+    --tag-bg: #2a2a2a;
+    --bar-bg: #0a0a0a;
+    --detail-bg: #141414;
   }
   :root[data-theme="light"] {
     --bg: #f4f4f2;
@@ -44,7 +54,7 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { height: 100%; overflow: hidden; }
-  body { background: var(--surface); color: var(--text); font-family: 'DM Mono', monospace; transition: background 0.4s, color 0.4s; }
+  body { background: var(--surface); color: var(--text); font-family: 'DM Mono', monospace; font-size: var(--fs-xs); transition: background 0.4s, color 0.4s; }
 
   /* ── Full-screen canvas ── */
   #canvas {
@@ -71,11 +81,11 @@
   }
   .canvas-brand h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 16px; font-weight: 700; letter-spacing: -0.5px;
+    font-size: var(--fs-xl); font-weight: 700; letter-spacing: -0.5px;
     color: var(--text);
   }
   .canvas-brand p {
-    font-size: 8px; letter-spacing: 3px; text-transform: uppercase;
+    font-size: var(--fs-xs); letter-spacing: 2px; text-transform: uppercase;
     color: var(--muted); margin-top: 3px;
   }
 
@@ -94,6 +104,33 @@
   }
   svg.connections line.visible { opacity: 1; }
 
+  /* ── Zoomable viewport ── */
+  #viewport {
+    position: absolute; inset: 0;
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  /* ── Zoom controls overlay ── */
+  .zoom-controls {
+    position: absolute; top: 20px; right: 20px; z-index: 20;
+    display: flex; flex-direction: column; gap: 4px;
+    pointer-events: all;
+  }
+  .zoom-btn {
+    width: 28px; height: 28px;
+    background: var(--node-bg); border: 1px solid var(--border-hi);
+    border-radius: 3px; color: var(--dim); cursor: pointer;
+    font-size: var(--fs-lg); line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.18s, color 0.18s;
+  }
+  .zoom-btn:hover { border-color: var(--text); color: var(--text); }
+  .zoom-level {
+    font-size: var(--fs-xs); color: var(--muted); text-align: center;
+    letter-spacing: 0.5px; padding: 2px 0;
+  }
+
   /* ── Nodes container ── */
   .nodes { position: relative; z-index: 2; width: 100%; height: 100%; }
 
@@ -103,9 +140,9 @@
     background: var(--node-bg);
     border: 1px solid var(--node-border);
     border-radius: 4px;
-    padding: 16px 18px;
+    padding: 12px 14px;
     cursor: grab;
-    width: 160px;
+    width: 150px;
     transform: translateX(-50%) translateY(-50%);
     user-select: none;
     transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
@@ -123,7 +160,7 @@
     z-index: 10;
     box-shadow: 0 0 0 1px var(--dim);
   }
-  .node.center { width: 200px; border-color: var(--border-hi); }
+  .node.center { width: 190px; border-color: var(--border-hi); }
   .node.center:hover, .node.center.active {
     border-color: var(--text);
     box-shadow: 0 0 0 1px var(--text), 0 0 32px rgba(255,255,255,0.04);
@@ -145,10 +182,10 @@
     to   { opacity: 1; transform: translateX(-50%) translateY(-50%); }
   }
 
-  .node-category { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
-  .node-title    { font-family: 'Playfair Display', serif; font-size: 14px; color: var(--text); line-height: 1.2; }
-  .node-desc     { font-size: 10px; color: var(--muted); margin-top: 5px; line-height: 1.5; letter-spacing: 0.3px; }
-  .node-tag      { display: inline-block; margin-top: 8px; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; background: var(--tag-bg); border: 1px solid var(--border-hi); padding: 2px 6px; border-radius: 2px; color: var(--dim); }
+  .node-category { font-size: var(--fs-xs); letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .node-title    { font-family: 'Playfair Display', serif; font-size: var(--fs-base); color: var(--text); line-height: 1.2; }
+  .node-desc     { font-size: var(--fs-xs); color: var(--muted); margin-top: 5px; line-height: 1.5; }
+  .node-tag      { display: inline-block; margin-top: 8px; font-size: var(--fs-xs); letter-spacing: 1px; text-transform: uppercase; background: var(--tag-bg); border: 1px solid var(--border-hi); padding: 2px 6px; border-radius: 2px; color: var(--dim); }
 
   /* ── Detail panel (inside canvas, slides from bottom) ── */
   #detail-panel {
@@ -164,13 +201,13 @@
     display: flex; align-items: center; gap: 36px;
     padding: 14px 24px 16px;
   }
-  .dp-name  { font-family: 'Playfair Display', serif; font-size: 18px; min-width: 170px; }
+  .dp-name  { font-family: 'Playfair Display', serif; font-size: var(--fs-2xl); min-width: 170px; }
   .dp-meta  { display: flex; gap: 24px; flex: 1; flex-wrap: wrap; }
   .dp-field { display: flex; flex-direction: column; gap: 3px; }
-  .dp-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
-  .dp-value { font-size: 11px; color: var(--text); }
+  .dp-label { font-size: var(--fs-xs); letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .dp-value { font-size: var(--fs-base); color: var(--text); }
   .dp-visit {
-    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    font-size: var(--fs-xs); letter-spacing: 1.5px; text-transform: uppercase;
     color: var(--text); text-decoration: none;
     padding: 5px 11px; border: 1px solid var(--border-hi); border-radius: 2px;
     transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
@@ -178,7 +215,7 @@
   .dp-visit:hover { border-color: var(--text); }
   .dp-visit.hidden { display: none; }
   .dp-close {
-    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    font-size: var(--fs-xs); letter-spacing: 1.5px; text-transform: uppercase;
     color: var(--muted); cursor: pointer;
     padding: 5px 11px; border: 1px solid var(--border); border-radius: 2px;
     transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
@@ -193,7 +230,7 @@
     border-top: 1px solid var(--border-hi);
     display: flex; align-items: stretch;
     z-index: 50;
-    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    font-size: var(--fs-xs); letter-spacing: 1.5px; text-transform: uppercase;
   }
 
   .bar-section {
@@ -205,13 +242,13 @@
   .bar-section:last-child { border-right: none; }
   .bar-section.grow { flex: 1; }
 
-  .bar-brand-name { font-family: 'Playfair Display', serif; font-size: 13px; letter-spacing: -0.3px; color: var(--text); }
+  .bar-brand-name { font-family: 'Playfair Display', serif; font-size: var(--fs-sm); letter-spacing: -0.3px; color: var(--text); }
   .bar-brand-sep  { color: var(--muted); }
   .bar-brand-sub  { color: var(--muted); }
 
   .bar-stat { display: flex; align-items: baseline; gap: 5px; padding: 0 10px; }
   .bar-stat + .bar-stat { border-left: 1px solid var(--border); }
-  .bar-stat-num   { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text); }
+  .bar-stat-num   { font-family: 'Playfair Display', serif; font-size: var(--fs-lg); color: var(--text); }
   .bar-stat-label { color: var(--muted); }
 
   .legend-item {
@@ -226,7 +263,7 @@
   .legend-item.active .legend-dot { opacity: 1; }
 
   .bar-webux {
-    font-family: 'Playfair Display', serif; font-size: 12px; letter-spacing: -0.3px;
+    font-family: 'Playfair Display', serif; font-size: var(--fs-xs); letter-spacing: -0.3px;
     color: var(--text); text-decoration: none; transition: opacity 0.2s;
   }
   .bar-webux:hover { opacity: 0.7; }
@@ -235,7 +272,7 @@
     cursor: pointer; background: transparent;
     border: 1px solid var(--border-hi); border-radius: 100px;
     padding: 4px 12px; font-family: 'DM Mono', monospace;
-    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    font-size: var(--fs-xs); letter-spacing: 1.5px; text-transform: uppercase;
     color: var(--dim); transition: all 0.2s;
     display: flex; align-items: center; gap: 6px;
   }
@@ -250,8 +287,16 @@
     <h1>Cerveau.dev</h1>
     <p>Ecosystem · 2026</p>
   </a>
-  <svg class="connections" id="svg-lines"></svg>
-  <div class="nodes" id="nodes-container"></div>
+  <div id="viewport">
+    <svg class="connections" id="svg-lines"></svg>
+    <div class="nodes" id="nodes-container"></div>
+  </div>
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="adjustZoom(0.1)" title="Zoom in">+</button>
+    <div class="zoom-level" id="zoom-label">85%</div>
+    <button class="zoom-btn" onclick="adjustZoom(-0.1)" title="Zoom out">−</button>
+    <button class="zoom-btn" onclick="resetZoom()" title="Reset zoom" style="font-size:var(--fs-xs);letter-spacing:0;">↺</button>
+  </div>
   <div id="detail-panel">
     <div class="dp-body">
       <div class="dp-name" id="dp-name">—</div>
@@ -287,8 +332,8 @@
     <div class="legend-item" onclick="filterCategory(event,'apps')"><div class="legend-dot"></div>Apps</div>
   </div>
   <div class="bar-section">
-    <span class="bar-brand-sub">Powered by</span>
-    <a class="bar-webux" href="https://studiowebux.com" target="_blank" rel="noopener">studiowebux</a>
+    <span class="bar-brand-sub" style="font-size:0.625rem;">Powered by</span>
+    <a class="bar-webux" href="https://studiowebux.com" target="_blank" rel="noopener">studio webux</a>
   </div>
   <div class="bar-section">
     <button class="theme-toggle" onclick="toggleTheme()">
@@ -413,6 +458,23 @@ const nodes = [
 let activeNode = null;
 let activeFilter = 'all';
 let drag = null;
+let zoom = 0.85;
+const ZOOM_MIN = 0.3;
+const ZOOM_MAX = 2.0;
+const ZOOM_STEP = 0.1;
+
+function applyZoom() {
+  document.getElementById('viewport').style.transform = `scale(${zoom})`;
+  document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+}
+function adjustZoom(delta) {
+  zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, Math.round((zoom + delta) * 10) / 10));
+  applyZoom();
+}
+function resetZoom() {
+  zoom = 0.85;
+  applyZoom();
+}
 
 function beginDrag(e, node) {
   e.preventDefault();
@@ -581,10 +643,14 @@ function computeStats() {
 }
 
 window.addEventListener('load', () => {
-  renderNodes(); renderLines(); computeStats();
+  renderNodes(); renderLines(); computeStats(); applyZoom();
   const saved = localStorage.getItem('ecosystem-theme');
   const isDark = (saved || 'dark') === 'dark';
   document.getElementById('theme-label').textContent = isDark ? 'Light' : 'Dark';
+  document.getElementById('canvas').addEventListener('wheel', (e) => {
+    e.preventDefault();
+    adjustZoom(e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP);
+  }, { passive: false });
 });
 window.addEventListener('resize', () => renderLines());
 </script>

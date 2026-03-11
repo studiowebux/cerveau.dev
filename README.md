@@ -144,39 +144,43 @@ In all three cases, Claude creates in MDPlanner:
 - Milestones and tasks derived from open TODOs and docs
 - `local-dev.md` filled in with codebase structure, prerequisites, and people
 
-### 5. Onboard the Brain
+### 5. Onboard a Project
 
-The fastest path — spawns the brain, connects MCP, and rebuilds rules in one step:
-
-```bash
-cd _protocol_
-make onboard NAME=MyApp PROJECT=/path/to/your/code
-```
-
-Or run the steps manually:
+Open cerveau.dev in Claude Code and run the import skill:
 
 ```bash
-make spawn NAME=MyApp PROJECT=/path/to/your/code
-./_scripts_/rebuild-brain-rules.sh MyApp
-cd _brains_/myapp-brain && claude mcp add --transport http mdplanner \
-  http://localhost:8003/mcp --header "Authorization: Bearer YOUR_TOKEN_FROM_ENV"
+cd _protocol_ && claude
 ```
 
-### 6. Launch
+Then inside the session:
+
+```
+/import-project NAME=MyApp PROJECT=/path/to/your/code
+```
+
+This spawns the brain, connects MCP, and rebuilds rules in one step. When
+done, Claude prints the brain path.
+
+### 6. Launch the Brain
 
 ```bash
 cd _brains_/myapp-brain && claude
 ```
 
-On first session, Claude will:
+### 7. Complete Setup
 
-1. Run the boot sequence (Phase 1) from the brain CLAUDE.md
-2. Detect that `local-dev.md` has empty placeholders
-3. Fill in the brain configuration table (MCP project name, people IDs, milestone)
-4. Create a `[project]` note in MDPlanner with your project overview
+Inside the brain session, run the skill again:
 
-From there, the protocol drives the workflow: boot, pick tasks, work, commit,
-write progress, close.
+```
+/import-project
+```
+
+Claude explores the codebase, fills `local-dev.md`, and creates the full
+MDPlanner state: portfolio item, brief, architecture note, milestones, and
+tasks.
+
+From the second session on, Boot happens automatically and Claude picks up
+where it left off.
 
 ## How It Works
 
@@ -241,7 +245,7 @@ every line costs tokens.
 | Target                                 | Usage                                            |
 | -------------------------------------- | ------------------------------------------------ |
 | `make onboard NAME=X PROJECT=/path`    | Spawn + connect MCP + rebuild in one step        |
-| `make spawn NAME=X PROJECT=/path`      | Create a new brain                               |
+| `make spawn NAME=X PROJECT=/path`      | Lower-level: spawn only, no MCP connect          |
 | `make list`                            | List all brains                                  |
 | `make status NAME=X`                   | Show brain install status                        |
 | `make validate NAME=X`                 | Check for leftover `__PROJECT__` placeholders    |

@@ -27,7 +27,7 @@ _protocol_/          _configs_/brains.json        Your code repo
 |---|---|
 | `_protocol_/` | Source of truth — rules, hooks, templates, Makefile |
 | `_configs_/brains.json` | Brain registry — declares what each brain loads |
-| `_brains_/<name>/` | Per-project brain directory (created by `make spawn`) |
+| `_brains_/<name>/` | Per-project brain directory (created by `/import-project`) |
 | `_scripts_/rebuild-brain-rules.sh` | Builds selective symlinks from `brains.json` |
 | MDPlanner (MCP) | External task/note store — Claude reads and writes via MCP tools |
 
@@ -78,8 +78,8 @@ A brain using 2 stacks, 3 practices, 3 workflows, and 2 agents typically loads
 | File | Owned by | Modified by |
 |---|---|---|
 | `_protocol_/**` | Protocol | Human (templates and rules) |
-| `_brains_/<brain>/CLAUDE.md` | Brain | `make spawn` then human |
-| `_brains_/<brain>/.claude/settings.json` | Brain | `make spawn` (generated) |
+| `_brains_/<brain>/.claude/CLAUDE.md` | Protocol | Symlink — auto-updated |
+| `_brains_/<brain>/.claude/settings.json` | Brain | `make onboard` (generated) |
 | `_brains_/<brain>/.claude/rules/**` | Protocol | `rebuild-brain-rules.sh` (symlinks) |
 | `_brains_/<brain>/.claude/rules/workflow/local-dev.md` | Brain | Human (real file, not symlinked) |
 | `_configs_/brains.json` | Config | Human |

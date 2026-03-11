@@ -4,14 +4,14 @@ title: Quick Start
 
 # Quick Start
 
-Seven steps from zero to a running brain session.
+Five steps from zero to a running brain session.
 
 ---
 
 ## Step 1 — Start MDPlanner
 
 ```bash
-cd ~/brains/_protocol_/setup
+cd cerveau.dev/_protocol_/setup
 cp .env.example .env
 ```
 
@@ -44,7 +44,7 @@ curl -s http://localhost:8003/health
 
 ## Step 2 — Write Your Rules
 
-The protocol ships with no rules — you write them for your stack.
+The protocol ships with no project rules — you write them for your stack.
 
 Open Claude Code anywhere and ask:
 
@@ -55,7 +55,7 @@ no global mutable state, go fmt before every commit.
 Keep under 80 lines. Rules only — no examples, no prose.
 ```
 
-Save each file to the appropriate directory:
+Save each file to the appropriate directory under `cerveau.dev/`:
 
 | Rule type | Directory |
 |---|---|
@@ -68,98 +68,48 @@ See [Writing Rules](../02-guides/02-writing-rules.md) for more prompts.
 
 ---
 
-## Step 3 — Register Your Brain
+## Step 3 — Onboard a Project
 
-Edit `~/brains/_configs_/brains.json`:
+Open cerveau.dev in Claude Code and run the import skill:
 
-```json
-{
-  "brains": [
-    {
-      "name": "MyApp",
-      "path": "_brains_/myapp-brain",
-      "isCore": false,
-      "stacks": ["go"],
-      "practices": ["testing"],
-      "workflows": ["git", "local-dev", "mdplanner-tasks"],
-      "agents": []
-    }
-  ]
-}
+```bash
+cd cerveau.dev/_protocol_ && claude
 ```
 
-Array values must match filenames without `.md`. Empty array `[]` links the
-entire directory.
+Then inside the session:
+
+```
+/import-project NAME=MyApp PROJECT=/absolute/path/to/your/code
+```
+
+This spawns the brain, connects MCP, and rebuilds selective rules in one step.
+
+When done, Claude prints the brain path and tells you to launch it.
 
 ---
 
-## Step 4 — Spawn the Brain
+## Step 4 — Launch the Brain
 
 ```bash
-cd ~/brains/_protocol_
-make spawn NAME=MyApp PROJECT=/absolute/path/to/your/code
-```
-
-`PROJECT` must be an absolute path. This creates `_brains_/myapp-brain/` with
-all templates and symlinks. Zero files are added to your code repository.
-
-Verify no placeholders remain:
-
-```bash
-make validate NAME=MyApp
-# expected: no output
+cd cerveau.dev/_brains_/myapp-brain && claude
 ```
 
 ---
 
-## Step 5 — Rebuild Selective Rules
+## Step 5 — Complete Setup
 
-```bash
-cd ~/brains
-./_scripts_/rebuild-brain-rules.sh MyApp
+Inside the brain session, run the skill again:
+
+```
+/import-project
 ```
 
-This replaces wholesale symlinks with selective ones based on `brains.json`.
-Only the declared rules load into Claude Code's context.
+Claude will explore the codebase, fill `local-dev.md`, and create the full
+MDPlanner state: portfolio item, brief, architecture note, milestones, and
+tasks.
 
----
-
-## Step 6 — Connect MCP
-
-```bash
-cd ~/brains/_brains_/myapp-brain
-
-claude mcp add --transport http mdplanner \
-  http://localhost:8003/mcp \
-  --header "Authorization: Bearer YOUR_TOKEN_HERE"
-```
-
-Replace `YOUR_TOKEN_HERE` with the value you set in `.env`.
-
-Verify:
-
-```bash
-claude mcp list
-# should show: mdplanner  http  http://localhost:8003/mcp
-```
-
----
-
-## Step 7 — Launch
-
-```bash
-cd ~/brains/_brains_/myapp-brain && claude
-```
-
-On first session Claude will:
-
-1. Run Phase 1 Boot (hook fires on session start)
-2. Detect empty placeholders in `local-dev.md`
-3. Ask you to confirm MCP project name, server URL, person ID, milestone
-4. Create your first MDPlanner notes
-
-From the second session on, Boot happens silently and Claude picks up where
-it left off.
+From the second session on, Boot happens automatically and Claude picks up
+where it left off.
 
 ---
 

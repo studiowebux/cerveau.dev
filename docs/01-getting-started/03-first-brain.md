@@ -9,7 +9,7 @@ What happens when you launch your first session.
 ## Launch
 
 ```bash
-cd ~/brains/_brains_/myapp-brain && claude
+cd cerveau.dev/_brains_/myapp-brain && claude
 ```
 
 ## Phase 1 — Boot
@@ -48,24 +48,13 @@ Close → Write progress note, move unfinished back to Todo
 
 ## Adding a Second Brain
 
-Repeat steps 3–6 from [Quick Start](02-quick-start.md) for each new project.
-One MDPlanner instance, many brains.
+Same two-session flow as the first. From `cerveau.dev/_protocol_`:
 
 ```bash
-# Register in brains.json
-{ "name": "ApiServer", "path": "_brains_/api-brain", "stacks": ["go"], ... }
-
-# Spawn
-cd ~/brains/_protocol_ && make spawn NAME=ApiServer PROJECT=/path/to/api
-
-# Rebuild
-cd ~/brains && ./_scripts_/rebuild-brain-rules.sh ApiServer
-
-# Connect MCP (from inside the new brain dir)
-cd ~/brains/_brains_/api-brain && claude mcp add --transport http mdplanner ...
-
-# Launch
-cd ~/brains/_brains_/api-brain && claude
+cd cerveau.dev/_protocol_ && claude
+# then: /import-project NAME=ApiServer PROJECT=/path/to/api
+# then: cd ../../_brains_/api-brain && claude
+# then: /import-project
 ```
 
 ## Troubleshooting
@@ -75,7 +64,7 @@ cd ~/brains/_brains_/api-brain && claude
 | `curl health` fails | `docker compose up -d` from `_protocol_/setup/` |
 | `claude mcp list` shows nothing | Re-run `claude mcp add` from inside the brain directory |
 | Claude doesn't run Boot | Check `.claude/CLAUDE.md` exists in the brain dir |
-| `__PROJECT__` still in files | `make validate NAME=X` shows where, re-run `make spawn` |
+| `__PROJECT__` still in files | `make validate NAME=X` shows where, re-run `make onboard` |
 | Rules not loading | Re-run `rebuild-brain-rules.sh`, check names match filenames in `brains.json` |
 | Hook errors about `jq` | `brew install jq` or `apt install jq` |
 | MCP auth fails (401) | Token in `claude mcp add` must match `MDPLANNER_MCP_TOKEN` in `.env` |
