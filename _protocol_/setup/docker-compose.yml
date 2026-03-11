@@ -6,8 +6,11 @@ services:
     volumes:
       - ./data:/data
       - ./backups:/backups
+      - ../../..:/cerveau
+      - ${HOME}/.claude:/home/.claude
     environment:
       - MDPLANNER_MCP_TOKEN=${MDPLANNER_MCP_TOKEN:-}
+      - MDPLANNER_BRAINS_CONFIG=${MDPLANNER_BRAINS_CONFIG:-}
       - MDPLANNER_CACHE=${MDPLANNER_CACHE:-}
       - MDPLANNER_WEBDAV=${MDPLANNER_WEBDAV:-1}
       - MDPLANNER_WEBDAV_USER=${MDPLANNER_WEBDAV_USER:-}
