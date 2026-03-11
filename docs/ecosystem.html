@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cerveau.dev Ecosystem</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root[data-theme="dark"] {
+    --bg: #0a0a0a; --bg2: #111; --surface: #161616;
+    --border: #2a2a2a; --border-hover: #555;
+    --text: #f0f0f0; --text-muted: #666; --text-dim: #999;
+    --node-bg: #1a1a1a; --node-border: #333; --node-hover: #222;
+    --line: rgba(255,255,255,0.08); --line-active: rgba(255,255,255,0.5);
+    --tag-bg: #1e1e1e;
+  }
+  :root[data-theme="light"] {
+    --bg: #f8f8f6; --bg2: #f0f0ee; --surface: #fff;
+    --border: #e0e0dc; --border-hover: #aaa;
+    --text: #0a0a0a; --text-muted: #aaa; --text-dim: #666;
+    --node-bg: #fff; --node-border: #ddd; --node-hover: #fafaf8;
+    --line: rgba(0,0,0,0.07); --line-active: rgba(0,0,0,0.4);
+    --tag-bg: #f0f0ee;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; transition: background 0.4s, color 0.4s; }
+
+  header { padding: 48px 60px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+  .title-block h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 48px); font-weight: 700; letter-spacing: -1px; line-height: 1; }
+  .title-block p { font-size: 11px; color: var(--text-muted); letter-spacing: 3px; text-transform: uppercase; margin-top: 10px; }
+
+  .controls { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+  .theme-toggle { cursor: pointer; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+  .theme-toggle:hover { border-color: var(--border-hover); color: var(--text); }
+  .theme-toggle .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text); }
+
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-end; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; padding: 4px 10px; border: 1px solid transparent; border-radius: 3px; transition: all 0.2s; }
+  .legend-item:hover, .legend-item.active { border-color: var(--border); color: var(--text); }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text); opacity: 0.4; }
+  .legend-item.active .legend-dot { opacity: 1; }
+
+  .canvas-wrapper { position: relative; margin: 40px 60px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: var(--surface); min-height: 620px; }
+  .canvas-wrapper::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+
+  svg.connections { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+  svg.connections line { stroke: var(--line-active); stroke-width: 1; stroke-dasharray: 4 6; opacity: 0; transition: opacity 0.3s, stroke 0.4s; }
+  svg.connections line.visible { opacity: 1; }
+
+  .nodes { position: relative; z-index: 2; width: 100%; height: 620px; }
+
+  .node { position: absolute; background: var(--node-bg); border: 1px solid var(--node-border); border-radius: 3px; padding: 18px 20px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); width: 165px; transform: translateX(-50%) translateY(-50%); user-select: none; }
+  .node:hover, .node.active { border-color: var(--text); background: var(--node-hover); z-index: 10; box-shadow: 0 0 0 1px var(--text); }
+  .node.center { width: 205px; border-color: var(--text-dim); }
+  .node.center:hover, .node.center.active { box-shadow: 0 0 0 1px var(--text), 0 0 40px rgba(255,255,255,0.05); }
+  .node.center::after { content: ''; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--text); animation: pulse 2s ease infinite; }
+  @keyframes pulse { 0%,100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.8); } }
+
+  .node-category { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .node-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text); line-height: 1.2; }
+  .node-desc { font-size: 9px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; letter-spacing: 0.5px; }
+  .node-tag { display: inline-block; margin-top: 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; background: var(--tag-bg); border: 1px solid var(--border); padding: 2px 7px; border-radius: 2px; color: var(--text-dim); }
+
+  .detail-panel { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--border); padding: 20px 28px; z-index: 20; display: flex; align-items: center; gap: 40px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .detail-panel.open { transform: translateY(0); }
+  .detail-name { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text); min-width: 180px; }
+  .detail-meta { display: flex; gap: 28px; flex: 1; }
+  .detail-field { display: flex; flex-direction: column; gap: 4px; }
+  .detail-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+  .detail-value { font-size: 12px; color: var(--text); }
+  .detail-close { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; padding: 6px 12px; border: 1px solid var(--border); border-radius: 2px; transition: all 0.2s; }
+  .detail-close:hover { border-color: var(--border-hover); color: var(--text); }
+
+  footer { padding: 0 60px 48px; display: flex; gap: 40px; align-items: center; }
+  .stat { display: flex; flex-direction: column; gap: 4px; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--text); letter-spacing: -1px; }
+  .stat-label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); }
+  .stat-divider { width: 1px; height: 40px; background: var(--border); }
+
+  .node { animation: fadeIn 0.5s ease forwards; opacity: 0; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(-46%); } to { opacity: 1; transform: translateX(-50%) translateY(-50%); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <h1>Cerveau.dev<br>Ecosystem</h1>
+    <p>Brain Protocol + MDPlanner · 2026</p>
+  </div>
+  <div class="controls">
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <span class="dot"></span>
+      <span id="theme-label">Light Mode</span>
+    </button>
+    <div class="legend">
+      <div class="legend-item active" onclick="filterCategory('all')"><div class="legend-dot"></div> All</div>
+      <div class="legend-item" onclick="filterCategory('core')"><div class="legend-dot"></div> Core</div>
+      <div class="legend-item" onclick="filterCategory('ai')"><div class="legend-dot"></div> AI</div>
+      <div class="legend-item" onclick="filterCategory('data')"><div class="legend-dot"></div> Data</div>
+      <div class="legend-item" onclick="filterCategory('integration')"><div class="legend-dot"></div> Integration</div>
+    </div>
+  </div>
+</header>
+
+<div class="canvas-wrapper" id="canvas">
+  <svg class="connections" id="svg-lines"></svg>
+  <div class="nodes" id="nodes-container"></div>
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-name" id="dp-name">—</div>
+    <div class="detail-meta">
+      <div class="detail-field"><span class="detail-label">Category</span><span class="detail-value" id="dp-cat">—</span></div>
+      <div class="detail-field"><span class="detail-label">Type</span><span class="detail-value" id="dp-type">—</span></div>
+      <div class="detail-field"><span class="detail-label">Status</span><span class="detail-value" id="dp-status">—</span></div>
+      <div class="detail-field"><span class="detail-label">Connects to</span><span class="detail-value" id="dp-connects">—</span></div>
+    </div>
+    <div class="detail-close" onclick="closePanel()">✕ Close</div>
+  </div>
+</div>
+
+<footer>
+  <div class="stat"><span class="stat-num">8</span><span class="stat-label">Components</span></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><span class="stat-num">8</span><span class="stat-label">Connections</span></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><span class="stat-num">4</span><span class="stat-label">Layers</span></div>
+  <div class="stat-divider"></div>
+  <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Self-hosted</span></div>
+</footer>
+
+<script>
+const nodes = [
+  // CENTER
+  {
+    id: 'mdplanner',
+    title: 'MDPlanner',
+    category: 'core',
+    desc: 'Tasks, notes, decisions, milestones. Single source of truth for human and AI.',
+    type: 'Self-hosted / Deno',
+    status: 'Production',
+    tag: 'Memory Hub',
+    center: true,
+    x: 50, y: 48,
+    connects: ['brain', 'mcp', 'markdown']
+  },
+  // TOP CENTER
+  {
+    id: 'brain',
+    title: 'Brain Protocol',
+    category: 'core',
+    desc: '4-phase session protocol. Boot → Work → Write Back → Close.',
+    type: 'cerveau.dev (OSS)',
+    status: 'Production',
+    tag: 'Protocol',
+    x: 50, y: 13,
+    connects: ['mdplanner', 'claude', 'github']
+  },
+  // RIGHT COLUMN
+  {
+    id: 'mcp',
+    title: 'MCP Server',
+    category: 'ai',
+    desc: '198 tools over Streamable HTTP. The bridge between AI and MDPlanner.',
+    type: 'Model Context Protocol',
+    status: 'Production',
+    tag: 'AI Bridge',
+    x: 83, y: 32,
+    connects: ['mdplanner', 'claude']
+  },
+  {
+    id: 'claude',
+    title: 'Claude Code',
+    category: 'ai',
+    desc: 'Boots from MDPlanner. Picks tasks, commits code, writes progress notes.',
+    type: 'Anthropic',
+    status: 'Active',
+    tag: 'AI Agent',
+    x: 83, y: 65,
+    connects: ['brain', 'mcp']
+  },
+  // LEFT COLUMN
+  {
+    id: 'github',
+    title: 'GitHub',
+    category: 'integration',
+    desc: 'Source code host. PRs and commits created by Claude per task.',
+    type: 'Version Control',
+    status: 'Active',
+    tag: 'Code',
+    x: 17, y: 13,
+    connects: ['brain']
+  },
+  {
+    id: 'obsidian',
+    title: 'Obsidian',
+    category: 'integration',
+    desc: 'Read-only knowledge view. Syncs MDPlanner markdown files via WebDAV.',
+    type: 'Client',
+    status: 'Active',
+    tag: 'Knowledge',
+    x: 17, y: 40,
+    connects: ['webdav']
+  },
+  {
+    id: 'markdown',
+    title: 'Markdown Files',
+    category: 'data',
+    desc: 'All data on disk as .md files. Tasks, notes, decisions. You own everything.',
+    type: 'File System',
+    status: 'Always on',
+    tag: 'Storage',
+    x: 17, y: 65,
+    connects: ['mdplanner', 'webdav']
+  },
+  {
+    id: 'webdav',
+    title: 'WebDAV',
+    category: 'data',
+    desc: 'Exposes markdown files as a remote vault. Obsidian mounts and syncs.',
+    type: 'Protocol',
+    status: 'Production',
+    tag: 'Sync',
+    x: 17, y: 88,
+    connects: ['markdown', 'obsidian']
+  },
+];
+
+let activeNode = null;
+let activeFilter = 'all';
+
+function getPos(node) {
+  const canvas = document.getElementById('canvas');
+  const w = canvas.offsetWidth;
+  const h = document.getElementById('nodes-container').offsetHeight;
+  return { x: (node.x / 100) * w, y: (node.y / 100) * h };
+}
+
+function renderNodes() {
+  const container = document.getElementById('nodes-container');
+  container.innerHTML = '';
+  nodes.forEach((node, i) => {
+    const el = document.createElement('div');
+    el.className = 'node' + (node.center ? ' center' : '');
+    el.id = 'node-' + node.id;
+    el.style.left = node.x + '%';
+    el.style.top = node.y + '%';
+    el.style.animationDelay = (i * 0.08) + 's';
+    if (activeFilter !== 'all' && node.category !== activeFilter && !node.center) {
+      el.style.opacity = '0.15';
+    }
+    el.innerHTML = `
+      <div class="node-category">${node.category}</div>
+      <div class="node-title">${node.title}</div>
+      <div class="node-desc">${node.desc}</div>
+      <div class="node-tag">${node.tag}</div>
+    `;
+    el.addEventListener('click', () => selectNode(node));
+    container.appendChild(el);
+  });
+}
+
+function renderLines() {
+  const svg = document.getElementById('svg-lines');
+  svg.innerHTML = '';
+  const drawn = new Set();
+  nodes.forEach(node => {
+    node.connects.forEach(targetId => {
+      const key = [node.id, targetId].sort().join('-');
+      if (drawn.has(key)) return;
+      drawn.add(key);
+      const target = nodes.find(n => n.id === targetId);
+      if (!target) return;
+      const from = getPos(node);
+      const to = getPos(target);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
+      line.setAttribute('x2', to.x);   line.setAttribute('y2', to.y);
+      line.setAttribute('data-a', node.id);
+      line.setAttribute('data-b', targetId);
+      svg.appendChild(line);
+    });
+  });
+  setTimeout(() => {
+    document.querySelectorAll('svg.connections line').forEach(l => l.classList.add('visible'));
+  }, 400);
+}
+
+function selectNode(node) {
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('svg.connections line').forEach(l => { l.style.opacity = '0.04'; });
+  if (activeNode === node.id) {
+    activeNode = null;
+    document.querySelectorAll('svg.connections line').forEach(l => l.style.opacity = '');
+    closePanel(); return;
+  }
+  activeNode = node.id;
+  document.getElementById('node-' + node.id).classList.add('active');
+  document.querySelectorAll('svg.connections line').forEach(l => {
+    const a = l.getAttribute('data-a'), b = l.getAttribute('data-b');
+    if (a === node.id || b === node.id) l.style.opacity = '1';
+  });
+  document.getElementById('dp-name').textContent = node.title;
+  document.getElementById('dp-cat').textContent = node.category;
+  document.getElementById('dp-type').textContent = node.type;
+  document.getElementById('dp-status').textContent = node.status;
+  document.getElementById('dp-connects').textContent = node.connects.join(', ');
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closePanel() {
+  activeNode = null;
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('svg.connections line').forEach(l => l.style.opacity = '');
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+function filterCategory(cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('active'));
+  event.target.closest('.legend-item').classList.add('active');
+  renderNodes(); renderLines();
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-label').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+  setTimeout(renderLines, 50);
+}
+
+window.addEventListener('load', () => { renderNodes(); renderLines(); });
+window.addEventListener('resize', () => { renderLines(); });
+</script>
+</body>
+</html>
