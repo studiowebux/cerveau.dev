@@ -3,237 +3,459 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cerveau.dev Ecosystem</title>
+<title>Cerveau.dev — Ecosystem</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<script>(function(){const t=localStorage.getItem('ecosystem-theme');if(t)document.documentElement.setAttribute('data-theme',t);})();</script>
 <style>
   :root[data-theme="dark"] {
-    --bg: #0a0a0a; --bg2: #111; --surface: #161616;
-    --border: #2a2a2a; --border-hover: #555;
-    --text: #f0f0f0; --text-muted: #666; --text-dim: #999;
-    --node-bg: #1a1a1a; --node-border: #333; --node-hover: #222;
-    --line: rgba(255,255,255,0.08); --line-active: rgba(255,255,255,0.5);
-    --tag-bg: #1e1e1e;
+    --bg: #0a0a0a;
+    --surface: #111;
+    --border: #222;
+    --border-hi: #3a3a3a;
+    --text: #ededed;
+    --muted: #888;
+    --dim: #b0b0b0;
+    --node-bg: #161616;
+    --node-border: #2a2a2a;
+    --node-hover: #1e1e1e;
+    --line: rgba(255,255,255,0.055);
+    --line-active: rgba(255,255,255,0.4);
+    --tag-bg: #1a1a1a;
+    --bar-bg: #0d0d0d;
+    --detail-bg: #0d0d0d;
   }
   :root[data-theme="light"] {
-    --bg: #f8f8f6; --bg2: #f0f0ee; --surface: #fff;
-    --border: #e0e0dc; --border-hover: #aaa;
-    --text: #0a0a0a; --text-muted: #aaa; --text-dim: #666;
-    --node-bg: #fff; --node-border: #ddd; --node-hover: #fafaf8;
-    --line: rgba(0,0,0,0.07); --line-active: rgba(0,0,0,0.4);
+    --bg: #f4f4f2;
+    --surface: #fafaf8;
+    --border: #e2e2de;
+    --border-hi: #c8c8c4;
+    --text: #0a0a0a;
+    --muted: #5a5a5a;
+    --dim: #717171;
+    --node-bg: #fff;
+    --node-border: #e2e2de;
+    --node-hover: #f8f8f6;
+    --line: rgba(0,0,0,0.055);
+    --line-active: rgba(0,0,0,0.3);
     --tag-bg: #f0f0ee;
+    --bar-bg: #ececea;
+    --detail-bg: #ececea;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; transition: background 0.4s, color 0.4s; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--surface); color: var(--text); font-family: 'DM Mono', monospace; transition: background 0.4s, color 0.4s; }
 
-  header { padding: 48px 60px 0; display: flex; justify-content: space-between; align-items: flex-start; }
-  .title-block h1 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 48px); font-weight: 700; letter-spacing: -1px; line-height: 1; }
-  .title-block p { font-size: 11px; color: var(--text-muted); letter-spacing: 3px; text-transform: uppercase; margin-top: 10px; }
+  /* ── Full-screen canvas ── */
+  #canvas {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    bottom: 48px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  #canvas::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
 
-  .controls { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
-  .theme-toggle { cursor: pointer; background: var(--surface); border: 1px solid var(--border); border-radius: 100px; padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
-  .theme-toggle:hover { border-color: var(--border-hover); color: var(--text); }
-  .theme-toggle .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text); }
+  /* ── Watermark ── */
+  .canvas-brand {
+    position: absolute; top: 20px; left: 24px; z-index: 5;
+    pointer-events: none;
+  }
+  .canvas-brand h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px; font-weight: 700; letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .canvas-brand p {
+    font-size: 8px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--muted); margin-top: 3px;
+  }
 
-  .legend { display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-end; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; padding: 4px 10px; border: 1px solid transparent; border-radius: 3px; transition: all 0.2s; }
-  .legend-item:hover, .legend-item.active { border-color: var(--border); color: var(--text); }
-  .legend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text); opacity: 0.4; }
-  .legend-item.active .legend-dot { opacity: 1; }
-
-  .canvas-wrapper { position: relative; margin: 40px 60px; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: var(--surface); min-height: 620px; }
-  .canvas-wrapper::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
-
-  svg.connections { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
-  svg.connections line { stroke: var(--line-active); stroke-width: 1; stroke-dasharray: 4 6; opacity: 0; transition: opacity 0.3s, stroke 0.4s; }
+  /* ── SVG connections ── */
+  svg.connections {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 1; overflow: visible;
+  }
+  svg.connections line {
+    stroke: var(--line-active);
+    stroke-width: 1;
+    stroke-dasharray: 4 6;
+    opacity: 0;
+    transition: opacity 0.3s, stroke 0.4s;
+  }
   svg.connections line.visible { opacity: 1; }
 
-  .nodes { position: relative; z-index: 2; width: 100%; height: 620px; }
+  /* ── Nodes container ── */
+  .nodes { position: relative; z-index: 2; width: 100%; height: 100%; }
 
-  .node { position: absolute; background: var(--node-bg); border: 1px solid var(--node-border); border-radius: 3px; padding: 18px 20px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4,0,0.2,1); width: 165px; transform: translateX(-50%) translateY(-50%); user-select: none; }
-  .node:hover, .node.active { border-color: var(--text); background: var(--node-hover); z-index: 10; box-shadow: 0 0 0 1px var(--text); }
-  .node.center { width: 205px; border-color: var(--text-dim); }
-  .node.center:hover, .node.center.active { box-shadow: 0 0 0 1px var(--text), 0 0 40px rgba(255,255,255,0.05); }
-  .node.center::after { content: ''; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: var(--text); animation: pulse 2s ease infinite; }
-  @keyframes pulse { 0%,100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 0.2; transform: scale(1.8); } }
+  /* ── Node cards ── */
+  .node {
+    position: absolute;
+    background: var(--node-bg);
+    border: 1px solid var(--node-border);
+    border-radius: 4px;
+    padding: 16px 18px;
+    cursor: grab;
+    width: 160px;
+    transform: translateX(-50%) translateY(-50%);
+    user-select: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    animation: fadeIn 0.5s ease forwards;
+    opacity: 0;
+  }
+  .node.dragging {
+    cursor: grabbing; z-index: 100;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    transition: none;
+  }
+  .node:hover, .node.active {
+    border-color: var(--dim);
+    background: var(--node-hover);
+    z-index: 10;
+    box-shadow: 0 0 0 1px var(--dim);
+  }
+  .node.center { width: 200px; border-color: var(--border-hi); }
+  .node.center:hover, .node.center.active {
+    border-color: var(--text);
+    box-shadow: 0 0 0 1px var(--text), 0 0 32px rgba(255,255,255,0.04);
+  }
+  .node.center::after {
+    content: '';
+    position: absolute; top: -4px; right: -4px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--text);
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 0.8; transform: scale(1); }
+    50%      { opacity: 0.15; transform: scale(2); }
+  }
+  .node.dimmed { opacity: 0.15 !important; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(-46%); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(-50%); }
+  }
 
-  .node-category { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
-  .node-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text); line-height: 1.2; }
-  .node-desc { font-size: 9px; color: var(--text-muted); margin-top: 6px; line-height: 1.5; letter-spacing: 0.5px; }
-  .node-tag { display: inline-block; margin-top: 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; background: var(--tag-bg); border: 1px solid var(--border); padding: 2px 7px; border-radius: 2px; color: var(--text-dim); }
+  .node-category { font-size: 8px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+  .node-title    { font-family: 'Playfair Display', serif; font-size: 14px; color: var(--text); line-height: 1.2; }
+  .node-desc     { font-size: 9px; color: var(--muted); margin-top: 5px; line-height: 1.5; letter-spacing: 0.3px; }
+  .node-tag      { display: inline-block; margin-top: 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; background: var(--tag-bg); border: 1px solid var(--border); padding: 2px 6px; border-radius: 2px; color: var(--dim); }
 
-  .detail-panel { position: absolute; bottom: 0; left: 0; right: 0; background: var(--bg); border-top: 1px solid var(--border); padding: 20px 28px; z-index: 20; display: flex; align-items: center; gap: 40px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
-  .detail-panel.open { transform: translateY(0); }
-  .detail-name { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--text); min-width: 180px; }
-  .detail-meta { display: flex; gap: 28px; flex: 1; }
-  .detail-field { display: flex; flex-direction: column; gap: 4px; }
-  .detail-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
-  .detail-value { font-size: 12px; color: var(--text); }
-  .detail-close { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; padding: 6px 12px; border: 1px solid var(--border); border-radius: 2px; transition: all 0.2s; }
-  .detail-close:hover { border-color: var(--border-hover); color: var(--text); }
+  /* ── Detail panel (inside canvas, slides from bottom) ── */
+  #detail-panel {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: var(--detail-bg);
+    border-top: 1px solid var(--border-hi);
+    z-index: 30;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  #detail-panel.open { transform: translateY(0); }
+  .dp-body {
+    display: flex; align-items: center; gap: 36px;
+    padding: 14px 24px 16px;
+  }
+  .dp-name  { font-family: 'Playfair Display', serif; font-size: 18px; min-width: 170px; }
+  .dp-meta  { display: flex; gap: 24px; flex: 1; flex-wrap: wrap; }
+  .dp-field { display: flex; flex-direction: column; gap: 3px; }
+  .dp-label { font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+  .dp-value { font-size: 11px; color: var(--text); }
+  .dp-visit {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text); text-decoration: none;
+    padding: 5px 11px; border: 1px solid var(--border-hi); border-radius: 2px;
+    transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+  }
+  .dp-visit:hover { border-color: var(--text); }
+  .dp-visit.hidden { display: none; }
+  .dp-close {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); cursor: pointer;
+    padding: 5px 11px; border: 1px solid var(--border); border-radius: 2px;
+    transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+  }
+  .dp-close:hover { border-color: var(--border-hi); color: var(--text); }
 
-  footer { padding: 0 60px 48px; display: flex; gap: 40px; align-items: center; }
-  .stat { display: flex; flex-direction: column; gap: 4px; }
-  .stat-num { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--text); letter-spacing: -1px; }
-  .stat-label { font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); }
-  .stat-divider { width: 1px; height: 40px; background: var(--border); }
+  /* ── Bottom bar ── */
+  #bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 48px;
+    background: var(--bar-bg);
+    border-top: 1px solid var(--border-hi);
+    display: flex; align-items: stretch;
+    z-index: 50;
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  }
 
-  .node { animation: fadeIn 0.5s ease forwards; opacity: 0; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(-46%); } to { opacity: 1; transform: translateX(-50%) translateY(-50%); } }
+  .bar-section {
+    display: flex; align-items: center;
+    padding: 0 20px;
+    border-right: 1px solid var(--border);
+    gap: 8px;
+  }
+  .bar-section:last-child { border-right: none; }
+  .bar-section.grow { flex: 1; }
+
+  .bar-brand-name { font-family: 'Playfair Display', serif; font-size: 13px; letter-spacing: -0.3px; color: var(--text); }
+  .bar-brand-sep  { color: var(--muted); }
+  .bar-brand-sub  { color: var(--muted); }
+
+  .bar-stat { display: flex; align-items: baseline; gap: 5px; padding: 0 10px; }
+  .bar-stat + .bar-stat { border-left: 1px solid var(--border); }
+  .bar-stat-num   { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--text); }
+  .bar-stat-label { color: var(--muted); }
+
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    color: var(--muted); cursor: pointer;
+    padding: 4px 9px; border: 1px solid transparent; border-radius: 3px;
+    transition: all 0.18s;
+  }
+  .legend-item:hover  { border-color: var(--border); color: var(--dim); }
+  .legend-item.active { border-color: var(--border-hi); color: var(--text); }
+  .legend-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text); opacity: 0.35; }
+  .legend-item.active .legend-dot { opacity: 1; }
+
+  .bar-webux {
+    font-family: 'Playfair Display', serif; font-size: 12px; letter-spacing: -0.3px;
+    color: var(--text); text-decoration: none; transition: opacity 0.2s;
+  }
+  .bar-webux:hover { opacity: 0.7; }
+
+  .theme-toggle {
+    cursor: pointer; background: transparent;
+    border: 1px solid var(--border-hi); border-radius: 100px;
+    padding: 4px 12px; font-family: 'DM Mono', monospace;
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--dim); transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .theme-toggle:hover { border-color: var(--text); color: var(--text); }
+  .theme-toggle .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text); }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="title-block">
-    <h1>Cerveau.dev<br>Ecosystem</h1>
-    <p>Brain Protocol + MDPlanner · 2026</p>
+<div id="canvas">
+  <div class="canvas-brand">
+    <h1>Cerveau.dev</h1>
+    <p>Ecosystem · 2026</p>
   </div>
-  <div class="controls">
-    <button class="theme-toggle" onclick="toggleTheme()">
-      <span class="dot"></span>
-      <span id="theme-label">Light Mode</span>
-    </button>
-    <div class="legend">
-      <div class="legend-item active" onclick="filterCategory('all')"><div class="legend-dot"></div> All</div>
-      <div class="legend-item" onclick="filterCategory('core')"><div class="legend-dot"></div> Core</div>
-      <div class="legend-item" onclick="filterCategory('ai')"><div class="legend-dot"></div> AI</div>
-      <div class="legend-item" onclick="filterCategory('data')"><div class="legend-dot"></div> Data</div>
-      <div class="legend-item" onclick="filterCategory('integration')"><div class="legend-dot"></div> Integration</div>
-    </div>
-  </div>
-</header>
-
-<div class="canvas-wrapper" id="canvas">
   <svg class="connections" id="svg-lines"></svg>
   <div class="nodes" id="nodes-container"></div>
-  <div class="detail-panel" id="detail-panel">
-    <div class="detail-name" id="dp-name">—</div>
-    <div class="detail-meta">
-      <div class="detail-field"><span class="detail-label">Category</span><span class="detail-value" id="dp-cat">—</span></div>
-      <div class="detail-field"><span class="detail-label">Type</span><span class="detail-value" id="dp-type">—</span></div>
-      <div class="detail-field"><span class="detail-label">Status</span><span class="detail-value" id="dp-status">—</span></div>
-      <div class="detail-field"><span class="detail-label">Connects to</span><span class="detail-value" id="dp-connects">—</span></div>
+  <div id="detail-panel">
+    <div class="dp-body">
+      <div class="dp-name" id="dp-name">—</div>
+      <div class="dp-meta">
+        <div class="dp-field"><span class="dp-label">Category</span><span class="dp-value" id="dp-cat">—</span></div>
+        <div class="dp-field"><span class="dp-label">Type</span><span class="dp-value" id="dp-type">—</span></div>
+        <div class="dp-field"><span class="dp-label">Status</span><span class="dp-value" id="dp-status">—</span></div>
+        <div class="dp-field"><span class="dp-label">Connects to</span><span class="dp-value" id="dp-connects">—</span></div>
+      </div>
+      <a class="dp-visit" id="dp-visit" href="#" target="_blank" rel="noopener">Visit →</a>
+      <div class="dp-close" onclick="closePanel()">✕ Close</div>
     </div>
-    <div class="detail-close" onclick="closePanel()">✕ Close</div>
   </div>
 </div>
 
-<footer>
-  <div class="stat"><span class="stat-num">8</span><span class="stat-label">Components</span></div>
-  <div class="stat-divider"></div>
-  <div class="stat"><span class="stat-num">8</span><span class="stat-label">Connections</span></div>
-  <div class="stat-divider"></div>
-  <div class="stat"><span class="stat-num">4</span><span class="stat-label">Layers</span></div>
-  <div class="stat-divider"></div>
-  <div class="stat"><span class="stat-num">100%</span><span class="stat-label">Self-hosted</span></div>
-</footer>
+<div id="bottom-bar">
+  <div class="bar-section">
+    <span class="bar-brand-name">Cerveau.dev</span>
+    <span class="bar-brand-sep">·</span>
+    <span class="bar-brand-sub">Ecosystem</span>
+  </div>
+  <div class="bar-section">
+    <span id="stat-breakdown" class="bar-stat-label">—</span>
+  </div>
+  <div class="bar-section grow">
+    <div class="legend-item active" onclick="filterCategory(event,'all')"><div class="legend-dot"></div>All</div>
+    <div class="legend-item" onclick="filterCategory(event,'core')"><div class="legend-dot"></div>Core</div>
+    <div class="legend-item" onclick="filterCategory(event,'ai')"><div class="legend-dot"></div>AI</div>
+    <div class="legend-item" onclick="filterCategory(event,'data')"><div class="legend-dot"></div>Data</div>
+    <div class="legend-item" onclick="filterCategory(event,'integration')"><div class="legend-dot"></div>Integration</div>
+    <div class="legend-item" onclick="filterCategory(event,'apps')"><div class="legend-dot"></div>Apps</div>
+  </div>
+  <div class="bar-section">
+    <span class="bar-brand-sub">Powered by</span>
+    <a class="bar-webux" href="https://studiowebux.com" target="_blank" rel="noopener">studiowebux</a>
+  </div>
+  <div class="bar-section">
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <span class="dot"></span>
+      <span id="theme-label">Light</span>
+    </button>
+  </div>
+</div>
 
 <script>
 const nodes = [
-  // CENTER
   {
-    id: 'mdplanner',
-    title: 'MDPlanner',
-    category: 'core',
-    desc: 'Tasks, notes, decisions, milestones. Single source of truth for human and AI.',
-    type: 'Self-hosted / Deno',
-    status: 'Production',
-    tag: 'Memory Hub',
-    center: true,
-    x: 50, y: 48,
-    connects: ['brain', 'mcp', 'markdown']
-  },
-  // TOP CENTER
-  {
-    id: 'brain',
-    title: 'Brain Protocol',
-    category: 'core',
+    id: 'brain', title: 'Brain Protocol', category: 'core',
     desc: '4-phase session protocol. Boot → Work → Write Back → Close.',
-    type: 'cerveau.dev (OSS)',
-    status: 'Production',
-    tag: 'Protocol',
-    x: 50, y: 13,
+    type: 'cerveau.dev (OSS)', status: 'Production', tag: 'Protocol',
+    url: 'https://github.com/studiowebux/cerveau.dev',
+    x: 50, y: 12,
     connects: ['mdplanner', 'claude', 'github']
   },
-  // RIGHT COLUMN
   {
-    id: 'mcp',
-    title: 'MCP Server',
-    category: 'ai',
-    desc: '198 tools over Streamable HTTP. The bridge between AI and MDPlanner.',
-    type: 'Model Context Protocol',
-    status: 'Production',
-    tag: 'AI Bridge',
-    x: 83, y: 32,
-    connects: ['mdplanner', 'claude']
+    id: 'mdplanner', title: 'MDPlanner', category: 'core',
+    desc: 'Tasks, notes, decisions, milestones. Single source of truth for human and AI.',
+    type: 'Self-hosted / Deno', status: 'Production', tag: 'Memory Hub',
+    url: 'https://mdplanner.dev',
+    center: true, x: 52, y: 48,
+    connects: ['brain', 'mcp', 'markdown']
   },
   {
-    id: 'claude',
-    title: 'Claude Code',
-    category: 'ai',
+    id: 'mcp', title: 'MCP Server', category: 'ai',
+    desc: 'Streamable HTTP + SSE interface. Bridges AI agents to MDPlanner.',
+    type: 'Model Context Protocol', status: 'Production', tag: 'AI Bridge',
+    url: 'https://modelcontextprotocol.io/docs/getting-started/intro',
+    x: 68, y: 68,
+    connects: ['mdplanner', 'claude', 'ezra']
+  },
+  {
+    id: 'claude', title: 'Claude Code', category: 'ai',
     desc: 'Boots from MDPlanner. Picks tasks, commits code, writes progress notes.',
-    type: 'Anthropic',
-    status: 'Active',
-    tag: 'AI Agent',
-    x: 83, y: 65,
+    type: 'Anthropic', status: 'Active', tag: 'AI Agent',
+    url: 'https://claude.ai',
+    x: 69, y: 41,
     connects: ['brain', 'mcp']
   },
-  // LEFT COLUMN
   {
-    id: 'github',
-    title: 'GitHub',
-    category: 'integration',
-    desc: 'Source code host. PRs and commits created by Claude per task.',
-    type: 'Version Control',
-    status: 'Active',
-    tag: 'Code',
-    x: 17, y: 13,
+    id: 'ezra', title: 'Ezra', category: 'ai',
+    desc: 'Go AI agent powered by local LLMs via Ollama. Autonomous task loop over MCP.',
+    type: 'Self-hosted / Go', status: 'Active', tag: 'AI Agent',
+    x: 85, y: 87,
+    connects: ['mcp']
+  },
+  {
+    id: 'aichat', title: 'AI Chat', category: 'ai',
+    desc: 'Self-hosted AI chat. Ollama + SearXNG search + Chatterbox TTS.',
+    type: 'Self-hosted / Offline', status: 'Active', tag: 'Local AI',
+    x: 55, y: 88,
+    connects: ['mdplanner']
+  },
+  {
+    id: 'github', title: 'GitHub', category: 'integration',
+    desc: 'Source code host. PRs and commits pushed by Claude per task.',
+    type: 'Version Control', status: 'Active', tag: 'Code',
+    url: 'https://github.com',
+    x: 30, y: 20,
     connects: ['brain']
   },
   {
-    id: 'obsidian',
-    title: 'Obsidian',
-    category: 'integration',
-    desc: 'Read-only knowledge view. Syncs MDPlanner markdown files via WebDAV.',
-    type: 'Client',
-    status: 'Active',
-    tag: 'Knowledge',
-    x: 17, y: 40,
-    connects: ['webdav']
+    id: 'obsidian', title: 'Obsidian', category: 'integration',
+    desc: 'Knowledge view. Reads and edits MDPlanner data as a vault via WebDAV.',
+    type: 'Client', status: 'Active', tag: 'Knowledge',
+    url: 'https://obsidian.md',
+    x: 7, y: 62,
+    connects: ['webdav', 'markdown']
   },
   {
-    id: 'markdown',
-    title: 'Markdown Files',
-    category: 'data',
+    id: 'cloudflare', title: 'Cloudflare', category: 'integration',
+    desc: 'Read-only DNS integration. MDPlanner displays and monitors DNS records.',
+    type: 'Cloud / API', status: 'Active', tag: 'DNS',
+    url: 'https://cloudflare.com',
+    x: 10, y: 22,
+    connects: ['mdplanner']
+  },
+  {
+    id: 'markdown', title: 'Markdown Files', category: 'data',
     desc: 'All data on disk as .md files. Tasks, notes, decisions. You own everything.',
-    type: 'File System',
-    status: 'Always on',
-    tag: 'Storage',
-    x: 17, y: 65,
+    type: 'File System', status: 'Always on', tag: 'Storage',
+    x: 41, y: 88,
     connects: ['mdplanner', 'webdav']
   },
   {
-    id: 'webdav',
-    title: 'WebDAV',
-    category: 'data',
+    id: 'webdav', title: 'WebDAV', category: 'data',
     desc: 'Exposes markdown files as a remote vault. Obsidian mounts and syncs.',
-    type: 'Protocol',
-    status: 'Production',
-    tag: 'Sync',
-    x: 17, y: 88,
-    connects: ['markdown', 'obsidian']
+    type: 'Protocol', status: 'Production', tag: 'Sync',
+    x: 8, y: 86,
+    connects: ['mdplanner', 'markdown', 'obsidian']
+  },
+  {
+    id: 'minimaldoc', title: 'MinimalDoc', category: 'apps',
+    desc: 'Go static site generator for docs. Markdown in, clean HTML out. Powers this site.',
+    type: 'Self-hosted / Go', status: 'Production', tag: 'Docs',
+    url: 'https://github.com/studiowebux/minimaldoc',
+    x: 22, y: 51,
+    connects: ['brain', 'github', 'markdown']
+  },
+  {
+    id: 'zurm', title: 'Zurm', category: 'apps',
+    desc: 'Terminal multiplexer built with Ebitengine. Used daily for all dev work.',
+    type: 'Desktop / Go', status: 'Active', tag: 'Terminal',
+    url: 'https://zurm.dev',
+    x: 73, y: 13,
+    connects: ['brain']
+  },
+  {
+    id: 'dockward', title: 'Dockward', category: 'apps',
+    desc: 'Docker management API and dashboard. Containers, logs, control from one place.',
+    type: 'Self-hosted / Go', status: 'Beta', tag: 'DevOps',
+    url: 'https://dockward.com',
+    x: 88, y: 41,
+    connects: ['brain']
   },
 ];
 
 let activeNode = null;
 let activeFilter = 'all';
+let drag = null;
+
+function beginDrag(e, node) {
+  e.preventDefault();
+  drag = {
+    node,
+    startMouseX: e.clientX, startMouseY: e.clientY,
+    startNodeX: node.x,     startNodeY: node.y,
+    moved: false
+  };
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup',   onDragEnd);
+}
+
+function onDragMove(e) {
+  if (!drag) return;
+  const canvas = document.getElementById('canvas');
+  const cw = canvas.offsetWidth;
+  const ch = canvas.offsetHeight;
+  const dx = e.clientX - drag.startMouseX;
+  const dy = e.clientY - drag.startMouseY;
+  if (Math.abs(dx) > 3 || Math.abs(dy) > 3) drag.moved = true;
+  drag.node.x = Math.max(5, Math.min(95, drag.startNodeX + (dx / cw) * 100));
+  drag.node.y = Math.max(4, Math.min(96, drag.startNodeY + (dy / ch) * 100));
+  const el = document.getElementById('node-' + drag.node.id);
+  el.classList.add('dragging');
+  el.style.left = drag.node.x + '%';
+  el.style.top  = drag.node.y + '%';
+  renderLines();
+}
+
+function onDragEnd() {
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup',   onDragEnd);
+  if (!drag) return;
+  document.getElementById('node-' + drag.node.id).classList.remove('dragging');
+  if (!drag.moved) selectNode(drag.node);
+  drag = null;
+}
 
 function getPos(node) {
   const canvas = document.getElementById('canvas');
-  const w = canvas.offsetWidth;
-  const h = document.getElementById('nodes-container').offsetHeight;
-  return { x: (node.x / 100) * w, y: (node.y / 100) * h };
+  return {
+    x: (node.x / 100) * canvas.offsetWidth,
+    y: (node.y / 100) * canvas.offsetHeight
+  };
 }
 
 function renderNodes() {
@@ -244,10 +466,10 @@ function renderNodes() {
     el.className = 'node' + (node.center ? ' center' : '');
     el.id = 'node-' + node.id;
     el.style.left = node.x + '%';
-    el.style.top = node.y + '%';
-    el.style.animationDelay = (i * 0.08) + 's';
+    el.style.top  = node.y + '%';
+    el.style.animationDelay = (i * 0.07) + 's';
     if (activeFilter !== 'all' && node.category !== activeFilter && !node.center) {
-      el.style.opacity = '0.15';
+      el.style.opacity = '0.12';
     }
     el.innerHTML = `
       <div class="node-category">${node.category}</div>
@@ -255,7 +477,7 @@ function renderNodes() {
       <div class="node-desc">${node.desc}</div>
       <div class="node-tag">${node.tag}</div>
     `;
-    el.addEventListener('click', () => selectNode(node));
+    el.addEventListener('mousedown', e => beginDrag(e, node));
     container.appendChild(el);
   });
 }
@@ -271,8 +493,7 @@ function renderLines() {
       drawn.add(key);
       const target = nodes.find(n => n.id === targetId);
       if (!target) return;
-      const from = getPos(node);
-      const to = getPos(target);
+      const from = getPos(node), to = getPos(target);
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       line.setAttribute('x1', from.x); line.setAttribute('y1', from.y);
       line.setAttribute('x2', to.x);   line.setAttribute('y2', to.y);
@@ -282,13 +503,13 @@ function renderLines() {
     });
   });
   setTimeout(() => {
-    document.querySelectorAll('svg.connections line').forEach(l => l.classList.add('visible'));
-  }, 400);
+    svg.querySelectorAll('line').forEach(l => l.classList.add('visible'));
+  }, 300);
 }
 
 function selectNode(node) {
   document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('svg.connections line').forEach(l => { l.style.opacity = '0.04'; });
+  document.querySelectorAll('svg.connections line').forEach(l => l.style.opacity = '0.04');
   if (activeNode === node.id) {
     activeNode = null;
     document.querySelectorAll('svg.connections line').forEach(l => l.style.opacity = '');
@@ -300,11 +521,14 @@ function selectNode(node) {
     const a = l.getAttribute('data-a'), b = l.getAttribute('data-b');
     if (a === node.id || b === node.id) l.style.opacity = '1';
   });
-  document.getElementById('dp-name').textContent = node.title;
-  document.getElementById('dp-cat').textContent = node.category;
-  document.getElementById('dp-type').textContent = node.type;
-  document.getElementById('dp-status').textContent = node.status;
-  document.getElementById('dp-connects').textContent = node.connects.join(', ');
+  document.getElementById('dp-name').textContent     = node.title;
+  document.getElementById('dp-cat').textContent      = node.category;
+  document.getElementById('dp-type').textContent     = node.type;
+  document.getElementById('dp-status').textContent   = node.status;
+  document.getElementById('dp-connects').textContent = node.connects.length ? node.connects.join(', ') : '—';
+  const visit = document.getElementById('dp-visit');
+  if (node.url) { visit.href = node.url; visit.classList.remove('hidden'); }
+  else          { visit.classList.add('hidden'); }
   document.getElementById('detail-panel').classList.add('open');
 }
 
@@ -315,23 +539,43 @@ function closePanel() {
   document.getElementById('detail-panel').classList.remove('open');
 }
 
-function filterCategory(cat) {
+function filterCategory(e, cat) {
   activeFilter = cat;
   document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('active'));
-  event.target.closest('.legend-item').classList.add('active');
-  renderNodes(); renderLines();
+  e.target.closest('.legend-item').classList.add('active');
+  nodes.forEach(node => {
+    const el = document.getElementById('node-' + node.id);
+    if (!el) return;
+    const hide = cat !== 'all' && node.category !== cat && !node.center;
+    el.classList.toggle('dimmed', hide);
+  });
 }
 
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
-  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
-  document.getElementById('theme-label').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+  const next = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('ecosystem-theme', next);
+  document.getElementById('theme-label').textContent = isDark ? 'Dark' : 'Light';
   setTimeout(renderLines, 50);
 }
 
-window.addEventListener('load', () => { renderNodes(); renderLines(); });
-window.addEventListener('resize', () => { renderLines(); });
+function computeStats() {
+  const counts = {};
+  nodes.forEach(n => { counts[n.category] = (counts[n.category] || 0) + 1; });
+  const order = ['core', 'ai', 'integration', 'data', 'apps'];
+  const parts = order.filter(c => counts[c]).map(c => `${counts[c]} ${c[0].toUpperCase() + c.slice(1)}`);
+  document.getElementById('stat-breakdown').textContent = parts.join(' · ');
+}
+
+window.addEventListener('load', () => {
+  renderNodes(); renderLines(); computeStats();
+  const saved = localStorage.getItem('ecosystem-theme');
+  const isDark = (saved || 'dark') === 'dark';
+  document.getElementById('theme-label').textContent = isDark ? 'Light' : 'Dark';
+});
+window.addEventListener('resize', () => renderLines());
 </script>
 </body>
 </html>

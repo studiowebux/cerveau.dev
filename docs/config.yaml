@@ -25,6 +25,8 @@ landing:
   nav:
     - text: "Docs"
       url: "/01-getting-started/01-installation.html"
+    - text: "Ecosystem"
+      url: "/ecosystem.html"
     - text: "GitHub"
       url: "https://github.com/studiowebux/cerveau.dev"
     - text: "Discord"
@@ -122,6 +124,8 @@ footer:
           url: "/03-reference/03-session-phases.html"
         - text: "Changelog"
           url: "/changelog/"
+        - text: "Ecosystem"
+          url: "/ecosystem.html"
     - title: "Support"
       items:
         - text: "Buy Me a Coffee"

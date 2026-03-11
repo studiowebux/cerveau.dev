@@ -34,6 +34,7 @@ jobs:
       - name: Build Documentation
         run: |
           minimaldoc build docs -o public
+          cp docs/ecosystem.html public/ecosystem.html
           echo "cerveau.dev" > public/CNAME
 
       - name: Upload artifact
