@@ -93,11 +93,7 @@ landing:
   opensource:
     title: "Open Source"
     description: "AGPL-3.0 Licensed. Self-host everything. No telemetry, no accounts, no subscriptions. Built by Studio Webux."
-    links:
-      - text: "GitHub Repository"
-        url: "https://github.com/studiowebux/cerveau.dev"
-      - text: "Report Issues"
-        url: "https://github.com/studiowebux/cerveau.dev/issues"
+    links: []
 
 footer:
   copyright: "2026 Studio Webux. AGPL-3.0 License."
