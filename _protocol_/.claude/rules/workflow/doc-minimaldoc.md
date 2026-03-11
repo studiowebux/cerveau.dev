@@ -1,3 +1,9 @@
+---
+paths:
+  - "**/docs/**"
+  - "**/docs/config.yaml"
+---
+
 # MinimalDoc Setup Workflow
 
 One-shot setup for projects using MinimalDoc documentation + GitHub Pages.

@@ -246,10 +246,10 @@
 <body>
 
 <div id="canvas">
-  <div class="canvas-brand">
+  <a class="canvas-brand" href="/" style="text-decoration:none;pointer-events:all;">
     <h1>Cerveau.dev</h1>
     <p>Ecosystem · 2026</p>
-  </div>
+  </a>
   <svg class="connections" id="svg-lines"></svg>
   <div class="nodes" id="nodes-container"></div>
   <div id="detail-panel">
@@ -269,7 +269,9 @@
 
 <div id="bottom-bar">
   <div class="bar-section">
-    <span class="bar-brand-name">Cerveau.dev</span>
+    <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px;">
+      <span class="bar-brand-name">Cerveau.dev</span>
+    </a>
     <span class="bar-brand-sep">·</span>
     <span class="bar-brand-sub">Ecosystem</span>
   </div>
@@ -299,7 +301,7 @@
 <script>
 const nodes = [
   {
-    id: 'brain', title: 'Brain Protocol', category: 'core',
+    id: 'brain', title: 'Cerveau.dev', category: 'core',
     desc: '4-phase session protocol. Boot → Work → Write Back → Close.',
     type: 'cerveau.dev (OSS)', status: 'Production', tag: 'Protocol',
     url: 'https://github.com/studiowebux/cerveau.dev',
@@ -541,13 +543,22 @@ function closePanel() {
 
 function filterCategory(e, cat) {
   activeFilter = cat;
+  activeNode = null;
   document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('active'));
   e.target.closest('.legend-item').classList.add('active');
+  document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+  document.getElementById('detail-panel').classList.remove('open');
+  const dimmed = new Set();
   nodes.forEach(node => {
     const el = document.getElementById('node-' + node.id);
     if (!el) return;
     const hide = cat !== 'all' && node.category !== cat && !node.center;
     el.classList.toggle('dimmed', hide);
+    if (hide) dimmed.add(node.id);
+  });
+  document.querySelectorAll('svg.connections line').forEach(l => {
+    const a = l.getAttribute('data-a'), b = l.getAttribute('data-b');
+    l.style.opacity = (dimmed.has(a) || dimmed.has(b)) ? '0.04' : '';
   });
 }
 

@@ -3,6 +3,10 @@ description: Multi-brain system for Claude Code. One protocol, many projects, ze
 base_url: https://cerveau.dev
 author: Studio Webux
 theme: default
+theme_config:
+  fonts:
+    google_url: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap"
+    heading: "'Playfair Display', serif"
 dark_mode: false
 enable_llms: true
 enable_search: true
@@ -46,7 +50,7 @@ landing:
         primary: false
 
   features:
-    title: "Why Brain Protocol?"
+    title: "Why Cerveau.dev?"
     items:
       - emoji: "~"
         title: "Multi-Brain"

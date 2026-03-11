@@ -11,7 +11,7 @@ file_path=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null |
 
 # Skip planning/brain files (avoid recursive reminders)
 case "$file_path" in
-  */HANDOFF.md|*/CLAUDE.md|*/mcp-reference.md|*/mcp-workflows.md)
+  */HANDOFF.md|*/CLAUDE.md)
     exit 0
     ;;
 esac

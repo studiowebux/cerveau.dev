@@ -1,3 +1,9 @@
+---
+paths:
+  - ".github/workflows/**"
+  - "**/docs/**"
+---
+
 # MinimalDoc Docs CI/CD
 
 GitHub Actions workflow for building and deploying MinimalDoc-powered

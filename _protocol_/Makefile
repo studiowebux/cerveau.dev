@@ -36,9 +36,6 @@ endif
 	echo ""; \
 	\
 	mkdir -p "$$DEST"; \
-	cp "$(TEMPLATE_DIR)/CLAUDE.md" "$$DEST/"; \
-	cp "$(TEMPLATE_DIR)/mcp-reference.md" "$$DEST/"; \
-	cp "$(TEMPLATE_DIR)/mcp-workflows.md" "$$DEST/"; \
 	cp -r "$(TEMPLATE_DIR)/templates" "$$DEST/"; \
 	cp -r "$(TEMPLATE_DIR)/setup" "$$DEST/"; \
 	\
@@ -88,9 +85,8 @@ endif
 	sed "s|__BRAIN_DIR__|$$REL_PROJ|g" "$$PROTO/.claude/settings.json.template" > "$$DEST/.claude/settings.json"; \
 	echo "  .claude/settings.json: generated (additionalDirectories → $$PROJ)"; \
 	\
-	cp "$$PROTO/.claude/CLAUDE.md" "$$DEST/.claude/CLAUDE.md"; \
-	$(SED_I) "s/__PROJECT__/$(NAME)/g" "$$DEST/.claude/CLAUDE.md"; \
-	echo "  .claude/CLAUDE.md: created (discipline rules)"; \
+	cp "$$PROTO/CLAUDE.md" "$$DEST/.claude/CLAUDE.md"; \
+	echo "  .claude/CLAUDE.md: created (brain protocol)"; \
 	\
 	BRAIN_PATH="_brains_/$$(echo '$(NAME)' | tr '[:upper:]' '[:lower:]')-brain"; \
 	BRAINS_JSON="$$REPO_ROOT/_configs_/brains.json"; \
@@ -169,8 +165,7 @@ endif
 	fi; \
 	echo ""; \
 	echo "CLAUDE.md:"; \
-	[ -f "$$DEST/CLAUDE.md" ] && echo "  brain protocol: present" || echo "  brain protocol: MISSING"; \
-	[ -f "$$DEST/.claude/CLAUDE.md" ] && echo "  discipline rules: present" || echo "  discipline rules: MISSING"; \
+	[ -f "$$DEST/.claude/CLAUDE.md" ] && echo "  brain protocol: present" || echo "  brain protocol: MISSING"; \
 	echo ""
 
 ## list: List all existing brains
@@ -178,7 +173,7 @@ list:
 	@echo "Existing brains:"
 	@echo ""
 	@for d in $(BRAIN_DIR)/*-brain; do \
-		if [ -d "$$d" ] && [ -f "$$d/CLAUDE.md" ]; then \
+		if [ -d "$$d" ] && [ -f "$$d/.claude/CLAUDE.md" ]; then \
 			name=$$(basename "$$d" | sed 's/-brain$$//'); \
 			echo "  $$name  →  $$d"; \
 		fi; \
@@ -232,7 +227,6 @@ sync-shareable:
 	echo "Syncing _protocol_ → _shareable_..."; \
 	changed=0; \
 	for rel in \
-		".claude/CLAUDE.md" \
 		".claude/settings.json.template" \
 		".claude/hooks/checkpoint-counter.sh" \
 		".claude/hooks/commit-validator.sh" \
@@ -251,8 +245,6 @@ sync-shareable:
 		".claude/skills/release/SKILL.md" \
 		"CLAUDE.md" \
 		"Makefile" \
-		"mcp-reference.md" \
-		"mcp-workflows.md" \
 	; do \
 		src="$$PROTO/$$rel"; dst="$$SHARE/_protocol_/$$rel"; \
 		if [ ! -f "$$dst" ] || ! cmp -s "$$src" "$$dst"; then \

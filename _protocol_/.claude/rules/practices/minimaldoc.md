@@ -1,5 +1,8 @@
 ---
-globs: ["docs/**", "docs/config.yaml", "docs/TOC.md"]
+paths:
+  - "**/docs/**"
+  - "**/docs/config.yaml"
+  - "**/TOC.md"
 ---
 
 # MinimalDoc Rule

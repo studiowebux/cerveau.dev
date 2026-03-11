@@ -56,10 +56,8 @@ All shell and git commands MUST run from the codebase directory below. Never run
      so sessions understand the project shape without exploring. -->
 
 ```
-<project-name>-brain/          <-- Brain: CLAUDE.md, templates, mcp-reference
+<project-name>-brain/          <-- Brain: CLAUDE.md, templates
   CLAUDE.md
-  mcp-reference.md
-  mcp-workflows.md
   templates/
 
 <project-code>/                <-- Code: all application files live here
@@ -103,3 +101,9 @@ cd __CODEBASE_ABS__
 cd __CODEBASE_ABS__
 # How to run tests
 ```
+
+## Brain Memory
+
+<!-- Claude: append important patterns, gotchas, and recurring facts discovered during sessions.
+     One line per entry. Remove entries that become stale or wrong.
+     This replaces auto-memory — write here instead of relying on MEMORY.md. -->
