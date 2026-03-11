@@ -71,9 +71,11 @@ claude mcp list
 Claude uses MDPlanner throughout every session:
 
 ### Boot
-- Reads most recent progress note
-- Lists open tasks for the active milestone
-- Reads architecture notes and decisions
+- Calls `get_context_pack` — single MCP call returning active milestone,
+  in-progress tasks, top todo tasks, most recent progress note, and decision
+  and architecture note titles
+- Falls back to 8 individual calls if `get_context_pack` is unavailable
+- Checks git state: current branch, recent commits, open PRs
 
 ### Work
 - Creates/updates task comments as work progresses

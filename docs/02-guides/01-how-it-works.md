@@ -67,7 +67,7 @@ A brain using 2 stacks, 3 practices, 3 workflows, and 2 agents typically loads
 1. Claude Code starts in the brain directory
 2. `settings.json` adds the code repo via `additionalDirectories`
 3. `session-context` hook fires — reminds Claude to run Phase 1
-4. Claude reads tasks, notes, architecture from MDPlanner
+4. Claude calls `get_context_pack` — one MCP call loads tasks, notes, milestone, and progress in a single round-trip
 5. Claude picks a task, implements, commits with validated message
 6. `checkpoint-counter` hook fires every 20 tool calls — keeps Claude on track
 7. At session end: progress note written, unfinished tasks returned to Todo

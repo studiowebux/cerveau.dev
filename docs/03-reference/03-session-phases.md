@@ -20,13 +20,53 @@ Every brain session follows four phases defined in the brain CLAUDE.md.
 The `session-context` hook fires on `SessionStart` and reminds Claude to run
 Phase 1 before any work.
 
-Claude reads from MDPlanner:
-1. Most recent progress note (sorted by `updatedAt`)
-2. Open tasks for the active milestone
-3. Architecture notes
-4. Recent decisions
+### New flow — `get_context_pack` (recommended)
 
-Then checks git status in the project repo.
+A single MCP call loads everything needed to start the session:
+
+```
+get_context_pack { project: "<project-name>" }
+```
+
+Returns in one round-trip:
+
+| Field | What Claude extracts |
+|---|---|
+| `people` | Claude's person ID + owner's person ID |
+| `milestone` | Active open milestone — name and ID |
+| `inProgress` | Tasks already in progress — resume these first |
+| `todo` | Top 10 ready tasks sorted by priority |
+| `recentProgress` | Most recent `[progress]` note excerpt |
+| `decisions` | Decision note titles and IDs |
+| `architecture` | Architecture note titles and IDs |
+| `constraints` | Constraint note titles and IDs |
+
+If `inProgress` is non-empty, resume those tasks. If the `recentProgress`
+excerpt is not enough context, follow up with `get_note { id }` for the full
+note. Load decision or architecture notes only when directly relevant to the
+task at hand.
+
+After `get_context_pack`, check git state: current branch, last 5 commits,
+open PRs.
+
+### Fallback flow — 8 calls (old MDPlanner or unavailable `get_context_pack`)
+
+If `get_context_pack` is unavailable (old server version), run the full
+sequence manually:
+
+```
+list_tasks { section: "In Progress", project: "<name>" }
+list_tasks { section: "Todo", project: "<name>", ready: true }
+list_milestones { project: "<name>", status: "open" }
+list_notes { search: "[progress] <project>" }
+  → get_note for the most recent one (by updatedAt)
+list_notes { search: "[architecture] <project>" }
+list_notes { search: "[decision] <project>" }
+list_notes { search: "[constraint] <project>" }
+list_people
+```
+
+Then check git state as above.
 
 ## Phase 2 — Work
 
