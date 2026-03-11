@@ -2,7 +2,7 @@
 
 mdplanner is the single source of truth. Read at session start, write back after every significant action. Never guess when the brain has the answer.
 
-**Every MCP query MUST be scoped to "__PROJECT__"** — by `project: "__PROJECT__"` on tasks/milestones, or by including "__PROJECT__" in note title searches. No exceptions.
+**Every MCP query MUST be scoped to "__MCP_PROJECT__"** — by `project: "__MCP_PROJECT__"` on tasks/milestones, or by including "__PROJECT__" in note title searches. No exceptions.
 
 Reference: `mcp-reference.md` · `mcp-workflows.md` · `templates/`
 
@@ -19,16 +19,27 @@ Run before doing anything else. Do not skip.
    - Fill in Directory Layout with the actual codebase structure (use `find` or `ls`)
    - Fill in Prerequisites, Running Locally, and Testing sections
    - The completed file MUST match the template structure exactly — all sections present, no placeholders remaining, Code Repository table fully populated
-1. `list_tasks { section: "In Progress", project: "__PROJECT__" }` — resume any in-progress work first
-2. `list_notes { search: "[project] __PROJECT__" }` then `get_note { id }` for each — load project context. If none exists, stop and ask the user.
-3. `list_notes { search: "[architecture] __PROJECT__" }` then `get_note { id }` — load architecture
-4. `list_notes { search: "[decision] __PROJECT__" }` then `get_note { id }` — load decisions
-5. `list_notes { search: "[constraint] __PROJECT__" }` then `get_note { id }` — load constraints
-6. `list_tasks { section: "Todo", project: "__PROJECT__" }` and `list_milestones { project: "__PROJECT__", status: "open" }` — see what is next
-7. `list_notes { search: "[progress] __PROJECT__" }` — find all progress notes, `get_note` for the **most recent one** (by `updatedAt` timestamp). This is the session handoff — read it fully to understand where the last session left off.
-8. **Git state check** — Read the codebase absolute path from `local-dev.md` "Code Repository" section. Run all git commands **from that directory**: `cd <codebase-path> && git branch` (current branch), `git log --oneline -5` (recent commits), and `gh pr list --state open` (pending PRs). **Never run git from the brain directory or monorepo root.** Report the state to the user. If on a feature branch with an open PR, note it.
+1. `get_context_pack { project: "__MCP_PROJECT__" }` — single call that returns
+   people, active milestone, in-progress tasks, top-10 todo, most recent
+   progress note excerpt, and decision/architecture/constraint note titles.
+   - If `inProgress` is non-empty: resume those tasks.
+   - If `recentProgress` excerpt is not enough: call `get_note { id }` for
+     the full content.
+   - If project notes (`[project]`) are missing from context pack: call
+     `list_notes { search: "[project] __PROJECT__" }` + `get_note`.
+2. **Git state check** — Read the codebase absolute path from `local-dev.md`
+   "Code Repository" section. Run all git commands **from that directory**:
+   `cd <codebase-path> && git branch` (current branch),
+   `git log --oneline -5` (recent commits), and `gh pr list --state open`
+   (pending PRs). **Never run git from the brain directory or monorepo root.**
+   Report the state to the user. If on a feature branch with an open PR, note it.
 
 If MCP is unreachable: stop and tell the user.
+
+> **Fallback** (if `get_context_pack` is unavailable — e.g. old server): run
+> the original 8-call sequence: `list_tasks { section: "In Progress" }`,
+> `list_notes` for project/architecture/decision/constraint/progress, then
+> `list_tasks { section: "Todo" }` and `list_milestones`.
 
 ---
 
@@ -37,7 +48,7 @@ If MCP is unreachable: stop and tell the user.
 1. Complete Phase 1 first.
 2. **Ticket required before work.** Every task — bug, feature, refactor, investigation — MUST have an mdplanner task before any code changes, subagent launches, or deep codebase exploration. Light reads (grep, glob, quick file read) to write a good task description are allowed. Everything else is blocked until the ticket exists.
    - If a matching task already exists: `get_task` then `update_task { section: "In Progress" }`.
-   - If no task exists: create one with `project: "__PROJECT__"`, an appropriate milestone, and section "In Progress". Include a clear description of the problem or goal — scan relevant code first if needed to write a useful description.
+   - If no task exists: create one with `project: "__MCP_PROJECT__"`, an appropriate milestone, and section "In Progress". Include a clear description of the problem or goal — scan relevant code first if needed to write a useful description.
 3. Verify change fits architecture. If it contradicts an `[architecture]` note: stop and flag.
 4. Check for feature spec: `list_notes { search: "[feature] __PROJECT__ — <name>" }`. Follow if found.
 5. Record non-obvious technical choices and bugs immediately as notes.
@@ -86,7 +97,7 @@ Every note title MUST include "__PROJECT__". Use templates from `templates/`.
 
 1. Write a `[progress]` note summarizing what was accomplished.
 2. Move unfinished tasks back to "Todo".
-3. Create discovered tasks in "Backlog" with `project: "__PROJECT__"`.
+3. Create discovered tasks in "Backlog" with `project: "__MCP_PROJECT__"`.
 
 ---
 
@@ -97,7 +108,7 @@ Every note title MUST include "__PROJECT__". Use templates from `templates/`.
 3. **Todo first, Backlog is owner-managed.** Claude picks tasks from Todo only. The owner moves tasks from Backlog → Todo and sets priority. When Todo is empty, Claude may analyze Backlog items and add comments (investigation notes, complexity estimates, suggested approach) but must not move them to In Progress or start implementation.
 4. **One task in progress at a time.** Complete the current task before picking the next. Deferring requires owner approval — no unilateral deferrals, no partial work left behind. Exception: tightly coupled tasks — flag to the owner and get approval before working on multiple simultaneously.
 5. **Read, don't list.** `list_notes` gives titles only — always follow with `get_note`.
-6. **Scope everything.** Every MCP call scoped to "__PROJECT__".
+6. **Scope everything.** Every MCP call scoped to `"__MCP_PROJECT__"` via the `project:` parameter. Note title searches use `"__PROJECT__"` in the search string.
 7. **Architecture is law.** Contradictions must be flagged, not silently ignored.
 8. **Decisions are append-only.** Never edit a `[decision]` note — create a superseding one.
 9. **Never set `completed: true`** on tasks. Owner does that.

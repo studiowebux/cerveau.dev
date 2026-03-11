@@ -21,18 +21,12 @@ Read the brain's context to obtain the values needed for all steps below:
 - Version file path (relative to the code repo)
 - MCP project name (used as the task filter)
 
-**From MCP — call `mcp__mdplanner__list_people` and resolve by name:**
-
-- Claude's person ID — the entry named "Claude" (or equivalent AI agent entry)
-- Owner's person ID — the human project owner entry
-
-Store these four values mentally for the rest of the session. Do not re-fetch
-unless the session restarts.
+These three values are not available from MCP — they must be read from the
+local file.
 
 ### 0b. Backend version check
 
-Using the values resolved above, compare the code version to the running
-backend:
+Compare the code version to the running backend:
 
 1. Read the version file at `<code-repo-path>/<version-file-path>`
 2. Fetch `<server-base-url>/api/version`
@@ -44,6 +38,44 @@ user before doing anything else. Example message:
 > Please restart the backend before we continue.
 
 Do not proceed with task work until the user confirms the backend is up to date.
+
+### 1. Load full session context in one call
+
+```text
+mcp__mdplanner__get_context_pack { project: "<project-name>" }
+```
+
+This single call returns everything needed for the rest of boot:
+
+| Field | What to extract |
+|-------|-----------------|
+| `people.agents` | Find the "Claude" entry → store as Claude's person ID |
+| `people.owner` | Store as owner's person ID |
+| `milestone` | Active open milestone — name + ID |
+| `inProgress` | Tasks already in progress — resume these first |
+| `todo` | Top 10 ready tasks (blockers resolved), sorted by priority |
+| `recentProgress` | Most recent `[progress]` note excerpt — read for session handoff |
+| `decisions` | Note titles + IDs — load with `get_note` only if directly relevant |
+| `architecture` | Note titles + IDs — load with `get_note` only if directly relevant |
+| `constraints` | Note titles + IDs — load with `get_note` only if directly relevant |
+| `summary` | `openMilestones`, `totalInProgress`, `totalTodo`, `staleTasks` |
+
+Store Claude's person ID, owner's person ID, and active milestone from this
+response. Do not re-fetch unless the session restarts.
+
+**Fallback** — if `get_context_pack` is unavailable (old server version):
+
+```text
+mcp__mdplanner__list_people
+mcp__mdplanner__list_tasks { section: "In Progress", project: "<name>" }
+mcp__mdplanner__list_tasks { section: "Todo", project: "<name>", ready: true }
+mcp__mdplanner__list_milestones { project: "<name>", status: "open" }
+mcp__mdplanner__list_notes { search: "[progress] <project-name>" }
+  → get_note for the most recent one (by updatedAt)
+mcp__mdplanner__list_notes { search: "[architecture] <project-name>" }
+mcp__mdplanner__list_notes { search: "[decision] <project-name>" }
+mcp__mdplanner__list_notes { search: "[constraint] <project-name>" }
+```
 
 ### 0c. Understand section structure (first time in a session)
 
@@ -58,34 +90,21 @@ MDPlanner sections are project-specific. The standard workflow sections are:
 
 `completed: true` is ALWAYS set by the human after testing, never by Claude.
 
-### 1. Check for in-progress tasks first (ALWAYS do this before anything else)
+### 2. Resume or pick tasks
 
-**Every session**, run this before picking new work:
+**If `inProgress` from the context pack is non-empty:** resume those tasks —
+do NOT start new work until all In Progress items are Done.
 
-```
-mcp__mdplanner__list_tasks { section: "In Progress" }
-```
-
-If any tasks are In Progress, resume them — do NOT start new tasks until all In
-Progress items are Done. This is the continuation checkpoint.
+**If `inProgress` is empty:** work from the `todo` list in the context pack
+(already filtered to `ready: true`, sorted by priority).
 
 **Task eligibility — only pick tasks that:**
 
-- Are assigned to Claude's person ID (resolved in step 0), OR
+- Are assigned to Claude's person ID, OR
 - Were created by Claude in the current or a previous session
 
 Never pick up tasks assigned to the owner or unassigned tasks unless the owner
 explicitly asks Claude to take them on.
-
-### 2. List tasks to work on (only if nothing is In Progress)
-
-```
-mcp__mdplanner__list_tasks { section: "Todo" }
-// Filter by the project name resolved in step 0:
-mcp__mdplanner__list_tasks { section: "Todo", project: "<project-name>" }
-```
-
-Sort by `config.priority` (1 = highest). Pick the batch for this session.
 
 ### 3. Inspect each task before starting
 
@@ -220,20 +239,23 @@ mcp__mdplanner__update_milestone { id: "<id>", status: "completed" }
 
 ```text
 0.  Read local-dev.md → resolve server URL, repo path, project name
-0.  list_people → resolve Claude's person ID + owner's person ID
 0.  Version check: read version file vs GET <server>/api/version — stop if mismatch
-1.  list_tasks { section: "In Progress" } → resume any existing work first
-2.  list_tasks { section: "Todo", project: "<name>", ready: true } → skip blocked
+1.  get_context_pack { project: "<name>" }
+      → Claude person ID, owner person ID, active milestone,
+        inProgress tasks, todo tasks, recentProgress note excerpt,
+        decision/architecture/constraint note titles
+2.  If inProgress non-empty → resume those tasks first
+    Else → work from todo list (already ready: true, sorted by priority)
 3.  get_task for each → fix description if bad, assign milestone if missing
-4.  list_milestones { status: "open" } → close stale (tagged) milestones,
-      find or create_milestone for target version
+4.  If no active milestone in context pack → list_milestones, close stale
+      (tagged), create_milestone for target version
 5.  batch_update_tasks { updates: [{ id, section: "In Progress", assignee: Claude-ID,
       milestone: "vX.Y.Z" }, ...] } ← or update_task × N for single task
 6.  Fix → commit → note hash
 7.  add_task_comment { comment: "[vX.Y.Z] Fixed in <hash> — <summary>" }
 8.  update_task { section: "Done", assignee: owner-ID }
 9.  Repeat 6-8 for each task (or use batch_update_tasks to move batch to Done)
-10. Update progress.md in brain after EVERY task (not just each phase)
+10. Write [progress] note after EVERY task (not just each phase)
 11. On release: update_milestone { status: "completed" }
 ```
 
@@ -247,9 +269,9 @@ source:
 | Server base URL    | `## Brain Configuration` table in `local-dev.md`   |
 | Version file path  | `## Brain Configuration` table in `local-dev.md`   |
 | MCP project name   | `## Brain Configuration` table in `local-dev.md`   |
-| Claude's person ID | `mcp__mdplanner__list_people` at session start     |
-| Owner's person ID  | `mcp__mdplanner__list_people` at session start     |
-| Active milestone   | `mcp__mdplanner__list_milestones` at session start |
+| Claude's person ID | `get_context_pack` → `people.agents` (Claude entry) |
+| Owner's person ID  | `get_context_pack` → `people.owner`                 |
+| Active milestone   | `get_context_pack` → `milestone`                    |
 
 Never hardcode any of these in this rule or in planning files.
 
