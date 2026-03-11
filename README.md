@@ -179,14 +179,6 @@ Every brain session follows four phases defined in the brain CLAUDE.md:
 | **Write Back** | Decisions, bugs, progress written as MDPlanner notes                |
 | **Close**      | Progress note, unfinished tasks back to Todo                        |
 
-Boot uses `get_context_pack` — a single MCP call that returns everything needed
-to start a session. Measured against the old 8-call sequence:
-
-| Method | Boot time | Tokens |
-| ------ | --------- | ------ |
-| `get_context_pack` (current) | ~43s | ~51k |
-| 8-call sequence (fallback) | ~1m13s | ~59k |
-
 Hooks enforce the discipline: boot reminders on session start, checkpoint
 reminders every 20 tool calls, commit format validation, progress checks
 on exit.
