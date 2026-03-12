@@ -8,13 +8,22 @@
 4. Check for feature spec: `list_notes { search: "[feature] <project> — <name>" }`. Follow if found.
 5. Record non-obvious technical choices and bugs immediately as notes.
 
+## Milestone Rules
+
+- **A milestone is a set of tasks.** The owner defines the scope by moving tasks from Backlog → Todo and tagging them with the milestone. This is the only correct way to assign a milestone to multiple tasks.
+- **Todo tasks carry the milestone tag.** All tasks in a milestone sit in Todo with the milestone field set. Claude never bulk-assigns milestones — only the owner decides what belongs to a milestone.
+- **Backlog tasks have no milestone.** The milestone field is empty for all Backlog tasks. Stale milestone on a Backlog task: clear the field, do not replace.
+- **One task in progress at a time.** Claude picks tasks from Todo one by one: Todo → In Progress → Pending Review → next task. Never start a second task while one is in progress.
+- **Milestone is not complete until all its tasks are Done or Pending Review.** No PR, no version tag, no release until every task in the milestone has reached Pending Review or Done.
+- **Never move Backlog tasks into a milestone.** Only the owner promotes Backlog → Todo and assigns the milestone.
+
 ## Commit Flow
 
 Every batch of work follows this sequence. Do not skip steps.
 
-1. **Milestone.** Before starting, ensure a target milestone exists in mdplanner. Create one if missing — patch bump for bugs, minor for features.
+1. **Milestone.** Ensure a target milestone exists in mdplanner. Create one if missing — patch bump for bugs, minor for features. Assign it to the task when moving it to In Progress — not before.
 2. **Branch.** Create a feature branch from the default branch: `<type>/<short-description>`. Never commit directly to main.
-3. **Work.** One task at a time: move to In Progress → implement → build-verify.
+3. **Work.** One task at a time: move to In Progress → assign milestone → implement → build-verify.
 4. **Docs gate.** If `docs/` exists in the codebase: run through `workflow/docs-sync.md` before committing. User-facing changes require a matching docs update in the same commit. Do not proceed without passing the checklist.
 5. **Task comment.** After each fix, `add_task_comment` with what was done. Do not include commit hash yet.
 6. **Commit.** After all session tasks are done (or at a logical checkpoint), stage specific files and commit on the feature branch with a descriptive message.
