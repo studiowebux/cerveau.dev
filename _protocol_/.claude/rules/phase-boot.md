@@ -2,7 +2,13 @@
 
 Run before doing anything else. Do not skip.
 
-0. **Read `local-dev.md`** — Extract before any other step:
+0. **Check for HANDOFF.md** — If `HANDOFF.md` exists in the brain directory, read it first.
+   It contains the exact state from the previous context window: what is in progress, the next step, and key facts.
+   Use it to skip redundant MCP calls — skip `get_context_pack` if the handoff covers current state, skip git checks already noted.
+   Delete `HANDOFF.md` after reading so it does not accumulate stale data.
+   Then continue with the steps below only for what the handoff does not cover.
+
+1. **Read `local-dev.md`** — Extract before any other step:
    - `<mcp-project>` from the Connection table (`MCP project name (task filter)`)
    - `<project>` from the Connection table (`MCP project name`) — used in note title searches
    - Codebase absolute path from the Code Repository table

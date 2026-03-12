@@ -253,6 +253,12 @@ endif
 		--exclude=memory \
 		|| true
 
+## install: Deploy statusline.sh to ~/.claude/ and make it executable
+install:
+	@cp "$(TEMPLATE_DIR)/statusline.sh" "$(HOME)/.claude/statusline.sh"
+	@chmod +x "$(HOME)/.claude/statusline.sh"
+	@echo "Installed: ~/.claude/statusline.sh"
+
 ## sync-shareable: Copy changed protocol files to _shareable_. Only updates files that differ.
 sync-shareable:
 	@PROTO="$(TEMPLATE_DIR)"; \
@@ -266,6 +272,7 @@ sync-shareable:
 		".claude/settings.json.template" \
 		".claude/hooks/checkpoint-counter.sh" \
 		".claude/hooks/commit-validator.sh" \
+		".claude/hooks/context-warning.sh" \
 		".claude/hooks/post-edit-reminder.sh" \
 		".claude/hooks/stop-progress-check.sh" \
 		".claude/hooks/session-context.sh" \

@@ -12,13 +12,33 @@ if [ ! -d "${CLAUDE_DIR}/projects" ]; then
 fi
 
 echo "Backing up Claude data..."
-echo "  Source:  ${CLAUDE_DIR}/projects"
+echo "  Source:  ${CLAUDE_DIR}"
 echo "  Target:  ${ARCHIVE}"
 
 cd "${HOME}"
-find .claude/projects -type f \( -name "*.jsonl" -o -path "*/memory/*" \) \
-  | tar -czf "${ARCHIVE}" -T -
+
+# Collect files to back up
+{
+  # Conversation history + memories (per-project)
+  find .claude/projects -type f \( -name "*.jsonl" -o -path "*/memory/*" \)
+
+  # Agent memories
+  [ -d .claude/agent-memory ] && find .claude/agent-memory -type f
+
+  # Custom agents
+  [ -d .claude/agents ] && find .claude/agents -type f
+
+  # Top-level config files
+  for f in \
+    .claude/settings.json \
+    .claude/statusline.sh \
+    .claude/brain-costs.json \
+    .claude/CLAUDE.md \
+    .claude/keybindings.json; do
+    [ -f "$f" ] && echo "$f"
+  done
+} | sort -u | tar -czf "${ARCHIVE}" -T -
 
 SIZE=$(du -h "${ARCHIVE}" | cut -f1)
-COUNT=$(find .claude/projects -type f \( -name "*.jsonl" -o -path "*/memory/*" \) | wc -l | tr -d ' ')
+COUNT=$(tar -tzf "${ARCHIVE}" | wc -l | tr -d ' ')
 echo "Done. ${COUNT} files, ${SIZE} → ${ARCHIVE}"
