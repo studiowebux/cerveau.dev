@@ -16,6 +16,7 @@ Fill in actual values for this brain — do not leave placeholders.
 | Key | Value |
 | --- | ----- |
 | MCP project name (task filter) | `__PROJECT__` |
+| MDPlanner server URL | `__MDPLANNER_URL__` |
 
 ### People Registry
 

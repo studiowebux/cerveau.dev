@@ -36,7 +36,7 @@ Replaces N `update_task` + N `add_task_comment` calls:
 batch_update_tasks {
   updates: [
     { id: "...", section: "In Progress", assignee: "<claude-id>", milestone: "vX.Y.Z" },
-    { id: "...", section: "Done",        assignee: "<owner-id>",  comment: "[vX.Y.Z] Fixed in abc1234 — summary" }
+    { id: "...", section: "Pending Review", assignee: "<owner-id>",  comment: "[vX.Y.Z] Fixed in abc1234 — summary" }
   ]
 }
 ```

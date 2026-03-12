@@ -4,18 +4,9 @@ Onboard a codebase into MD Planner and spawn its brain in one automated flow.
 
 ## Arguments
 
-The skill accepts optional inline arguments:
-
-```
-/import-project NAME=MyApp PROJECT=/path/to/code MCP_URL=http://localhost:8003/mcp
-```
+The skill accepts optional inline arguments: `/import-project NAME=MyApp PROJECT=/path/to/code`
 
 If NAME or PROJECT are missing, ask the user before proceeding.
-`MCP_URL` defaults to `http://localhost:8003/mcp` if not provided.
-
-The MCP bearer token is read automatically from `_protocol_/setup/.env`
-(`MDPLANNER_MCP_TOKEN`). If the file does not exist or the token is missing,
-`make onboard` will skip MCP connect and print the manual command.
 
 ---
 
@@ -23,8 +14,8 @@ The MCP bearer token is read automatically from `_protocol_/setup/.env`
 
 ### 1. Resolve inputs
 
-- Extract `NAME`, `PROJECT`, and optionally `MCP_URL` from the skill arguments.
-- If NAME or PROJECT are missing, ask the user:
+- Extract `NAME` and `PROJECT` from the skill arguments if provided.
+- If either is missing, ask the user:
   - `NAME` — short PascalCase name for the brain (e.g. `HodeiVault`)
   - `PROJECT` — absolute path to the codebase directory
 - Verify the directory exists before continuing.
@@ -34,10 +25,10 @@ The MCP bearer token is read automatically from `_protocol_/setup/.env`
 Run from `_protocol_/` (resolve its path relative to cerveau.dev root):
 
 ```bash
-cd <cerveau-root>/_protocol_ && make onboard NAME=<NAME> PROJECT=<PROJECT> [MCP_URL=<MCP_URL>]
+cd <cerveau-root>/_protocol_ && make onboard NAME=<NAME> PROJECT=<PROJECT>
 ```
 
-This creates the brain directory, generates `settings.json`, symlinks rules/hooks/agents, reads the MCP token from `setup/.env`, connects MCP, and rebuilds selective rules. Stop and report if this fails.
+This creates the brain directory, generates `settings.json`, symlinks rules/hooks/agents, connects MCP, and rebuilds selective rules. Stop and report if this fails.
 
 **STOP HERE.** Once `make onboard` succeeds, report to the user:
 

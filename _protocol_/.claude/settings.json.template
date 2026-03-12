@@ -2,6 +2,22 @@
   "additionalDirectories": [
     "__BRAIN_DIR__"
   ],
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "100"
+  },
+  "model": "sonnet",
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh"
+  },
+  "attribution": {
+    "commit": "Powered by MDPlanner.dev X Cerveau.dev\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+    "pr": "🤖 Powered by MDPlanner.dev X Cerveau.dev"
+  },
+  "spinnerTipsEnabled": false,
+  "alwaysThinkingEnabled": true,
+  "prefersReducedMotion": true,
+  "autoMemoryEnabled": false,
   "deny": [
     "Read: **/.env*",
     "Read: **/.zshrc",

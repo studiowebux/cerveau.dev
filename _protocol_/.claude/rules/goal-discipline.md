@@ -21,7 +21,7 @@ RIGHT: "Add session ID display to viewer header", "Create GET /api/brains endpoi
 1. Set ONE task as in-progress in mdplanner
 2. Work ONLY on that task
 3. Complete it FULLY
-4. Move to Done + write progress note
+4. Move to Pending Review + write progress note
 5. ONLY THEN pick the next task
 
 Never work on multiple tasks simultaneously. Never switch tasks without completing the current one. Never leave a task partially complete.
@@ -33,7 +33,7 @@ A task is complete when:
 - All code works end-to-end
 - No TODOs or follow-ups remain
 - A `[progress]` note has been written to mdplanner
-- The task is moved to "Done" in mdplanner
+- The task is moved to "Pending Review" in mdplanner (owner moves to Done after verification)
 
 ## Red Flags
 

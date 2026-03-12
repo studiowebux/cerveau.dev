@@ -17,6 +17,7 @@ CONFIG="${REPO_ROOT}/_configs_/brains.json"
 PROTOCOL_RULES="${REPO_ROOT}/_protocol_/.claude/rules"
 PROTOCOL_AGENTS="${REPO_ROOT}/_protocol_/.claude/agents"
 PROTOCOL_HOOKS="${REPO_ROOT}/_protocol_/.claude/hooks"
+PROTOCOL_SKILLS="${REPO_ROOT}/_protocol_/.claude/skills"
 
 if [ ! -f "$CONFIG" ]; then
   echo "Error: brains.json not found at $CONFIG"
@@ -242,6 +243,35 @@ open('${localdev}', 'w').write(content)
     local hook_count
     hook_count="$(find "$PROTOCOL_HOOKS" -name '*.sh' | wc -l | tr -d ' ')"
     echo "  hooks/ — symlinked (${hook_count} scripts)"
+  fi
+
+  # Rebuild CLAUDE.md symlink (generic protocol — local-dev.md holds all project-specific values)
+  local claude_md="${brain_abs}/.claude/CLAUDE.md"
+  local protocol_claude="${REPO_ROOT}/_protocol_/CLAUDE.md"
+  if [ -f "$protocol_claude" ]; then
+    if [ -f "$claude_md" ] || [ -L "$claude_md" ]; then
+      rm "$claude_md"
+    fi
+    local rel_claude
+    rel_claude="$(python3 -c "import os.path; print(os.path.relpath('${protocol_claude}', '${brain_abs}/.claude'))")"
+    ln -s "$rel_claude" "$claude_md"
+    echo "  CLAUDE.md — symlinked (generic protocol)"
+  fi
+
+  # Rebuild skills symlink (always wholesale)
+  local skills_dir="${brain_abs}/.claude/skills"
+  if [ -d "$PROTOCOL_SKILLS" ]; then
+    if [ -L "$skills_dir" ]; then
+      rm "$skills_dir"
+    elif [ -d "$skills_dir" ]; then
+      rm -rf "$skills_dir"
+    fi
+    local rel_protocol_skills
+    rel_protocol_skills="$(python3 -c "import os.path; print(os.path.relpath('${PROTOCOL_SKILLS}', '${skills_dir}/..'))")"
+    ln -s "$rel_protocol_skills" "$skills_dir"
+    local skill_count
+    skill_count="$(find "$PROTOCOL_SKILLS" -name 'SKILL.md' | wc -l | tr -d ' ')"
+    echo "  skills/ — symlinked (${skill_count} skills)"
   fi
 
   local all_rules_lines

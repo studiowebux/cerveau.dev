@@ -47,13 +47,14 @@ endif
 			-e 's/__PROJECT__/$(NAME)/g' \
 			-e "s|__CODEBASE__|$$CODEBASE_REL|g" \
 			-e "s|__CODEBASE_ABS__|$$PROJ|g" \
+			-e "s|__MDPLANNER_URL__|$${MDPLANNER_URL:-http://localhost:8003}|g" \
 			{} +; \
 	\
 	echo "  Brain files: created"; \
 	\
 	mkdir -p "$$DEST/.claude"; \
 	\
-	for dir in hooks agents; do \
+	for dir in hooks agents skills; do \
 		REL=$$(python3 -c "import os.path; print(os.path.relpath('$$PROTO/.claude/$$dir', '$$DEST/.claude'))"); \
 		ln -s "$$REL" "$$DEST/.claude/$$dir"; \
 		echo "  .claude/$$dir → $$REL"; \
@@ -85,8 +86,9 @@ endif
 	sed "s|__BRAIN_DIR__|$$REL_PROJ|g" "$$PROTO/.claude/settings.json.template" > "$$DEST/.claude/settings.json"; \
 	echo "  .claude/settings.json: generated (additionalDirectories → $$PROJ)"; \
 	\
-	cp "$$PROTO/CLAUDE.md" "$$DEST/.claude/CLAUDE.md"; \
-	echo "  .claude/CLAUDE.md: created (brain protocol)"; \
+	REL_CLAUDE=$$(python3 -c "import os.path; print(os.path.relpath('$$PROTO/CLAUDE.md', '$$DEST/.claude'))"); \
+	ln -s "$$REL_CLAUDE" "$$DEST/.claude/CLAUDE.md"; \
+	echo "  .claude/CLAUDE.md: symlinked (generic protocol)"; \
 	\
 	BRAIN_PATH="_brains_/$$(echo '$(NAME)' | tr '[:upper:]' '[:lower:]')-brain"; \
 	BRAINS_JSON="$$REPO_ROOT/_configs_/brains.json"; \
@@ -121,6 +123,40 @@ endif
 	echo "       --header \"Authorization: Bearer <token>\""; \
 	echo "  2. Edit brains.json to add stacks/practices/workflows/agents arrays"; \
 	echo "  3. Run: ./_scripts_/rebuild-brain-rules.sh $(NAME)"; \
+	echo ""
+
+## onboard: Spawn brain + connect MCP + rebuild rules in one step. Usage: make onboard NAME=MyApp PROJECT=/path/to/code [MCP_URL=http://host:port/mcp]
+onboard:
+ifndef NAME
+	$(error NAME is required. Usage: make onboard NAME=MyApp PROJECT=/path/to/code)
+endif
+ifndef PROJECT
+	$(error PROJECT is required. Usage: make onboard NAME=MyApp PROJECT=/path/to/code)
+endif
+	@$(MAKE) --no-print-directory spawn NAME=$(NAME) PROJECT=$(PROJECT)
+	@DEST="$(BRAIN_DIR)/$(shell echo '$(NAME)' | tr '[:upper:]' '[:lower:]')-brain"; \
+	ENV_FILE="$(TEMPLATE_DIR)/setup/.env"; \
+	MCP_URL="${MCP_URL}"; \
+	if [ -z "$$MCP_URL" ]; then MCP_URL="http://localhost:8003/mcp"; fi; \
+	TOKEN=""; \
+	if [ -f "$$ENV_FILE" ]; then \
+		TOKEN=$$(grep '^MDPLANNER_MCP_TOKEN=' "$$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]'); \
+	fi; \
+	if [ -z "$$TOKEN" ]; then \
+		echo "Warning: MDPLANNER_MCP_TOKEN not found in $$ENV_FILE — skipping MCP connect"; \
+		echo "  Run manually: cd $$DEST && claude mcp add --transport http mdplanner <url> --header 'Authorization: Bearer <token>'"; \
+	else \
+		echo "Connecting MCP ($$MCP_URL)..."; \
+		cd "$$DEST" && claude mcp add --transport http mdplanner "$$MCP_URL" \
+		  --header "Authorization: Bearer $$TOKEN" && echo "  MCP connected."; \
+	fi; \
+	echo "Rebuilding rules..."; \
+	cd "$(TEMPLATE_DIR)/.." && ./_scripts_/rebuild-brain-rules.sh $(NAME); \
+	echo ""; \
+	echo "Brain ready. Launch and run the import skill:"; \
+	echo ""; \
+	echo "  cd $$DEST && claude"; \
+	echo "  Then: /import-project"; \
 	echo ""
 
 ## status: Show install status for a brain. Usage: make status NAME=MyApp
@@ -236,6 +272,9 @@ sync-shareable:
 		".claude/hooks/pre-compact-handoff.sh" \
 		".claude/rules/code-discipline.md" \
 		".claude/rules/goal-discipline.md" \
+		".claude/rules/phase-boot.md" \
+		".claude/rules/phase-work.md" \
+		".claude/rules/phase-close.md" \
 		".claude/rules/workflow/local-dev.md" \
 		".claude/rules/workflow/mdplanner-tasks.md" \
 		".claude/rules/workflow/doc-minimaldoc.md" \
@@ -243,8 +282,10 @@ sync-shareable:
 		".claude/rules/practices/minimaldoc.md" \
 		".claude/agents/minimaldoc-writer.md" \
 		".claude/skills/release/SKILL.md" \
+		".claude/skills/import-project/SKILL.md" \
 		"CLAUDE.md" \
 		"Makefile" \
+		"statusline.sh" \
 	; do \
 		src="$$PROTO/$$rel"; dst="$$SHARE/_protocol_/$$rel"; \
 		if [ ! -f "$$dst" ] || ! cmp -s "$$src" "$$dst"; then \
