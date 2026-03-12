@@ -4,10 +4,10 @@ title: Makefile Targets
 
 # Makefile Targets
 
-All targets run from `~/brains/_protocol_/`:
+All targets run from `cerveau.dev/_protocol_/`:
 
 ```bash
-cd ~/brains/_protocol_
+cd cerveau.dev/_protocol_
 make help
 ```
 
@@ -41,6 +41,16 @@ What it does:
 - Creates selective symlinks for rules, agents, hooks
 - Generates `settings.json` with `additionalDirectories` pointing to `PROJECT`
 - Adds an entry to `_configs_/brains.json`
+
+### install
+
+Install the status line script to `~/.claude/statusline.sh`.
+
+```bash
+make install
+```
+
+Copies `_protocol_/statusline.sh` and makes it executable. Run once after cloning.
 
 ### status
 
@@ -95,6 +105,14 @@ make sync-shareable
 Run this from the monorepo `_protocol_/` (not from `_shareable_/_protocol_/`).
 Then `cd _shareable_` and commit + push to GitHub.
 
+### help
+
+Print all available targets with descriptions.
+
+```bash
+make help
+```
+
 ## Workflow
 
 ```bash
@@ -105,6 +123,6 @@ make onboard NAME=MyApp PROJECT=/path/to/myapp
 make spawn NAME=MyApp PROJECT=/path/to/myapp
 cd ../_brains_/myapp-brain && claude mcp add --transport http mdplanner \
   http://localhost:8003/mcp --header "Authorization: Bearer <token>"
-cd ~/brains && ./_scripts_/rebuild-brain-rules.sh MyApp
-cd ~/brains/_brains_/myapp-brain && claude
+cd cerveau.dev && ./_scripts_/rebuild-brain-rules.sh MyApp
+cd _brains_/myapp-brain && claude
 ```

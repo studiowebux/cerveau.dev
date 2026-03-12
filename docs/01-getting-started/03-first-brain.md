@@ -42,9 +42,9 @@ Claude then creates your first MDPlanner notes:
 
 ```
 Boot  → Claude reads tasks, notes, architecture from MDPlanner
-Work  → Pick a ticket, implement, commit, add progress comment, move to Done
+Work  → Pick a ticket, implement, commit, add progress comment, move to Pending Review
 Write → Record decisions / bugs / learnings as MDPlanner notes
-Close → Write progress note, move unfinished back to Todo
+Close → Write progress note, leave unfinished tasks In Progress (Boot resumes them next session)
 ```
 
 ## Adding a Second Brain

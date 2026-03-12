@@ -77,8 +77,8 @@ A brain using 2 stacks, 3 practices, 3 workflows, and 2 agents typically loads
 4. Claude calls `get_context_pack` — one MCP call loads tasks, notes, milestone, and progress in a single round-trip
 5. Claude picks a task, implements, commits with validated message
 6. `checkpoint-counter` hook fires every 20 tool calls — keeps Claude on track
-7. At session end: progress note written, unfinished tasks returned to Todo
-8. `stop-progress-check` hook verifies progress was written before exit
+7. At session end: progress note written, unfinished tasks left In Progress for next session
+8. `stop-progress-check` hook blocks exit and prompts Claude to write a progress note (at most once per 8 hours)
 
 ## File Ownership
 

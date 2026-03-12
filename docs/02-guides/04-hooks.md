@@ -19,7 +19,7 @@ every brain.
 | `post-edit-reminder.sh` | After file edits | Reminds Claude to stay on the current task |
 | `commit-validator.sh` | Before Bash tool (git commit) | Validates conventional commit format; scans staged files for secrets |
 | `pre-compact-handoff.sh` | Before context compaction | Instructs Claude to write a handoff note before context is cleared |
-| `stop-progress-check.sh` | Session stop | Checks that a progress note was written before allowing exit |
+| `stop-progress-check.sh` | Session stop | Blocks exit and prompts Claude to write a progress note (at most once per 8 hours) |
 
 ## Hook Details
 
@@ -55,8 +55,9 @@ MDPlanner so the next session can resume without losing in-progress context.
 
 ### stop-progress-check
 
-Fires on `Stop`. Checks whether Claude wrote a progress note during this
-session. If not, prompts Claude to write one before the session closes.
+Fires on `Stop`. Blocks the session from closing and prompts Claude to write a
+progress note. Enforced at most once per 8 hours per brain to avoid repeated
+interruptions.
 
 ## Customizing Hooks
 
@@ -70,24 +71,4 @@ input=$(cat)
 tool_name=$(echo "$input" | jq -r '.tool_name // empty' 2>/dev/null || echo "")
 ```
 
-## Hook JSON Schema
-
-Hooks receive JSON on stdin from Claude Code. See the
-[Claude Code hooks documentation](https://docs.anthropic.com/en/docs/claude-code/hooks)
-for the full schema.
-
-Key fields:
-
-| Field | Available in | Description |
-|---|---|---|
-| `tool_name` | PreToolUse, PostToolUse | Name of the tool being called |
-| `tool_input` | PreToolUse | Tool input parameters |
-| `tool_response` | PostToolUse | Tool output |
-| `session_id` | All | Current session identifier |
-
-Output fields by hook type:
-
-| Hook type | Output field |
-|---|---|
-| PreToolUse, PostToolUse, UserPromptSubmit | `hookSpecificOutput` |
-| Stop, SessionStart | `reason`, `stopReason` |
+For the full hook input/output schema, see the [Claude Code hooks documentation](https://docs.anthropic.com/en/docs/claude-code/hooks).

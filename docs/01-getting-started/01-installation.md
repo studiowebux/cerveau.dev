@@ -16,21 +16,6 @@ podman compose version
 
 `gh` (GitHub CLI) is optional — needed for PR workflows only.
 
-## Shell Setup
-
-Add to your `~/.zshrc` or `~/.bashrc` and reload:
-
-```bash
-alias claude='claude --verbose'
-```
-
-Install the status line:
-
-```bash
-cp cerveau.dev/_protocol_/statusline.sh ~/.claude/statusline.sh
-chmod +x ~/.claude/statusline.sh
-```
-
 ## Clone
 
 ```bash
@@ -45,14 +30,31 @@ cerveau.dev/
   _configs_/        ← brains.json registry
   _brains_/         ← created by make onboard (empty for now)
   _scripts_/        ← rebuild-brain-rules.sh, backup-claude.sh
+  _projects_/       ← you can put your git submodules/clone here (or anywhere else)
+  docker-compose.yml
+  .env.example
   README.md
-  ARCHITECTURE.md
-  SETUP.md
 ```
 
-> [!TIP]
-> Keep `cerveau.dev/` outside any project repo. The brain directory links to
-> your project repos — it doesn't live inside them.
+:::info
+Keep `cerveau.dev/` outside any project repo. The brain directory links to
+your project repos — it doesn't live inside them.
+:::
+
+## Shell Setup (Optional)
+
+Add to your `~/.zshrc` and reload:
+
+```bash
+alias claude='claude --verbose'
+```
+
+Install the status line:
+
+```bash
+cp cerveau.dev/_protocol_/statusline.sh ~/.claude/statusline.sh
+chmod +x ~/.claude/statusline.sh
+```
 
 ## Next
 

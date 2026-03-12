@@ -39,18 +39,6 @@ each one loads.
 | `workflows` | array | yes | Workflow rule filenames to symlink from `_protocol_/.claude/rules/workflow/`. |
 | `agents` | array | yes | Agent filenames (without `.md`) to symlink from `_protocol_/.claude/agents/`. |
 
-## Empty Arrays
-
-An empty array (`[]`) links the **entire directory** for backward compatibility:
-
-```json
-"stacks": []
-```
-
-This causes `rebuild-brain-rules.sh` to symlink the whole `stack/` directory
-instead of selective files. Useful during initial setup before you know which
-rules you need.
-
 ## Selective Loading Rules
 
 Array values must exactly match filenames in the protocol directories
@@ -65,18 +53,6 @@ _protocol_/.claude/rules/stack/go.md    →  "stacks": ["go", "docker"]
 
 If a declared rule filename doesn't exist in the protocol, the rebuild script
 skips it with a warning.
-
-## local-dev.md
-
-`local-dev.md` is always a **real file** in the brain (never a symlink), even
-if `workflows` includes it. It contains brain-specific configuration:
-
-- MCP project name
-- Server URL
-- Person ID
-- Active milestone
-
-The rebuild script preserves real files and only replaces symlinks.
 
 ## After Editing
 

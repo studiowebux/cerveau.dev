@@ -10,26 +10,8 @@ with their own system prompt and a restricted tool set.
 
 ## File Format
 
-Agents live in `_protocol_/.claude/agents/`. Each agent is a single `.md` file
-with YAML frontmatter:
-
-```yaml
----
-name: code-reviewer
-description: Reviews code for security, correctness, and consistency. Use when you want an independent review of a PR or implementation.
-tools: Read, Grep, Glob
-model: sonnet
----
-
-Your agent system prompt goes here.
-```
-
-| Field | Description |
-|---|---|
-| `name` | Agent identifier — must match the filename (without `.md`) |
-| `description` | When Claude Code uses this agent. Be specific — Claude reads this to decide. |
-| `tools` | Comma-separated list of allowed tools. Restrict to what the agent actually needs. |
-| `model` | `sonnet`, `opus`, or `haiku` |
+Agents live in `_protocol_/.claude/agents/`. For the agent file format and
+available fields, see the [Claude Code agents documentation](https://docs.anthropic.com/en/docs/claude-code/sub-agents).
 
 ## Declaring Agents in a Brain
 

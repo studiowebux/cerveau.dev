@@ -10,10 +10,10 @@ to.
 
 ## Container Setup
 
-The `compose.yml` is in `_protocol_/setup/`:
+The `compose.yml` and `.env.example` are at the cerveau.dev root:
 
 ```bash
-cd cerveau.dev/_protocol_/setup
+cd cerveau.dev
 cp .env.example .env
 ```
 
@@ -35,6 +35,34 @@ Generate a token:
 ```bash
 openssl rand -hex 32
 ```
+
+### Initialize the Data Directory
+
+Before starting the container for the first time, initialize the data directory:
+
+```bash
+podman run -it --rm -v ./data:/data ghcr.io/studiowebux/mdplanner:latest init /data
+```
+
+This creates the required folder structure and default files inside `./data`.
+
+### Generate the Encryption Secret
+
+MDPlanner encrypts sensitive values (GitHub and Cloudflare tokens). Generate a
+secret key and add it to `.env`:
+
+```bash
+podman run -it --rm ghcr.io/studiowebux/mdplanner:latest keygen-secret
+```
+
+Copy the output and add it to `.env`:
+
+```env
+MDPLANNER_SECRET_KEY=<output from keygen-secret>
+```
+
+> Without `init` the server will fail to start. Without `MDPLANNER_SECRET_KEY`
+> tokens are stored in clear text — set it to enable encryption at rest.
 
 Start:
 
@@ -79,12 +107,11 @@ Claude uses MDPlanner throughout every session:
 - Calls `get_context_pack` — single MCP call returning active milestone,
   in-progress tasks, top todo tasks, most recent progress note, and decision
   and architecture note titles
-- Falls back to 8 individual calls if `get_context_pack` is unavailable
 - Checks git state: current branch, recent commits, open PRs
 
 ### Work
 - Creates/updates task comments as work progresses
-- Moves tasks to Done after commit
+- Moves tasks to Pending Review after commit (owner moves to Done after verification)
 
 ### Write Back
 - Records decisions as MDPlanner notes
@@ -93,7 +120,7 @@ Claude uses MDPlanner throughout every session:
 
 ### Close
 - Writes a progress note (required by `stop-progress-check` hook)
-- Moves unfinished tasks back to Todo
+- Leaves unfinished tasks In Progress (Boot resumes them next session)
 
 ## Hard Rules
 
@@ -111,13 +138,4 @@ MDPlanner is open source: https://github.com/studiowebux/mdplanner
 The container image is `ghcr.io/studiowebux/mdplanner:latest`. Data persists in
 the `./data` volume.
 
-Optional environment variables:
-
-| Variable | Default | Description |
-|---|---|---|
-| `MDPLANNER_MCP_TOKEN` | — | Required — Bearer token for MCP endpoint |
-| `MDPLANNER_BRAINS_CONFIG` | — | Path to `brains.json` inside container — enables Brain Manager UI |
-| `MDPLANNER_CACHE` | `0` | Enable SQLite FTS5 full-text search cache |
-| `MDPLANNER_BACKUP_INTERVAL` | — | Hours between automatic backups |
-| `MDPLANNER_WEBDAV` | `1` | Enable WebDAV endpoint |
-| `MDPLANNER_READ_ONLY` | — | Disable write operations |
+For the full list of environment variables, see the [MDPlanner README](https://github.com/studiowebux/mdplanner).

@@ -11,16 +11,22 @@ Every brain session follows four phases defined in the brain CLAUDE.md.
 | Phase | What happens |
 |---|---|
 | **Phase 1 — Boot** | Load context from MDPlanner: most recent progress note, open tasks, architecture, decisions |
-| **Phase 2 — Work** | Ticket before work, one task at a time, implement, commit, update task, move to Done |
+| **Phase 2 — Work** | Ticket before work, one task at a time, implement, commit, update task, move to Pending Review |
 | **Phase 3 — Write Back** | Record decisions, bugs, learnings as MDPlanner notes |
-| **Phase 4 — Close** | Write progress note, move unfinished tasks back to Todo |
+| **Phase 4 — Close** | Write progress note, leave unfinished tasks In Progress (Boot resumes them next session) |
 
 ## Phase 1 — Boot
 
 The `session-context` hook fires on `SessionStart` and reminds Claude to run
 Phase 1 before any work.
 
-A single MCP call loads everything needed to start the session:
+**First: check for `HANDOFF.md`** in the brain directory. If it exists, read
+it before anything else. It contains the exact state from the previous context
+window — what is in progress, the next step, and key facts. Use it to skip
+redundant MCP calls. Delete it after reading so stale data does not
+accumulate.
+
+If no `HANDOFF.md`, load context from MDPlanner with a single MCP call:
 
 ```
 get_context_pack { project: "<project-name>" }
@@ -57,7 +63,7 @@ After implementing a task:
 2. Commit: `git commit -m "type: subject"`
 3. Push: `git push`
 4. Add progress comment to the MDPlanner task
-5. Move task to Done in MDPlanner
+5. Move task to Pending Review in MDPlanner (owner moves to Done after verification)
 
 The `commit-validator` hook blocks commits that:
 - Don't follow conventional commit format
@@ -87,26 +93,46 @@ After completing a task or making a significant decision:
 Before ending the session:
 
 1. Write a progress note: `[progress] <date> — <summary of what was done>`
-2. Move any unfinished In Progress tasks back to Todo
-3. The `stop-progress-check` hook verifies a progress note was written
+2. Leave unfinished tasks In Progress — Phase 1 Boot resumes them automatically next session
+3. The `stop-progress-check` hook blocks exit and prompts Claude to write a progress note (at most once per 8 hours)
+
+## Context Compaction — HANDOFF.md
+
+When the context window fills up, Claude Code compacts the conversation. The
+`pre-compact-handoff` hook fires just before compaction and instructs Claude
+to write `HANDOFF.md` into the brain directory.
+
+`HANDOFF.md` contains three sections:
+
+| Section | What to write |
+|---|---|
+| `## State` | What is in progress, task IDs, branch name, last commit |
+| `## Next Step` | The exact action to take on resume — one sentence |
+| `## Key Facts` | Decisions, gotchas, constraints discovered this session not yet in MDPlanner |
+
+On the next boot, Phase 1 reads `HANDOFF.md` first and skips MCP calls that
+the handoff already covers. The file is deleted after reading.
+
+This keeps continuity across context resets without losing in-progress state.
 
 ## Hard Rules
 
 | Rule | Description |
 |---|---|
-| Ticket before work | No code changes without an MDPlanner task |
-| One task at a time | Only one task in In Progress |
-| Branch before commit | Create a feature branch before starting work |
-| Push after commit | Always push immediately after committing |
-| Never mark complete | Only the human sets `completed: true` |
-| Never edit decisions | Create a superseding note instead |
-| Progress before close | Must write a progress note before session ends |
-| No unilateral deferrals | Deferring tasks requires owner approval |
-| Continue means work | `continue` resumes the current task, not exploration |
-| Backlog ownership | Claude owns the backlog — keeps it clean and up to date |
-| Brain stays external | Brain directory never lives inside a project repo |
-| One-task-at-a-time | Never work on multiple tasks simultaneously |
-| No force push to main | Protected branch — PR workflow only |
-| Context compaction note | Write handoff note before context is compacted |
-| Secrets gate | Commit validator scans for secrets — blocked if found |
-| Checkpoint acknowledgement | Respond to checkpoint hooks before continuing |
+| Boot first | Never skip Phase 1 |
+| Ticket before work | No code changes, no subagents, no deep exploration without an MDPlanner task |
+| Todo first | Claude picks tasks from Todo only — Backlog is owner-managed |
+| One task at a time | Complete the current task before picking the next — deferrals require owner approval |
+| Read, don't list | `list_notes` gives titles only — always follow with `get_note` |
+| Scope everything | Every MCP call scoped to `<mcp-project>` — both values come from `local-dev.md` |
+| Architecture is law | Contradictions must be flagged, not silently ignored |
+| Decisions are append-only | Never edit a `[decision]` note — create a superseding one |
+| Never mark complete | Only the owner sets `completed: true` on tasks |
+| Tasks need milestones | Link task to milestone before starting work |
+| Branch before commit | Never commit to main — create a feature branch first |
+| Write back | Decisions, bugs, progress — always write a note; recurring facts go in Brain Memory |
+| Brain first | Brain first, user second, guess last |
+| Brain stays external | Brain files never live inside the project codebase |
+| Continue means work | `continue` picks up pending tasks autonomously — no asking |
+| Codebase directory | All git, build, test, and serve commands run from the codebase absolute path |
+| Docs gate | User-facing changes require a docs update in the same commit |

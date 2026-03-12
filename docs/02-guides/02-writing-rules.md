@@ -41,7 +41,7 @@ Keep general practices (error handling, architecture, security) as always-loaded
 
 ## Generate with Claude
 
-Open Claude Code anywhere (not inside a brain) and use these prompts:
+Open Claude Code inside `cerveau.dev/` and use these prompts:
 
 ### Stack rules
 
@@ -84,21 +84,6 @@ no force push to main, PR-based merges only.
 Keep under 80 lines. Rules only — no examples, no prose.
 ```
 
-## Save the Rule
-
-Save each generated file to the appropriate directory:
-
-```bash
-# Stack rule example
-vim ~/brains/_protocol_/.claude/rules/stack/go.md
-
-# Practice rule example
-vim ~/brains/_protocol_/.claude/rules/practices/testing.md
-
-# Workflow rule example
-vim ~/brains/_protocol_/.claude/rules/workflow/git.md
-```
-
 ## Declare in brains.json
 
 Add the rule name (filename without `.md`) to the brain's array:
@@ -106,9 +91,13 @@ Add the rule name (filename without `.md`) to the brain's array:
 ```json
 {
   "name": "MyApp",
+  "path": "_brains_/myapp-brain",
+  "codebase": "_projects_/myapp",
+  "isCore": false,
   "stacks": ["go"],
   "practices": ["testing", "code-review"],
-  "workflows": ["git", "mdplanner-tasks", "local-dev"]
+  "workflows": ["git", "mdplanner-tasks", "local-dev"],
+  "agents": ["goal-planner"]
 }
 ```
 

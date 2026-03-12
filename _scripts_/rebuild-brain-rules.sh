@@ -5,7 +5,7 @@ set -euo pipefail
 #
 # Reads brains.json to determine each brain's declared stacks, practices,
 # workflows, and agents, then creates real directories with individual symlinks.
-# Empty arrays = link entire subdirectory (backward compat).
+# Empty arrays = skip the subdirectory entirely (load nothing).
 #
 # Usage:
 #   ./rebuild-brain-rules.sh [brain-name]
@@ -46,10 +46,9 @@ link_subdir() {
   local count
   count="$(echo "$filter_json" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")"
 
-  if [ "$count" -eq 0 ] || [ "$filter_json" = "null" ]; then
-    ln -s "${rel_protocol}/${subdir}" "${rules_dir}/${subdir}"
-    lines="$(find "$src_dir" -name '*.md' -exec cat {} + | wc -l | tr -d ' ')"
-    echo "  ${subdir}/ — wholesale (${lines} lines)"
+  if [ "$filter_json" = "null" ] || [ "$count" -eq 0 ]; then
+    echo "  ${subdir}/ — skipped (none declared)"
+    return
   else
     mkdir -p "${rules_dir}/${subdir}"
     local linked=0
@@ -226,12 +225,8 @@ open('${localdev}', 'w').write(content)
     local agent_count
     agent_count="$(echo "$agents_json" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")"
 
-    if [ "$agent_count" -eq 0 ] || [ "$agents_json" = "null" ]; then
-      ln -s "$rel_protocol_agents" "$agents_dir"
-      local agent_lines
-      agent_lines="$(find "$PROTOCOL_AGENTS" -name '*.md' -exec cat {} + | wc -l | tr -d ' ')"
-      total_lines=$((total_lines + agent_lines))
-      echo "  agents/ — wholesale (${agent_lines} lines)"
+    if [ "$agents_json" = "null" ] || [ "$agent_count" -eq 0 ]; then
+      echo "  agents/ — skipped (none declared)"
     else
       mkdir -p "$agents_dir"
       local a_linked=0

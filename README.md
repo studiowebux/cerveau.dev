@@ -23,7 +23,6 @@ Discord: https://discord.gg/BG5Erm9fNv
 ### 1. Start MDPlanner
 
 ```bash
-cd _protocol_/setup
 cp .env.example .env
 # Edit .env — set MDPLANNER_MCP_TOKEN (generate with: openssl rand -hex 32)
 podman compose up -d

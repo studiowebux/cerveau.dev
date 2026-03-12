@@ -22,3 +22,4 @@
   - [brains.json Schema](03-reference/02-brains-json.md)
   - [Session Phases](03-reference/03-session-phases.md)
   - [Directory Structure](03-reference/04-directory-structure.md)
+  - [local-dev.md](03-reference/05-local-dev.md)

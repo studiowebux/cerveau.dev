@@ -11,7 +11,7 @@ Five steps from zero to a running brain session.
 ## Step 1 — Start MDPlanner
 
 ```bash
-cd cerveau.dev/_protocol_/setup
+cd cerveau.dev
 cp .env.example .env
 ```
 
@@ -27,9 +27,30 @@ Generate a token:
 openssl rand -hex 32
 ```
 
-Start the container:
+**Setup encryption key**
+
+:::info
+Generate and set an encryption key if you plan to use Github or Cloudflare integration.
+:::
 
 ```bash
+podman run -it --rm ghcr.io/studiowebux/mdplanner:latest keygen-secret
+```
+
+```env
+MDPLANNER_SECRET_KEY=__THE_64_HEX__
+```
+
+Start the container:
+
+**Initialize the project**
+
+```bash
+podman run -it --rm -v ./data:/data ghcr.io/studiowebux/mdplanner:latest init /data
+```
+
+```bash
+podman compose pull
 podman compose up -d
 ```
 
@@ -46,7 +67,7 @@ curl -s http://localhost:8003/health
 
 The protocol ships with no project rules — you write them for your stack.
 
-Open Claude Code anywhere and ask:
+Open Claude Code in `cerveau.dev/` and ask:
 
 ```
 Create a Claude Code rule file for Go development.
@@ -57,12 +78,12 @@ Keep under 80 lines. Rules only — no examples, no prose.
 
 Save each file to the appropriate directory under `cerveau.dev/`:
 
-| Rule type | Directory |
-|---|---|
-| Stack (language/framework) | `_protocol_/.claude/rules/stack/go.md` |
-| Practice (how you work) | `_protocol_/.claude/rules/practices/testing.md` |
-| Workflow (process) | `_protocol_/.claude/rules/workflow/git.md` |
-| Core (always loaded) | `_protocol_/.claude/rules/code-discipline.md` |
+| Rule type                  | Directory                                       |
+| -------------------------- | ----------------------------------------------- |
+| Stack (language/framework) | `_protocol_/.claude/rules/stack/go.md`          |
+| Practice (how you work)    | `_protocol_/.claude/rules/practices/testing.md` |
+| Workflow (process)         | `_protocol_/.claude/rules/workflow/git.md`      |
+| Core (always loaded)       | `_protocol_/.claude/rules/code-discipline.md`   |
 
 See [Writing Rules](../02-guides/02-writing-rules.md) for more prompts.
 
@@ -86,9 +107,19 @@ This spawns the brain, connects MCP, and rebuilds selective rules in one step.
 
 When done, Claude prints the brain path and tells you to launch it.
 
+Verify no placeholders remain:
+
+```bash
+make validate NAME=MyApp
+```
+
+:::info
+The `cerveau.dev/` or `_protocol_/` are only used to manage the **_Protocol_**, all projects must be managed from the respecive brain they have, which is located in `_brains_/`.
+:::
+
 ---
 
-## Step 4 — Launch the Brain
+## Step 4 — Launch the Brain Session
 
 ```bash
 cd cerveau.dev/_brains_/myapp-brain && claude
@@ -106,7 +137,7 @@ Inside the brain session, run the skill again:
 
 Claude will explore the codebase, fill `local-dev.md`, and create the full
 MDPlanner state: portfolio item, brief, architecture note, milestones, and
-tasks.
+tasks, and everything else you added into the Boot Protocol.
 
 From the second session on, Boot happens automatically and Claude picks up
 where it left off.

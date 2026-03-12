@@ -17,5 +17,5 @@ Every note title MUST include `<project>`. Use templates from `templates/`.
 # Phase 4 — Session Close
 
 1. Write a `[progress]` note summarizing what was accomplished.
-2. Move unfinished tasks back to "Todo".
+2. Leave unfinished tasks In Progress — Phase 1 Boot resumes them automatically next session.
 3. Create discovered tasks in "Backlog" with `project: "<mcp-project>"`.

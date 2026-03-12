@@ -36,21 +36,13 @@ endif
 	echo ""; \
 	\
 	mkdir -p "$$DEST"; \
-	cp -r "$(TEMPLATE_DIR)/templates" "$$DEST/"; \
-	cp -r "$(TEMPLATE_DIR)/setup" "$$DEST/"; \
 	\
 	REPO_ROOT="$$(cd "$$DEST/../.." && pwd)"; \
 	CODEBASE_REL="$$(python3 -c "import os.path; print(os.path.relpath('$$PROJ', '$$REPO_ROOT'))")"; \
 	\
-	find "$$DEST" -type f \( -name "*.md" -o -name "*.json" \) \
-		-exec $(SED_I) \
-			-e 's/__PROJECT__/$(NAME)/g' \
-			-e "s|__CODEBASE__|$$CODEBASE_REL|g" \
-			-e "s|__CODEBASE_ABS__|$$PROJ|g" \
-			-e "s|__MDPLANNER_URL__|$${MDPLANNER_URL:-http://localhost:8003}|g" \
-			{} +; \
-	\
-	echo "  Brain files: created"; \
+	REL_TMPL=$$(python3 -c "import os.path; print(os.path.relpath('$$PROTO/templates', '$$DEST'))"); \
+	ln -s "$$REL_TMPL" "$$DEST/templates"; \
+	echo "  templates → $$REL_TMPL"; \
 	\
 	mkdir -p "$$DEST/.claude"; \
 	\
@@ -76,6 +68,12 @@ endif
 		fname=$$(basename "$$f"); \
 		if [ "$$fname" = "local-dev.md" ]; then \
 			cp "$$f" "$$DEST/.claude/rules/workflow/$$fname"; \
+			$(SED_I) \
+				-e 's/__PROJECT__/$(NAME)/g' \
+				-e "s|__CODEBASE__|$$CODEBASE_REL|g" \
+				-e "s|__CODEBASE_ABS__|$$PROJ|g" \
+				-e "s|__MDPLANNER_URL__|$${MDPLANNER_URL:-http://localhost:8003}|g" \
+				"$$DEST/.claude/rules/workflow/$$fname"; \
 		else \
 			ln -s "../$$REL_RULES/workflow/$$fname" "$$DEST/.claude/rules/workflow/$$fname"; \
 		fi; \
@@ -298,15 +296,6 @@ sync-shareable:
 		if [ ! -f "$$dst" ] || ! cmp -s "$$src" "$$dst"; then \
 			mkdir -p "$$(dirname "$$dst")"; \
 			cp "$$src" "$$dst"; \
-			echo "  updated: $$rel"; \
-			changed=$$((changed+1)); \
-		fi; \
-	done; \
-	for f in $$(find "$$PROTO/setup" "$$PROTO/templates" -type f 2>/dev/null); do \
-		rel="$${f#$$PROTO/}"; dst="$$SHARE/_protocol_/$$rel"; \
-		if [ ! -f "$$dst" ] || ! cmp -s "$$f" "$$dst"; then \
-			mkdir -p "$$(dirname "$$dst")"; \
-			cp "$$f" "$$dst"; \
 			echo "  updated: $$rel"; \
 			changed=$$((changed+1)); \
 		fi; \

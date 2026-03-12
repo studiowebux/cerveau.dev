@@ -28,19 +28,21 @@ alias claude='claude --verbose'
 ## What It Shows
 
 ```
-myapp-brain  codebase: /path/to/myapp
-▓▓▓▓░░░░░░ 40%  cost: $0.0123
+myapp-brain  codebase: _projects_/myapp  (main)  model: claude-sonnet-4-6
+▓▓▓▓░░░░░░ 40%  session: $0.0123  total: $0.4500  cli: 1.2.3
 ```
 
-Line 1: brain name (directory basename) + codebase path read from
-`local-dev.md`.
+Line 1: brain name + relative codebase path + current git branch + active model.
 
-Line 2: context bar (color-coded: green < 70%, yellow < 90%, red 90%+) +
-usage percentage + session cost in USD.
+Line 2: context bar (green < 70%, yellow 70–89%, red 90%+) + usage percentage +
+session cost + total accumulated cost across all sessions + CLI version (with
+update arrow if a newer version is available).
 
-The codebase path is read from the `| Absolute path |` row in the Code
-Repository table of `local-dev.md`. If the table has unresolved placeholders
-(first session), the path shows `n/a`.
+The codebase path is read from `local-dev.md` — relative path preferred, falls
+back to absolute. Shows `n/a` if placeholders are unresolved (first session).
+
+Total cost is tracked in `~/.claude/brain-costs.json` per brain and persists
+across sessions.
 
 ## Requirements
 
