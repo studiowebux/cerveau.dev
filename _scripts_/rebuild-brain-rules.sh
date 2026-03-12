@@ -106,6 +106,36 @@ rebuild_brain() {
 
   echo "Rebuilding: $brain_name ($brain_path)"
 
+  # Sync settings.json — merge template fields into brain settings, preserving
+  # brain-specific keys: additionalDirectories, deny, hooks
+  local settings_file="${brain_abs}/.claude/settings.json"
+  local template_file="${REPO_ROOT}/_protocol_/.claude/settings.json.template"
+  if [ -f "$template_file" ] && [ -f "$settings_file" ]; then
+    python3 - "$template_file" "$settings_file" <<'PYEOF'
+import json, sys
+
+BRAIN_KEYS = {"additionalDirectories", "deny", "hooks"}
+
+template = json.load(open(sys.argv[1]))
+brain    = json.load(open(sys.argv[2]))
+
+# Start from the template, drop the placeholder additionalDirectories
+merged = {k: v for k, v in template.items() if k not in BRAIN_KEYS}
+
+# Layer brain-specific keys on top (preserved as-is)
+for k in BRAIN_KEYS:
+    if k in brain:
+        merged[k] = brain[k]
+
+with open(sys.argv[2], "w") as f:
+    json.dump(merged, f, indent=2)
+    f.write("\n")
+PYEOF
+    echo "  settings.json — synced from template"
+  elif [ ! -f "$settings_file" ]; then
+    echo "  settings.json — not found, skipping"
+  fi
+
   local rel_protocol_rules
   rel_protocol_rules="$(python3 -c "import os.path; print(os.path.relpath('${PROTOCOL_RULES}', '${rules_dir}'))")"
 
