@@ -36,7 +36,7 @@ else
   sed -i '' "s/__TIMESTAMP__/$TIMESTAMP/" "$HANDOFF"
 fi
 
-# Remind Claude to write progress
+# Notify the user that the handoff file was written (PreCompact has no decision control)
 jq -n '{
-  "reason": "COMPACTION IMMINENT: Write a [progress] note to mdplanner NOW summarizing what was done so far. Then continue working."
+  "systemMessage": "Handoff saved to HANDOFF.md — next session will resume from this context."
 }'

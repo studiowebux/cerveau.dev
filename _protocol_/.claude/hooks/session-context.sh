@@ -24,9 +24,13 @@ context="$context
 
 ## Brain Protocol Reminder
 Run Phase 1 — Boot from the brain CLAUDE.md before doing anything else.
-This means: list_tasks (In Progress) then list_notes + get_note for [project], [architecture], [decision], [constraint] then list_tasks (Todo) then list_milestones.
-Do NOT skip this. Do NOT abbreviate. Read full note content with get_note."
+Call get_context_pack { project: \"<mcp-project>\" } — single call returns people, active milestone, in-progress tasks, top-10 todo, recent progress, and note titles.
+Then run git state check from the codebase directory (see local-dev.md for absolute path).
+Do NOT skip this. Do NOT abbreviate."
 
 jq -n --arg ctx "$context" '{
-  "reason": $ctx
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": $ctx
+  }
 }'
