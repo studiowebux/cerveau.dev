@@ -38,65 +38,6 @@ if [ -f "$LOCAL_DEV" ]; then
   fi
 fi
 
-# --- Cross-session cost tracking ---
-# Stores per-brain: accumulated cost from completed sessions + last known session cost.
-# When SESSION_COST drops below last known value, a new session started.
-COST_FILE="$HOME/.claude/brain-costs.json"
-BRAIN_KEY="$BRAIN_NAME"
-
-if [ ! -f "$COST_FILE" ]; then
-  echo '{}' > "$COST_FILE"
-fi
-
-STORED=$(jq -r --arg k "$BRAIN_KEY" '.[$k] // {"accumulated": 0, "baseline": 0, "last_cost": 0, "last_pct": 0}' "$COST_FILE")
-ACCUMULATED=$(echo "$STORED" | jq -r '.accumulated // 0')
-BASELINE=$(echo "$STORED" | jq -r '.baseline // 0')
-LAST_COST=$(echo "$STORED" | jq -r '.last_cost // 0')
-LAST_PCT=$(echo "$STORED" | jq -r '.last_pct // 0')
-
-# Detect process restart: SESSION_COST dropped (new claude process)
-IS_NEW_PROCESS=$(awk "BEGIN { print ($SESSION_COST < $LAST_COST) ? 1 : 0 }")
-# Detect /clear: context % dropped sharply while cost kept going up
-IS_CLEAR=$(awk "BEGIN { print ($LAST_PCT > 15 && $PCT < 5) ? 1 : 0 }")
-
-if [ "$IS_NEW_PROCESS" = "1" ]; then
-  # Bank the last conversation cost then reset baseline to 0
-  CONV_COST=$(awk "BEGIN { printf \"%.6f\", $LAST_COST - $BASELINE }")
-  NEW_ACCUMULATED=$(awk "BEGIN { printf \"%.6f\", $ACCUMULATED + $CONV_COST }")
-  jq --arg k "$BRAIN_KEY" \
-     --argjson acc "$NEW_ACCUMULATED" \
-     --argjson base "0" \
-     --argjson last "$SESSION_COST" \
-     --argjson pct "$PCT" \
-     '.[$k] = {"accumulated": $acc, "baseline": $base, "last_cost": $last, "last_pct": $pct}' \
-     "$COST_FILE" > "${COST_FILE}.tmp" && mv "${COST_FILE}.tmp" "$COST_FILE"
-  ACCUMULATED="$NEW_ACCUMULATED"
-  BASELINE="0"
-elif [ "$IS_CLEAR" = "1" ]; then
-  # Bank the conversation cost since last baseline, set new baseline to current cost
-  CONV_COST=$(awk "BEGIN { printf \"%.6f\", $SESSION_COST - $BASELINE }")
-  NEW_ACCUMULATED=$(awk "BEGIN { printf \"%.6f\", $ACCUMULATED + $CONV_COST }")
-  jq --arg k "$BRAIN_KEY" \
-     --argjson acc "$NEW_ACCUMULATED" \
-     --argjson base "$SESSION_COST" \
-     --argjson last "$SESSION_COST" \
-     --argjson pct "$PCT" \
-     '.[$k] = {"accumulated": $acc, "baseline": $base, "last_cost": $last, "last_pct": $pct}' \
-     "$COST_FILE" > "${COST_FILE}.tmp" && mv "${COST_FILE}.tmp" "$COST_FILE"
-  ACCUMULATED="$NEW_ACCUMULATED"
-  BASELINE="$SESSION_COST"
-else
-  # Normal tick: update last known cost and pct
-  jq --arg k "$BRAIN_KEY" \
-     --argjson last "$SESSION_COST" \
-     --argjson pct "$PCT" \
-     '.[$k].last_cost = $last | .[$k].last_pct = $pct' \
-     "$COST_FILE" > "${COST_FILE}.tmp" && mv "${COST_FILE}.tmp" "$COST_FILE"
-fi
-
-CONV_COST=$(awk "BEGIN { printf \"%.4f\", $SESSION_COST - $BASELINE }")
-TOTAL_COST=$(awk "BEGIN { printf \"%.4f\", $ACCUMULATED + $CONV_COST }")
-
 # --- Colors ---
 GREEN='\033[32m'
 YELLOW='\033[33m'
@@ -117,8 +58,7 @@ BAR=""
 [ "$FILLED" -gt 0 ] && BAR=$(printf "%${FILLED}s" | tr ' ' '▓')
 [ "$EMPTY" -gt 0 ]  && BAR="${BAR}$(printf "%${EMPTY}s" | tr ' ' '░')"
 
-SESSION_FMT=$(printf '$%.4f' "$CONV_COST")
-TOTAL_FMT=$(printf '$%.4f' "$TOTAL_COST")
+COST_FMT=$(printf '$%.4f' "$SESSION_COST")
 
 # --- Version suffix ---
 VERSION_SUFFIX=""
@@ -131,4 +71,4 @@ fi
 BRANCH_SUFFIX=""
 [ -n "$BRANCH" ] && BRANCH_SUFFIX=" ${DIM}(${RESET}${CYAN}${BRANCH}${RESET}${DIM})${RESET}"
 echo -e "${CYAN}${BRAIN_NAME}${RESET}  ${DIM}codebase:${RESET} ${CODEBASE}${BRANCH_SUFFIX}  ${DIM}model:${RESET} ${MODEL}"
-echo -e "${BAR_COLOR}${BAR}${RESET} ${PCT}%  ${DIM}session:${RESET} ${YELLOW}${SESSION_FMT}${RESET}  ${DIM}total:${RESET} ${YELLOW}${TOTAL_FMT}${RESET}${VERSION_SUFFIX}"
+echo -e "${BAR_COLOR}${BAR}${RESET} ${PCT}%  ${DIM}cost:${RESET} ${YELLOW}${COST_FMT}${RESET}${VERSION_SUFFIX}"
