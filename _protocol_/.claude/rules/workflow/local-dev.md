@@ -103,6 +103,19 @@ cd __CODEBASE_ABS__
 # How to run tests
 ```
 
+## Release Checklist
+
+<!-- Fill in during first brain session. Adapt steps to the project's version strategy. -->
+
+Before tagging and pushing a release:
+
+1. All milestone tasks are Pending Review or Done in MDPlanner.
+2. Update the version identifier — _describe where version is declared (file, ldflags, etc.)_.
+3. Commit the version bump on `main` (or merge the feature branch first).
+4. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`
+
+Never tag before the version identifier is updated. Never move or delete a pushed tag.
+
 ## Brain Memory
 
 <!-- Claude: append important patterns, gotchas, and recurring facts discovered during sessions.
