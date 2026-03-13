@@ -272,7 +272,6 @@ sync-shareable:
 		".claude/hooks/commit-validator.sh" \
 		".claude/hooks/context-warning.sh" \
 		".claude/hooks/post-edit-reminder.sh" \
-		".claude/hooks/stop-progress-check.sh" \
 		".claude/hooks/session-context.sh" \
 		".claude/hooks/pre-compact-handoff.sh" \
 		".claude/rules/code-discipline.md" \

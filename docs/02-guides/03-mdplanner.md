@@ -119,7 +119,7 @@ Claude uses MDPlanner throughout every session:
 - Updates architecture notes when structure changes
 
 ### Close
-- Writes a progress note (required by `stop-progress-check` hook)
+- Writes a progress note
 - Leaves unfinished tasks In Progress (Boot resumes them next session)
 
 ## Hard Rules

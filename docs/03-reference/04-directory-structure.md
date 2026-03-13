@@ -25,8 +25,7 @@ cerveau.dev/
 │       │   ├── context-warning.sh
 │       │   ├── post-edit-reminder.sh
 │       │   ├── pre-compact-handoff.sh
-│       │   ├── session-context.sh
-│       │   └── stop-progress-check.sh
+│       │   └── session-context.sh
 │       ├── agents/                      # Agent definitions (selective symlink in brains)
 │       │   └── minimaldoc-writer.md     # Example agent (use as template)
 │       ├── skills/                      # Skill definitions (wholesale symlink in brains)

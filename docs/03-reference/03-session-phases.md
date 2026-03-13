@@ -94,7 +94,6 @@ Before ending the session:
 
 1. Write a progress note: `[progress] <date> — <summary of what was done>`
 2. Leave unfinished tasks In Progress — Phase 1 Boot resumes them automatically next session
-3. The `stop-progress-check` hook blocks exit and prompts Claude to write a progress note (at most once per 8 hours)
 
 ## Context Compaction — HANDOFF.md
 

@@ -19,7 +19,6 @@ every brain.
 | `post-edit-reminder.sh` | After file edits | Reminds Claude to stay on the current task |
 | `commit-validator.sh` | Before Bash tool (git commit) | Validates conventional commit format; scans staged files for secrets |
 | `pre-compact-handoff.sh` | Before context compaction | Instructs Claude to write a handoff note before context is cleared |
-| `stop-progress-check.sh` | Session stop | Blocks exit and prompts Claude to write a progress note (at most once per 8 hours) |
 
 ## Hook Details
 
@@ -52,12 +51,6 @@ Blocks the commit if either check fails.
 
 Fires before context compaction. Instructs Claude to write a handoff note to
 MDPlanner so the next session can resume without losing in-progress context.
-
-### stop-progress-check
-
-Fires on `Stop`. Blocks the session from closing and prompts Claude to write a
-progress note. Enforced at most once per 8 hours per brain to avoid repeated
-interruptions.
 
 ## Customizing Hooks
 
