@@ -4,9 +4,9 @@ Run before doing anything else. Do not skip.
 
 0. **Check for HANDOFF.md** — If `HANDOFF.md` exists in the brain directory, read it first.
    It contains the exact state from the previous context window: what is in progress, the next step, and key facts.
-   Use it to skip redundant MCP calls — skip `get_context_pack` if the handoff covers current state, skip git checks already noted.
+   **If HANDOFF.md covers in-progress tasks, git state, next step, and people IDs — skip `get_context_pack` entirely. Do not call it.**
+   Skip any git checks already noted in the handoff. Continue with steps below only for what the handoff does not cover.
    Delete `HANDOFF.md` after reading so it does not accumulate stale data.
-   Then continue with the steps below only for what the handoff does not cover.
 
 1. **Read `local-dev.md`** — Extract before any other step:
    - `<mcp-project>` from the Connection table (`MCP project name (task filter)`)
