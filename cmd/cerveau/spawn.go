@@ -14,7 +14,7 @@ func cmdSpawn(name, project string, packages []string) {
 	dest := brainDirFor(name)
 
 	if err := doSpawn(name, project, dest, packages); err != nil {
-		os.RemoveAll(dest)
+		_ = os.RemoveAll(dest) // best-effort cleanup
 		rollbackBrainsJSON(name)
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		fmt.Fprintf(os.Stderr, "Rolled back: removed %s\n", dest)
@@ -51,7 +51,7 @@ func doSpawn(name, project, dest string, packages []string) error {
 		os.Exit(1)
 	}
 	if !dirExists(projAbs) {
-		if err := os.MkdirAll(projAbs, 0755); err != nil {
+		if err := os.MkdirAll(projAbs, 0750); err != nil { // #nosec G703 — projAbs from user CLI arg, resolved via filepath.Abs
 			return fmt.Errorf("cannot create project directory %s: %w", projAbs, err)
 		}
 		fmt.Printf("  Created project directory: %s\n", projAbs)
@@ -68,13 +68,13 @@ func doSpawn(name, project, dest string, packages []string) error {
 	fmt.Printf("Codebase:       %s\n", projAbs)
 	fmt.Printf("Packages:       %s\n\n", strings.Join(packages, ", "))
 
-	if err := os.MkdirAll(dest, 0755); err != nil {
+	if err := os.MkdirAll(dest, 0750); err != nil {
 		return fmt.Errorf("cannot create brain directory: %w", err)
 	}
 
 	// Create .claude directory
 	claudeDir := filepath.Join(dest, ".claude")
-	if err := os.MkdirAll(claudeDir, 0755); err != nil {
+	if err := os.MkdirAll(claudeDir, 0750); err != nil {
 		return fmt.Errorf("cannot create .claude directory: %w", err)
 	}
 
@@ -105,12 +105,12 @@ func doSpawn(name, project, dest string, packages []string) error {
 	templatePath := filepath.Join(templatesDir(), "settings.json.template")
 	settingsPath := filepath.Join(claudeDir, "settings.json")
 	if fileExists(templatePath) {
-		tmplData, err := os.ReadFile(templatePath)
+		tmplData, err := os.ReadFile(templatePath) // #nosec G304 — path from CERVEAU_HOME templates dir
 		if err != nil {
 			return fmt.Errorf("cannot read settings template: %w", err)
 		}
 		content := strings.ReplaceAll(string(tmplData), "__BRAIN_DIR__", projAbs)
-		if err := os.WriteFile(settingsPath, []byte(content), 0644); err != nil {
+		if err := os.WriteFile(settingsPath, []byte(content), 0600); err != nil { // #nosec G703 — path within brain dir
 			return fmt.Errorf("cannot write settings.json: %w", err)
 		}
 		fmt.Printf("  settings.json: generated (additionalDirectories → %s)\n", projAbs)
@@ -151,7 +151,7 @@ func autoWireMCP() {
 		return
 	}
 
-	data, err := os.ReadFile(envFile)
+	data, err := os.ReadFile(envFile) // #nosec G304 — path from CERVEAU_HOME
 	if err != nil {
 		return
 	}
@@ -174,7 +174,19 @@ func autoWireMCP() {
 		mcpURL = "http://localhost:8003/mcp"
 	}
 
-	cmd := exec.Command("claude", "mcp", "add",
+	// Validate inputs before passing to subprocess
+	if !strings.HasPrefix(mcpURL, "http://") && !strings.HasPrefix(mcpURL, "https://") {
+		fmt.Fprintf(os.Stderr, "  MCP: skipped — invalid URL %q (must start with http:// or https://)\n", mcpURL)
+		return
+	}
+
+	claudePath, err := exec.LookPath("claude")
+	if err != nil {
+		fmt.Println("  MCP: skipped (claude not found in PATH)")
+		return
+	}
+
+	cmd := exec.Command(claudePath, "mcp", "add", // #nosec G204 — args are validated above
 		"--transport", "http", "--scope", "user",
 		"mdplanner", mcpURL,
 		"--header", "Authorization: Bearer "+token)

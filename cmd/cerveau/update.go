@@ -77,7 +77,7 @@ func cmdUpdate() {
 	}
 
 	version := "unknown"
-	if data, err := os.ReadFile(filepath.Join(home, "version.txt")); err == nil {
+	if data, err := os.ReadFile(filepath.Join(home, "version.txt")); err == nil { // #nosec G304 — home is CERVEAU_HOME
 		version = strings.TrimSpace(string(data))
 	}
 
@@ -97,7 +97,7 @@ func cmdUpdate() {
 
 // applyUpdate copies files from src to dest, skipping protected paths.
 func applyUpdate(src, dest string) error {
-	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error { // #nosec G122 — trusted temp dir from extractTarGz
 		if err != nil {
 			return nil
 		}
@@ -129,15 +129,15 @@ func applyUpdate(src, dest string) error {
 		target := filepath.Join(dest, rel)
 
 		if info.IsDir() {
-			return os.MkdirAll(target, 0755)
+			return os.MkdirAll(target, 0750)
 		}
 
-		data, err := os.ReadFile(path)
+		data, err := os.ReadFile(path) // #nosec G304 G122 — path comes from filepath.Walk within trusted src dir
 		if err != nil {
 			return nil
 		}
-		os.MkdirAll(filepath.Dir(target), 0755)
-		return os.WriteFile(target, data, info.Mode()&0777)
+		_ = os.MkdirAll(filepath.Dir(target), 0750)
+		return os.WriteFile(target, data, info.Mode()&0777) // #nosec G703 — target is scoped to dest via filepath.Rel
 	})
 }
 
@@ -204,15 +204,15 @@ func extractTarGz(r io.Reader, dest string, stripComponents int) error {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(target, 0755); err != nil {
+			if err := os.MkdirAll(target, 0750); err != nil {
 				return err
 			}
 		case tar.TypeReg:
-			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+			if err := os.MkdirAll(filepath.Dir(target), 0750); err != nil {
 				return err
 			}
-			mode := os.FileMode(header.Mode) & 0777
-			f, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode)
+			mode := os.FileMode(header.Mode & 0777)
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode) // #nosec G304 — target validated by path traversal check above
 			if err != nil {
 				return err
 			}

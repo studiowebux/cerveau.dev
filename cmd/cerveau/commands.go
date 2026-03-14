@@ -42,7 +42,7 @@ func cmdStatus(name string) {
 	fmt.Println("Settings:")
 	settingsPath := filepath.Join(dest, ".claude", "settings.json")
 	if fileExists(settingsPath) {
-		data, _ := os.ReadFile(settingsPath)
+		data, _ := os.ReadFile(settingsPath) // #nosec G304 — path within trusted brain dir
 		if strings.Contains(string(data), "additionalDirectories") {
 			fmt.Println("  settings.json: OK (has additionalDirectories)")
 		} else {
@@ -92,7 +92,7 @@ func cmdValidate(name string) {
 
 	count := 0
 	var files []string
-	filepath.Walk(dest, func(path string, info os.FileInfo, err error) error {
+	_ = filepath.Walk(dest, func(path string, info os.FileInfo, err error) error { // #nosec G122 — trusted brain dir
 		if err != nil || info.IsDir() || isSymlink(path) {
 			return nil
 		}
@@ -100,7 +100,7 @@ func cmdValidate(name string) {
 		if ext != ".md" && ext != ".json" {
 			return nil
 		}
-		data, err := os.ReadFile(path)
+		data, err := os.ReadFile(path) // #nosec G304 G122 — path from filepath.Walk within trusted brain dir
 		if err != nil {
 			return nil
 		}
@@ -134,14 +134,14 @@ func cmdInstallStatusline() {
 	}
 
 	destDir := filepath.Join(home, ".claude")
-	os.MkdirAll(destDir, 0755)
+	_ = os.MkdirAll(destDir, 0750)
 	dest := filepath.Join(destDir, "statusline.sh")
 
-	data, err := os.ReadFile(src)
+	data, err := os.ReadFile(src) // #nosec G304 — path from CERVEAU_HOME templates dir
 	if err != nil {
 		fatalf("Cannot read %s: %v", src, err)
 	}
-	if err := os.WriteFile(dest, data, 0755); err != nil {
+	if err := os.WriteFile(dest, data, 0755); err != nil { // #nosec G306 G703 — executable script needs 0755, path from CERVEAU_HOME
 		fatalf("Cannot write %s: %v", dest, err)
 	}
 
@@ -150,7 +150,7 @@ func cmdInstallStatusline() {
 
 func cmdVersion() {
 	versionFile := filepath.Join(cerveauHome(), "version.txt")
-	if data, err := os.ReadFile(versionFile); err == nil {
+	if data, err := os.ReadFile(versionFile); err == nil { // #nosec G304 — path from CERVEAU_HOME
 		fmt.Printf("cerveau %s\n", strings.TrimSpace(string(data)))
 	} else {
 		fmt.Println("cerveau (version unknown)")

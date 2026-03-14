@@ -88,7 +88,7 @@ func installPackageFiles(brainAbs string, pkg Package) (int, int) {
 		destPath := filepath.Join(brainAbs, destDir, f.Name)
 
 		// Ensure parent directory exists (handles nested paths like skills/foo/SKILL.md)
-		os.MkdirAll(filepath.Dir(destPath), 0755)
+		_ = os.MkdirAll(filepath.Dir(destPath), 0750)
 
 		// Preserve existing real files
 		if fileExists(destPath) && !isSymlink(destPath) {
@@ -99,16 +99,16 @@ func installPackageFiles(brainAbs string, pkg Package) (int, int) {
 
 		// Remove stale symlink if present
 		if isSymlink(destPath) {
-			os.Remove(destPath)
+			_ = os.Remove(destPath)
 		}
 
 		if f.RealFile {
-			data, err := os.ReadFile(srcPath)
+			data, err := os.ReadFile(srcPath) // #nosec G304 — srcPath built from trusted registry + CERVEAU_HOME
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "  Warning: cannot read %s: %v — skipped\n", srcPath, err)
 				continue
 			}
-			if err := os.WriteFile(destPath, data, 0644); err != nil {
+			if err := os.WriteFile(destPath, data, 0600); err != nil { // #nosec G703 — destPath built from trusted brain dir + registry
 				fmt.Fprintf(os.Stderr, "  Warning: cannot write %s: %v — skipped\n", destPath, err)
 				continue
 			}
@@ -131,7 +131,7 @@ func ensureLocalDev(brainAbs string, brain Brain) {
 	}
 
 	// Only substitute if placeholders remain
-	data, err := os.ReadFile(localdev)
+	data, err := os.ReadFile(localdev) // #nosec G304 — path built from trusted brain dir
 	if err != nil {
 		return
 	}
@@ -144,12 +144,15 @@ func ensureLocalDev(brainAbs string, brain Brain) {
 	if mdplannerURL == "" {
 		mdplannerURL = "http://localhost:8003"
 	}
-	replaceInFile(localdev, map[string]string{
+	if err := replaceInFile(localdev, map[string]string{
 		"__PROJECT__":       brain.Name,
 		"__CODEBASE__":      brain.Codebase,
 		"__CODEBASE_ABS__":  codebaseAbs,
 		"__MDPLANNER_URL__": mdplannerURL,
-	})
+	}); err != nil {
+		fmt.Fprintf(os.Stderr, "  Warning: cannot substitute placeholders in local-dev.md: %v\n", err)
+		return
+	}
 	fmt.Printf("  workflow/local-dev.md — placeholders substituted\n")
 }
 
@@ -163,7 +166,7 @@ func removeSymlinksRecursive(dir string) {
 	for _, e := range entries {
 		path := filepath.Join(dir, e.Name())
 		if isSymlink(path) {
-			os.Remove(path)
+			_ = os.Remove(path)
 		} else if e.IsDir() {
 			removeSymlinksRecursive(path)
 		}
@@ -178,14 +181,14 @@ func removeEmptyDirs(dir string) {
 			removeEmptyDirs(sub)
 			subEntries, _ := os.ReadDir(sub)
 			if len(subEntries) == 0 {
-				os.Remove(sub)
+				_ = os.Remove(sub)
 			}
 		}
 	}
 }
 
 func countLines(path string) int {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 — path from trusted brain dir
 	if err != nil || len(data) == 0 {
 		return 0
 	}

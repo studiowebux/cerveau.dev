@@ -110,7 +110,7 @@ func loadMergedRegistry() Registry {
 }
 
 func loadRegistryFile(path string) Registry {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 — path from CERVEAU_HOME config dir
 	if err != nil {
 		fatalf("Cannot read %s: %v", path, err)
 	}
@@ -141,13 +141,13 @@ func resolveFilePath(pkg Package, file PackageFile) string {
 func loadBrainsConfig() BrainsConfig {
 	path := brainsJSONPath()
 	if !fileExists(path) {
-		os.MkdirAll(filepath.Dir(path), 0755)
+		_ = os.MkdirAll(filepath.Dir(path), 0750)
 		empty := BrainsConfig{Brains: []Brain{}}
 		data, _ := json.MarshalIndent(empty, "", "  ")
-		os.WriteFile(path, append(data, '\n'), 0644)
+		_ = os.WriteFile(path, append(data, '\n'), 0600)
 		return empty
 	}
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 — path from CERVEAU_HOME config dir
 	if err != nil {
 		fatalf("Cannot read brains.json: %v", err)
 	}
@@ -164,7 +164,7 @@ func saveBrainsConfig(cfg BrainsConfig) {
 		fatalf("Cannot serialize brains.json: %v", err)
 	}
 	data = append(data, '\n')
-	if err := os.WriteFile(brainsJSONPath(), data, 0644); err != nil {
+	if err := os.WriteFile(brainsJSONPath(), data, 0600); err != nil {
 		fatalf("Cannot write brains.json: %v", err)
 	}
 }
@@ -208,7 +208,7 @@ func contains(slice []string, item string) bool {
 
 
 func replaceInFile(path string, replacements map[string]string) error {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 — caller provides trusted path
 	if err != nil {
 		return err
 	}
@@ -216,5 +216,5 @@ func replaceInFile(path string, replacements map[string]string) error {
 	for old, new := range replacements {
 		content = strings.ReplaceAll(content, old, new)
 	}
-	return os.WriteFile(path, []byte(content), 0644)
+	return os.WriteFile(path, []byte(content), 0600) // #nosec G703 — same trusted path
 }
