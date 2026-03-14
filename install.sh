@@ -35,16 +35,17 @@ echo "Installing Cerveau to $CERVEAU_HOME"
 echo "  Container runtime: $RUNTIME"
 echo ""
 
-# ── Download protocol ─────────────────────────────────────────────────────────
+# ── Download packages ─────────────────────────────────────────────────────────
 mkdir -p "$CERVEAU_HOME"
 
-echo "  Downloading latest protocol..."
+echo "  Downloading latest packages..."
 TARBALL="https://github.com/${GITHUB_REPO}/archive/refs/heads/main.tar.gz"
 curl -sL "$TARBALL" \
   | tar -xz --strip-components=1 -C "$CERVEAU_HOME" 2>/dev/null \
   || { echo "Error: Download failed. Check your internet connection."; exit 1; }
 
-echo "  Protocol → $CERVEAU_HOME"
+mkdir -p "$CERVEAU_HOME/_packages_/_local_"
+echo "  Packages → $CERVEAU_HOME"
 
 # ── Install CLI binary ───────────────────────────────────────────────────────
 mkdir -p "$BIN_DIR"
