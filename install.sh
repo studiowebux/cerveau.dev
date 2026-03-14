@@ -87,15 +87,9 @@ else
 MDPLANNER_MCP_TOKEN=${TOKEN}
 MDPLANNER_SECRET_KEY=${SECRET_KEY}
 MDPLANNER_CACHE=1
-MDPLANNER_BRAINS_CONFIG=/cerveau/brains.json
+MDPLANNER_CERVEAU_DIR=/cerveau
 ENVEOF
   echo "  Generated .env → $ENV_FILE"
-fi
-
-# ── Brains config ────────────────────────────────────────────────────────────
-if [ ! -f "$CERVEAU_HOME/brains.json" ]; then
-  echo '{"brains":[]}' > "$CERVEAU_HOME/brains.json"
-  echo "  Created default brains.json"
 fi
 
 # ── Initialize data directory ─────────────────────────────────────────────────
