@@ -100,7 +100,12 @@ fi
 
 # ── Start MDPlanner ───────────────────────────────────────────────────────────
 echo "  Starting MDPlanner..."
-(cd "$CERVEAU_HOME" && $COMPOSE up -d --pull always --quiet-pull)
+if [ "$RUNTIME" = "podman" ]; then
+  podman pull ghcr.io/studiowebux/mdplanner:latest --quiet 2>/dev/null || true
+  (cd "$CERVEAU_HOME" && $COMPOSE up -d)
+else
+  (cd "$CERVEAU_HOME" && $COMPOSE up -d --pull always --quiet-pull)
+fi
 
 echo "  Waiting for MDPlanner to be ready..."
 for i in $(seq 1 20); do
