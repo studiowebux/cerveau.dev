@@ -81,7 +81,7 @@ if [ -f "$ENV_FILE" ] && grep -q "^MDPLANNER_MCP_TOKEN=." "$ENV_FILE"; then
   TOKEN=$(grep '^MDPLANNER_MCP_TOKEN=' "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]')
   echo "  Reusing existing MCP token"
 else
-  TOKEN=$(LC_ALL=C tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 32)
+  TOKEN=$(head -c 256 /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | head -c 32)
   echo "MDPLANNER_MCP_TOKEN=${TOKEN}" > "$ENV_FILE"
   echo "  Generated MCP token → $ENV_FILE"
 fi
