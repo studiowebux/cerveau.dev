@@ -17,6 +17,9 @@
   - [Status Line](02-guides/05-statusline.md)
   - [Agents](02-guides/06-agents.md)
   - [Skills](02-guides/07-skills.md)
+- Packages
+  - [Overview](04-marketplace/01-overview.md)
+  - [Publishing](04-marketplace/02-publishing.md)
 - Reference
   - [CLI Reference](03-reference/01-makefile.md)
   - [brains.json Schema](03-reference/02-brains-json.md)
