@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/tar"
+	"bufio"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -24,24 +25,7 @@ func cmdUpdate() {
 		oldReg = loadRegistryFile(registryJSONPath())
 	}
 
-	// Backup preserved files
-	type backup struct {
-		rel  string
-		data []byte
-	}
-	var backups []backup
-	for _, rel := range []string{
-		".env",
-		filepath.Join("_configs_", "brains.json"),
-		filepath.Join("_configs_", "registry.local.json"),
-	} {
-		path := filepath.Join(home, rel)
-		if data, err := os.ReadFile(path); err == nil {
-			backups = append(backups, backup{rel, data})
-		}
-	}
-
-	// Download and extract
+	// Download and extract to temp directory first
 	fmt.Println("  Downloading...")
 	client := &http.Client{Timeout: 60 * time.Second}
 	resp, err := client.Get(tarballURL)
@@ -53,31 +37,43 @@ func cmdUpdate() {
 		fatalf("Error: Download failed (HTTP %d)", resp.StatusCode)
 	}
 
-	if err := extractTarGz(resp.Body, home, 1); err != nil {
+	tmpDir, err := os.MkdirTemp("", "cerveau-update-*")
+	if err != nil {
+		fatalf("Error: Cannot create temp directory: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	if err := extractTarGz(resp.Body, tmpDir, 1); err != nil {
 		fatalf("Error: Extraction failed: %v", err)
 	}
 
-	// Restore preserved files
-	for _, b := range backups {
-		path := filepath.Join(home, b.rel)
-		os.MkdirAll(filepath.Dir(path), 0755)
-		os.WriteFile(path, b.data, 0644)
-	}
-
-	// Safety check: detect removed files that brains depend on
-	if fileExists(registryJSONPath()) {
-		newReg := loadRegistryFile(registryJSONPath())
+	// Check for removed files before applying
+	newRegPath := filepath.Join(tmpDir, "_configs_", "registry.json")
+	if fileExists(newRegPath) && len(oldReg.Packages) > 0 {
+		newReg := loadRegistryFile(newRegPath)
 		if problems := checkRemovedFiles(oldReg, newReg); len(problems) > 0 {
 			fmt.Println()
-			fmt.Println("WARNING: The following package files were removed upstream:")
+			fmt.Println("WARNING: The following package files will be removed by this update:")
 			for _, p := range problems {
 				fmt.Printf("  %s\n", p)
 			}
 			fmt.Println()
-			fmt.Println("If your brains use these, move customizations to _packages_/_local_/")
-			fmt.Println("Then run: cerveau rebuild")
-			fmt.Println()
+			fmt.Println("If your brains use these, back them up to _packages_/_local_/ first.")
+			fmt.Print("Continue anyway? [y/N] ")
+
+			reader := bufio.NewReader(os.Stdin)
+			answer, _ := reader.ReadString('\n')
+			answer = strings.TrimSpace(strings.ToLower(answer))
+			if answer != "y" && answer != "yes" {
+				fmt.Println("Update cancelled.")
+				return
+			}
 		}
+	}
+
+	// Apply: copy from temp to home, respecting protection rules
+	if err := applyUpdate(tmpDir, home); err != nil {
+		fatalf("Error: Failed to apply update: %v", err)
 	}
 
 	version := "unknown"
@@ -97,6 +93,52 @@ func cmdUpdate() {
 	}
 
 	fmt.Println()
+}
+
+// applyUpdate copies files from src to dest, skipping protected paths.
+func applyUpdate(src, dest string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return nil
+		}
+
+		rel, err := filepath.Rel(src, path)
+		if err != nil || rel == "." {
+			return nil
+		}
+
+		// Skip protected paths
+		if strings.HasPrefix(rel, filepath.Join("_brains_")+string(filepath.Separator)) &&
+			rel != filepath.Join("_brains_", ".gitkeep") {
+			return nil
+		}
+		if strings.HasPrefix(rel, filepath.Join("_packages_", "_local_")+string(filepath.Separator)) {
+			return nil
+		}
+
+		// Skip preserved files
+		preserved := map[string]bool{
+			".env": true,
+			filepath.Join("_configs_", "brains.json"):          true,
+			filepath.Join("_configs_", "registry.local.json"):   true,
+		}
+		if preserved[rel] {
+			return nil
+		}
+
+		target := filepath.Join(dest, rel)
+
+		if info.IsDir() {
+			return os.MkdirAll(target, 0755)
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+		os.MkdirAll(filepath.Dir(target), 0755)
+		return os.WriteFile(target, data, info.Mode()&0777)
+	})
 }
 
 // checkRemovedFiles compares old and new registries, returns list of files
@@ -123,7 +165,6 @@ func checkRemovedFiles(old, new Registry) []string {
 
 // extractTarGz extracts a .tar.gz stream to dest, stripping stripComponents
 // leading path components.
-// Protects: _brains_/ contents, _packages_/_local_/
 func extractTarGz(r io.Reader, dest string, stripComponents int) error {
 	gr, err := gzip.NewReader(r)
 	if err != nil {
@@ -150,16 +191,6 @@ func extractTarGz(r io.Reader, dest string, stripComponents int) error {
 		}
 		relPath := parts[stripComponents]
 		if relPath == "" {
-			continue
-		}
-
-		// Skip _brains_/ contents (preserve user data)
-		if strings.HasPrefix(relPath, "_brains_/") && relPath != "_brains_/.gitkeep" {
-			continue
-		}
-
-		// Skip _packages_/_local_/ (never overwrite user packages)
-		if strings.HasPrefix(relPath, "_packages_/_local_/") {
 			continue
 		}
 
