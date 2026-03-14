@@ -82,8 +82,13 @@ if [ -f "$ENV_FILE" ] && grep -q "^MDPLANNER_MCP_TOKEN=." "$ENV_FILE"; then
   echo "  Reusing existing MCP token"
 else
   TOKEN=$(head -c 256 /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | head -c 32)
-  echo "MDPLANNER_MCP_TOKEN=${TOKEN}" > "$ENV_FILE"
-  echo "  Generated MCP token → $ENV_FILE"
+  SECRET_KEY=$($RUNTIME run --rm ghcr.io/studiowebux/mdplanner:latest keygen-secret 2>/dev/null | grep '^[0-9a-f]\{64\}$')
+  cat > "$ENV_FILE" <<ENVEOF
+MDPLANNER_MCP_TOKEN=${TOKEN}
+MDPLANNER_SECRET_KEY=${SECRET_KEY}
+MDPLANNER_CACHE=1
+ENVEOF
+  echo "  Generated .env → $ENV_FILE"
 fi
 
 # ── Initialize data directory ─────────────────────────────────────────────────
