@@ -1,5 +1,0 @@
-{
-  "version": "2.0.0",
-  "protocol": "studiowebux/cerveau.dev",
-  "min_claude_version": "claude-sonnet-4"
-}

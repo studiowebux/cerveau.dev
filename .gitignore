@@ -1,6 +1,8 @@
 _backups_/
 backups/
 _brains_/*/HANDOFF.md
+_packages_/_local_/*
+!_packages_/_local_/.gitkeep
 .DS_Store
 tmp/
 /cerveau

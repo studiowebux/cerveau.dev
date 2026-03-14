@@ -10,13 +10,11 @@ instructions.
 
 ## File Format
 
-Skills live in `_protocol_/.claude/skills/<name>/SKILL.md`:
+Skills live in `_packages_/studiowebux/core/1.0.0/skills/<name>/SKILL.md`:
 
 ```
-_protocol_/.claude/skills/
+_packages_/studiowebux/core/1.0.0/skills/
   release/
-    SKILL.md
-  import-project/
     SKILL.md
   update/
     SKILL.md
@@ -31,20 +29,17 @@ step. No special syntax — just clear instructions.
 
 ## Included Skills
 
-The protocol ships with four skills:
+The core package ships with three skills:
 
 - `/release` — full release workflow: version bump, changelog, build
   verification, tag, push, GitHub release, MDPlanner progress note.
-- `/import-project` — onboard a codebase into MDPlanner and spawn its brain
-  in one automated flow. Accepts `NAME=MyApp PROJECT=/path/to/code` as
-  arguments. Run this from the protocol session to bootstrap a new project.
 - `/update` — download and install the latest Cerveau protocol. Preserves
   `.env`, `_brains_/`, and `brains.json`. Reports the version before and after.
 - `/marketplace` — browse available packages and install them into a brain.
   Use `/marketplace` to list, or `/marketplace install <pkg> [brain]` to
   install a package.
 
-Read the `SKILL.md` files in `_protocol_/.claude/skills/` for the full
+Read the `SKILL.md` files in `_packages_/studiowebux/core/1.0.0/skills/` for the full
 procedures and use them as templates when writing your own.
 
 ## Writing Skills
@@ -56,14 +51,14 @@ of steps. Examples:
 Create a skill for deploying to staging.
 Steps: build, run smoke tests, push image to registry, update the
 deployment, verify health endpoint returns 200.
-Save it to _protocol_/.claude/skills/deploy-staging/SKILL.md
+Save it to _packages_/studiowebux/core/1.0.0/skills/deploy-staging/SKILL.md
 ```
 
 ```
 Create a skill for cutting a hotfix.
 Steps: checkout main, create hotfix branch, confirm the fix is committed,
 bump patch version, changelog entry, tag, push, PR.
-Save it to _protocol_/.claude/skills/hotfix/SKILL.md
+Save it to _packages_/studiowebux/core/1.0.0/skills/hotfix/SKILL.md
 ```
 
 Keep skills focused. One workflow per skill. If a skill branches based on

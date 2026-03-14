@@ -31,16 +31,6 @@ What it does:
 - Adds an entry to `_configs_/brains.json`
 - Auto-wires MCP globally from `~/.cerveau/.env` if present (no extra step needed)
 
-### onboard
-
-Spawn + rebuild rules in one step. The fastest path to a working brain.
-
-```bash
-cerveau onboard MyApp /absolute/path/to/your/code
-```
-
-Runs `spawn` (which handles MCP), then `rebuild`.
-Use this for new brains when you already know which stacks/practices you want.
 
 ### rebuild
 
@@ -54,7 +44,7 @@ Reads the brain's entry in `_configs_/brains.json` and creates selective symlink
 
 ### update
 
-Download and apply the latest Cerveau protocol. Preserves `.env`, `_brains_/`, and `brains.json`.
+Download and apply the latest Cerveau packages. Preserves `.env`, `_brains_/`, and `brains.json`.
 
 ```bash
 cerveau update
@@ -85,7 +75,7 @@ cerveau marketplace install workflow-minimaldoc MyApp
 - First argument — package name from `marketplace list`
 - Second argument — brain name to install into
 
-Adds the package files to the brain's `brains.json` entry (under the appropriate type key: `workflows`, `practices`, `agents`, or `stacks`), then rebuilds rules automatically.
+Adds the package to the brain's `brains.json` `packages` array, then rebuilds rules automatically.
 
 Or from a brain session: `/marketplace install workflow-minimaldoc MyApp`
 
@@ -97,7 +87,7 @@ Install the status line script to `~/.claude/statusline.sh`.
 cerveau install-statusline
 ```
 
-Copies `_protocol_/statusline.sh` and makes it executable. Run once after installing Cerveau.
+Copies the statusline script from the core package and makes it executable. Run once after installing Cerveau.
 
 ### status
 
@@ -133,7 +123,7 @@ Run this after `cerveau spawn` to confirm the template was fully substituted.
 
 ### diff
 
-Show what changed between the protocol template and a brain.
+Show what changed between the package templates and a brain.
 
 ```bash
 cerveau diff MyApp
@@ -164,6 +154,6 @@ cd ~/.cerveau/_brains_/myapp-brain && claude
 # Add a marketplace package
 cerveau marketplace install workflow-minimaldoc MyApp
 
-# Update to the latest protocol
+# Update to the latest packages
 cerveau update
 ```

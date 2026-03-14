@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -14,15 +15,10 @@ func main() {
 	switch os.Args[1] {
 	case "spawn":
 		if len(os.Args) < 4 {
-			fatal("Usage: cerveau spawn <name> <project-path>")
+			fatal("Usage: cerveau spawn <name> <project-path> [--packages org/pkg,org/pkg]")
 		}
-		cmdSpawn(os.Args[2], os.Args[3])
-
-	case "onboard":
-		if len(os.Args) < 4 {
-			fatal("Usage: cerveau onboard <name> <project-path>")
-		}
-		cmdOnboard(os.Args[2], os.Args[3])
+		packages := parsePackagesFlag(os.Args[4:])
+		cmdSpawn(os.Args[2], os.Args[3], packages)
 
 	case "rebuild":
 		name := ""
@@ -36,16 +32,26 @@ func main() {
 
 	case "marketplace":
 		if len(os.Args) < 3 {
-			fatal("Usage: cerveau marketplace <list|install>")
+			fatal("Usage: cerveau marketplace <list|info|install|uninstall>")
 		}
 		switch os.Args[2] {
 		case "list":
 			cmdMarketplaceList()
+		case "info":
+			if len(os.Args) < 4 {
+				fatal("Usage: cerveau marketplace info <org/pkg>")
+			}
+			cmdMarketplaceInfo(os.Args[3])
 		case "install":
 			if len(os.Args) < 5 {
-				fatal("Usage: cerveau marketplace install <pkg> <brain>")
+				fatal("Usage: cerveau marketplace install <org/pkg> <brain>")
 			}
 			cmdMarketplaceInstall(os.Args[3], os.Args[4])
+		case "uninstall":
+			if len(os.Args) < 5 {
+				fatal("Usage: cerveau marketplace uninstall <org/pkg> <brain>")
+			}
+			cmdMarketplaceUninstall(os.Args[3], os.Args[4])
 		default:
 			fatal("Unknown marketplace command: " + os.Args[2])
 		}
@@ -65,12 +71,6 @@ func main() {
 		}
 		cmdValidate(os.Args[2])
 
-	case "diff":
-		if len(os.Args) < 3 {
-			fatal("Usage: cerveau diff <name>")
-		}
-		cmdDiff(os.Args[2])
-
 	case "install-statusline":
 		cmdInstallStatusline()
 
@@ -85,6 +85,19 @@ func main() {
 		cmdHelp()
 		os.Exit(1)
 	}
+}
+
+// parsePackagesFlag extracts packages from --packages flag or returns default.
+func parsePackagesFlag(args []string) []string {
+	for i, arg := range args {
+		if arg == "--packages" && i+1 < len(args) {
+			return strings.Split(args[i+1], ",")
+		}
+		if strings.HasPrefix(arg, "--packages=") {
+			return strings.Split(strings.TrimPrefix(arg, "--packages="), ",")
+		}
+	}
+	return []string{defaultPackage}
 }
 
 func fatal(msg string) {

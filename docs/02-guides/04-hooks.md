@@ -7,7 +7,7 @@ title: Hooks
 Hooks enforce the protocol automatically. They run at specific Claude Code
 lifecycle events and fire regardless of whether Claude remembers the rules.
 
-All hooks live in `_protocol_/.claude/hooks/` and are symlinked wholesale into
+All hooks live in `_packages_/studiowebux/core/1.0.0/hooks/` and are symlinked wholesale into
 every brain.
 
 ## Hooks Overview
@@ -54,8 +54,8 @@ MDPlanner so the next session can resume without losing in-progress context.
 
 ## Customizing Hooks
 
-Hooks are plain bash scripts. You can modify them in `_protocol_/.claude/hooks/`
-and all brains pick up the change immediately (they symlink to the protocol).
+Hooks are plain bash scripts. You can modify them in `_packages_/studiowebux/core/1.0.0/hooks/`
+and all brains pick up the change immediately (they symlink to the package).
 
 All hook input parsing uses `jq` with error guards:
 

@@ -14,7 +14,7 @@ Five steps from zero to a running brain session.
 curl -fsSL https://cerveau.dev/install.sh | bash
 ```
 
-This installs the protocol to `~/.cerveau/`, starts MDPlanner, and registers the MCP globally. See [Installation](01-installation.md) for prerequisites.
+This installs Cerveau to `~/.cerveau/`, starts MDPlanner, and registers the MCP globally. See [Installation](01-installation.md) for prerequisites.
 
 Verify:
 
@@ -27,7 +27,7 @@ curl -s http://localhost:8003/health
 
 ## Step 2 — Write Your Rules
 
-The protocol ships with no project rules — you write them for your stack.
+The core package ships with no project rules — you write them for your stack.
 
 Open Claude Code in `~/.cerveau/` and ask:
 
@@ -42,27 +42,19 @@ Save each file to the appropriate directory:
 
 | Rule type                  | Directory                                              |
 | -------------------------- | ------------------------------------------------------ |
-| Stack (language/framework) | `~/.cerveau/_protocol_/.claude/rules/stack/go.md`     |
-| Practice (how you work)    | `~/.cerveau/_protocol_/.claude/rules/practices/testing.md` |
-| Workflow (process)         | `~/.cerveau/_protocol_/.claude/rules/workflow/git.md` |
-| Core (always loaded)       | `~/.cerveau/_protocol_/.claude/rules/code-discipline.md` |
+| Stack (language/framework) | `~/.cerveau/_packages_/studiowebux/core/1.0.0/rules/stack/go.md`     |
+| Practice (how you work)    | `~/.cerveau/_packages_/studiowebux/core/1.0.0/rules/practices/testing.md` |
+| Workflow (process)         | `~/.cerveau/_packages_/studiowebux/core/1.0.0/rules/workflow/git.md` |
+| Core (always loaded)       | `~/.cerveau/_packages_/studiowebux/core/1.0.0/rules/code-discipline.md` |
 
 See [Writing Rules](../02-guides/02-writing-rules.md) for more prompts.
 
 ---
 
-## Step 3 — Onboard a Project
-
-Open the protocol directory in Claude Code and run the import skill:
+## Step 3 — Spawn a Brain
 
 ```bash
-cd ~/.cerveau/_protocol_ && claude
-```
-
-Then inside the session:
-
-```
-/import-project NAME=MyApp PROJECT=/absolute/path/to/your/code
+cerveau spawn MyApp /absolute/path/to/your/code --packages studiowebux/core
 ```
 
 This spawns the brain, wires MCP (already global from the install), and rebuilds selective rules in one step.
@@ -74,7 +66,7 @@ cerveau validate MyApp
 ```
 
 :::info
-`~/.cerveau/_protocol_/` is only used to manage the protocol. All project work happens from the brain session in `~/.cerveau/_brains_/myapp-brain/`.
+`~/.cerveau/_packages_/` contains the shared packages. All project work happens from the brain session in `~/.cerveau/_brains_/myapp-brain/`.
 :::
 
 ---
@@ -87,20 +79,12 @@ cd ~/.cerveau/_brains_/myapp-brain && claude
 
 ---
 
-## Step 5 — Complete Setup
+## Step 5 — Boot
 
-Inside the brain session, run the skill again:
+Inside the brain session, type `boot`. Claude will read the rules,
+explore the codebase, fill `local-dev.md`, and set up MDPlanner state.
 
-```
-/import-project
-```
-
-Claude will explore the codebase, fill `local-dev.md`, and create the full
-MDPlanner state: portfolio item, brief, architecture note, milestones, and
-tasks.
-
-From the second session on, Boot happens automatically and Claude picks up
-where it left off.
+Type `boot` at the start of every session to trigger Phase 1.
 
 ---
 

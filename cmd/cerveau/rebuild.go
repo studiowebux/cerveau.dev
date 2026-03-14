@@ -9,16 +9,7 @@ import (
 
 func cmdRebuild(filterName string) {
 	cfg := loadBrainsConfig()
-	home := cerveauHome()
-	proto := protoDir()
-	protoRules := filepath.Join(proto, ".claude", "rules")
-	protoAgents := filepath.Join(proto, ".claude", "agents")
-	protoHooks := filepath.Join(proto, ".claude", "hooks")
-	protoSkills := filepath.Join(proto, ".claude", "skills")
-
-	if !dirExists(protoRules) {
-		fatal("Error: protocol rules not found at " + protoRules)
-	}
+	reg := loadMergedRegistry()
 
 	found := false
 	for _, brain := range cfg.Brains {
@@ -26,7 +17,7 @@ func cmdRebuild(filterName string) {
 			continue
 		}
 		found = true
-		rebuildBrain(home, proto, protoRules, protoAgents, protoHooks, protoSkills, brain)
+		rebuildBrain(reg, brain)
 	}
 
 	if filterName != "" && !found {
@@ -36,7 +27,8 @@ func cmdRebuild(filterName string) {
 	fmt.Println("Done.")
 }
 
-func rebuildBrain(home, proto, protoRules, protoAgents, protoHooks, protoSkills string, brain Brain) {
+func rebuildBrain(reg Registry, brain Brain) {
+	home := cerveauHome()
 	brainAbs := filepath.Join(home, brain.Path)
 	if !dirExists(brainAbs) {
 		fmt.Printf("  SKIP: brain directory does not exist: %s\n", brainAbs)
@@ -45,237 +37,123 @@ func rebuildBrain(home, proto, protoRules, protoAgents, protoHooks, protoSkills 
 
 	fmt.Printf("Rebuilding: %s (%s)\n", brain.Name, brain.Path)
 
-	rulesDir := filepath.Join(brainAbs, ".claude", "rules")
-	agentsDir := filepath.Join(brainAbs, ".claude", "agents")
-	hooksDir := filepath.Join(brainAbs, ".claude", "hooks")
-	skillsDir := filepath.Join(brainAbs, ".claude", "skills")
-
-	// Sync settings.json (merge template fields, preserve brain-specific keys)
-	templateFile := filepath.Join(proto, ".claude", "settings.json.template")
-	settingsFile := filepath.Join(brainAbs, ".claude", "settings.json")
-	if fileExists(templateFile) && fileExists(settingsFile) {
-		syncSettings(templateFile, settingsFile)
-		fmt.Println("  settings.json — synced from template")
-	} else if !fileExists(settingsFile) {
-		fmt.Println("  settings.json — not found, skipping")
+	// Clean old symlinks (preserve real files)
+	claudeDir := filepath.Join(brainAbs, ".claude")
+	if dirExists(claudeDir) {
+		removeSymlinksRecursive(claudeDir)
+		removeEmptyDirs(claudeDir)
+	}
+	templatesDir := filepath.Join(brainAbs, "templates")
+	if dirExists(templatesDir) {
+		removeSymlinksRecursive(templatesDir)
+		removeEmptyDirs(templatesDir)
 	}
 
-	// Clean old symlinks from rules (preserve real files)
-	if isSymlink(rulesDir) {
-		os.Remove(rulesDir)
-		fmt.Println("  Removed old rules symlink")
-	} else if dirExists(rulesDir) {
-		removeSymlinksRecursive(rulesDir)
-		removeEmptyDirs(rulesDir)
-		fmt.Println("  Cleaned old rules symlinks (preserved real files)")
-	}
-	os.MkdirAll(rulesDir, 0755)
-
-	// Link top-level rule files
+	totalFiles := 0
 	totalLines := 0
-	topCount := 0
-	entries, _ := os.ReadDir(protoRules)
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
+
+	for _, pkgID := range brain.Packages {
+		pkg := findPackage(reg, pkgID)
+		if pkg == nil {
+			fmt.Fprintf(os.Stderr, "  Warning: package %q not found in registry — skipped\n", pkgID)
 			continue
 		}
-		target := filepath.Join(rulesDir, e.Name())
-		srcFile := filepath.Join(protoRules, e.Name())
-		if fileExists(target) && !isSymlink(target) {
-			totalLines += countLines(target)
-		} else {
-			relSymlink(srcFile, target)
-			totalLines += countLines(srcFile)
-		}
-		topCount++
-	}
-	fmt.Printf("  top-level — %d files (%d lines)\n", topCount, totalLines)
 
-	// Link subdirectories selectively
-	totalLines += linkSubdir("practices", brain.Practices, rulesDir, protoRules)
-	totalLines += linkSubdir("workflow", brain.Workflows, rulesDir, protoRules)
-
-	// Ensure local-dev.md is a real file
-	ensureLocalDev(rulesDir, protoRules, brain)
-
-	totalLines += linkSubdir("stack", brain.Stacks, rulesDir, protoRules)
-
-	// Rebuild agents selectively
-	if dirExists(protoAgents) {
-		if isSymlink(agentsDir) {
-			os.Remove(agentsDir)
-		} else if dirExists(agentsDir) {
-			removeSymlinksRecursive(agentsDir)
-			removeEmptyDirs(agentsDir)
-		}
-
-		if len(brain.Agents) == 0 {
-			fmt.Println("  agents/ — skipped (none declared)")
-		} else {
-			os.MkdirAll(agentsDir, 0755)
-			aLinked, aLines := 0, 0
-			agentEntries, _ := os.ReadDir(protoAgents)
-			for _, e := range agentEntries {
-				if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
-					continue
-				}
-				stem := strings.TrimSuffix(e.Name(), ".md")
-				if contains(brain.Agents, stem) {
-					srcFile := filepath.Join(protoAgents, e.Name())
-					relSymlink(srcFile, filepath.Join(agentsDir, e.Name()))
-					aLines += countLines(srcFile)
-					aLinked++
-				}
-			}
-			totalLines += aLines
-			fmt.Printf("  agents/ — %d linked (%d lines)\n", aLinked, aLines)
-		}
+		pkgFiles, pkgLines := installPackageFiles(brainAbs, *pkg)
+		totalFiles += pkgFiles
+		totalLines += pkgLines
+		fmt.Printf("  %s v%s — %d files (%d lines)\n", pkgID, pkg.Version, pkgFiles, pkgLines)
 	}
 
-	// Rebuild hooks wholesale
-	if dirExists(protoHooks) {
-		if isSymlink(hooksDir) {
-			os.Remove(hooksDir)
-		} else if dirExists(hooksDir) {
-			os.RemoveAll(hooksDir)
-		}
-		relSymlink(protoHooks, hooksDir)
-		hookCount := countFilesWithExt(protoHooks, ".sh")
-		fmt.Printf("  hooks/ — symlinked (%d scripts)\n", hookCount)
-	}
-
-	// Rebuild CLAUDE.md symlink
-	protoClaude := filepath.Join(proto, "CLAUDE.md")
-	claudeMd := filepath.Join(brainAbs, ".claude", "CLAUDE.md")
-	if fileExists(protoClaude) {
-		os.Remove(claudeMd)
-		relSymlink(protoClaude, claudeMd)
-		fmt.Println("  CLAUDE.md — symlinked (generic protocol)")
-	}
-
-	// Rebuild skills wholesale
-	if dirExists(protoSkills) {
-		if isSymlink(skillsDir) {
-			os.Remove(skillsDir)
-		} else if dirExists(skillsDir) {
-			os.RemoveAll(skillsDir)
-		}
-		relSymlink(protoSkills, skillsDir)
-		skillCount := countFilesWithName(protoSkills, "SKILL.md")
-		fmt.Printf("  skills/ — symlinked (%d skills)\n", skillCount)
-	}
-
-	fmt.Printf("  TOTAL: %d lines loaded\n\n", totalLines)
+	fmt.Printf("  TOTAL: %d files, %d lines\n\n", totalFiles, totalLines)
 }
 
-func linkSubdir(subdir string, declared []string, rulesDir, protoRules string) int {
-	srcDir := filepath.Join(protoRules, subdir)
-	if !dirExists(srcDir) {
-		return 0
-	}
+func installPackageFiles(brainAbs string, pkg Package) (int, int) {
+	files, lines := 0, 0
 
-	if len(declared) == 0 {
-		fmt.Printf("  %s/ — skipped (none declared)\n", subdir)
-		return 0
-	}
+	for _, f := range pkg.Files {
+		srcPath := resolveFilePath(pkg, f)
 
-	destDir := filepath.Join(rulesDir, subdir)
-	os.MkdirAll(destDir, 0755)
-
-	linked, skipped, lines := 0, 0, 0
-	entries, _ := os.ReadDir(srcDir)
-	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
+		if !fileExists(srcPath) {
+			fmt.Fprintf(os.Stderr, "  Warning: %s/%s not found at %s — skipped\n", pkg.QualifiedID(), f.Name, srcPath)
 			continue
 		}
-		stem := strings.TrimSuffix(e.Name(), ".md")
-		srcFile := filepath.Join(srcDir, e.Name())
-		destFile := filepath.Join(destDir, e.Name())
 
-		if contains(declared, stem) {
-			if fileExists(destFile) && !isSymlink(destFile) {
-				lines += countLines(destFile)
-			} else {
-				relSymlink(srcFile, destFile)
-				lines += countLines(srcFile)
-			}
-			linked++
-		} else {
-			skipped++
+		destDir, ok := TypeDestMap[f.Type]
+		if !ok {
+			fmt.Fprintf(os.Stderr, "  Warning: unknown file type %q for %s — skipped\n", f.Type, f.Name)
+			continue
 		}
+
+		destPath := filepath.Join(brainAbs, destDir, f.Name)
+
+		// Ensure parent directory exists (handles nested paths like skills/foo/SKILL.md)
+		_ = os.MkdirAll(filepath.Dir(destPath), 0750)
+
+		// Preserve existing real files
+		if fileExists(destPath) && !isSymlink(destPath) {
+			lines += countLines(destPath)
+			files++
+			continue
+		}
+
+		// Remove stale symlink if present
+		if isSymlink(destPath) {
+			_ = os.Remove(destPath)
+		}
+
+		if f.RealFile {
+			data, err := os.ReadFile(srcPath) // #nosec G304 — srcPath built from trusted registry + CERVEAU_HOME
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "  Warning: cannot read %s: %v — skipped\n", srcPath, err)
+				continue
+			}
+			if err := os.WriteFile(destPath, data, 0600); err != nil { // #nosec G703 — destPath built from trusted brain dir + registry
+				fmt.Fprintf(os.Stderr, "  Warning: cannot write %s: %v — skipped\n", destPath, err)
+				continue
+			}
+		} else {
+			relSymlink(srcPath, destPath)
+		}
+
+		lines += countLines(srcPath)
+		files++
 	}
-	fmt.Printf("  %s/ — %d linked, %d skipped (%d lines)\n", subdir, linked, skipped, lines)
-	return lines
+
+	return files, lines
 }
 
-func ensureLocalDev(rulesDir, protoRules string, brain Brain) {
-	workflowDir := filepath.Join(rulesDir, "workflow")
-	if !dirExists(workflowDir) {
+// ensureLocalDev handles placeholder substitution for local-dev.md after rebuild.
+func ensureLocalDev(brainAbs string, brain Brain) {
+	localdev := filepath.Join(brainAbs, ".claude", "rules", "workflow", "local-dev.md")
+	if !fileExists(localdev) || isSymlink(localdev) {
 		return
 	}
 
-	localdev := filepath.Join(workflowDir, "local-dev.md")
-	if isSymlink(localdev) {
-		os.Remove(localdev)
+	// Only substitute if placeholders remain
+	data, err := os.ReadFile(localdev) // #nosec G304 — path built from trusted brain dir
+	if err != nil {
+		return
+	}
+	if !strings.Contains(string(data), "__PROJECT__") {
+		return
 	}
 
-	if !fileExists(localdev) {
-		src := filepath.Join(protoRules, "workflow", "local-dev.md")
-		if !fileExists(src) {
-			return
-		}
-		data, err := os.ReadFile(src)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "  Warning: cannot read %s: %v\n", src, err)
-			return
-		}
-		if err := os.WriteFile(localdev, data, 0644); err != nil {
-			fmt.Fprintf(os.Stderr, "  Warning: cannot write %s: %v\n", localdev, err)
-			return
-		}
-
-		codebaseAbs := filepath.Join(cerveauHome(), brain.Codebase)
-		mdplannerURL := os.Getenv("MDPLANNER_URL")
-		if mdplannerURL == "" {
-			mdplannerURL = "http://localhost:8003"
-		}
-		if err := replaceInFile(localdev, map[string]string{
-			"__PROJECT__":       brain.Name,
-			"__CODEBASE__":      brain.Codebase,
-			"__CODEBASE_ABS__":  codebaseAbs,
-			"__MDPLANNER_URL__": mdplannerURL,
-		}); err != nil {
-			fmt.Fprintf(os.Stderr, "  Warning: placeholder substitution failed: %v\n", err)
-		}
-		fmt.Printf("  workflow/local-dev.md — created as real file (codebase: %s)\n", brain.Codebase)
-	} else {
-		fmt.Println("  workflow/local-dev.md — preserved (real file)")
+	codebaseAbs := brain.Codebase
+	mdplannerURL := os.Getenv("MDPLANNER_URL")
+	if mdplannerURL == "" {
+		mdplannerURL = "http://localhost:8003"
 	}
-}
-
-func syncSettings(templatePath, settingsPath string) {
-	brainKeys := map[string]bool{
-		"additionalDirectories": true,
-		"deny":                  true,
-		"hooks":                 true,
+	if err := replaceInFile(localdev, map[string]string{
+		"__PROJECT__":       brain.Name,
+		"__CODEBASE__":      brain.Codebase,
+		"__CODEBASE_ABS__":  codebaseAbs,
+		"__MDPLANNER_URL__": mdplannerURL,
+	}); err != nil {
+		fmt.Fprintf(os.Stderr, "  Warning: cannot substitute placeholders in local-dev.md: %v\n", err)
+		return
 	}
-
-	tmpl := loadJSONMap(templatePath)
-	brain := loadJSONMap(settingsPath)
-
-	merged := make(map[string]any)
-	for k, v := range tmpl {
-		if !brainKeys[k] {
-			merged[k] = v
-		}
-	}
-	for k := range brainKeys {
-		if v, ok := brain[k]; ok {
-			merged[k] = v
-		}
-	}
-
-	saveJSONMap(settingsPath, merged)
+	fmt.Printf("  workflow/local-dev.md — placeholders substituted\n")
 }
 
 // ── Filesystem helpers ───────────────────────────────────────────────────────
@@ -288,7 +166,7 @@ func removeSymlinksRecursive(dir string) {
 	for _, e := range entries {
 		path := filepath.Join(dir, e.Name())
 		if isSymlink(path) {
-			os.Remove(path)
+			_ = os.Remove(path)
 		} else if e.IsDir() {
 			removeSymlinksRecursive(path)
 		}
@@ -303,38 +181,16 @@ func removeEmptyDirs(dir string) {
 			removeEmptyDirs(sub)
 			subEntries, _ := os.ReadDir(sub)
 			if len(subEntries) == 0 {
-				os.Remove(sub)
+				_ = os.Remove(sub)
 			}
 		}
 	}
 }
 
 func countLines(path string) int {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 — path from trusted brain dir
 	if err != nil || len(data) == 0 {
 		return 0
 	}
 	return strings.Count(string(data), "\n")
-}
-
-func countFilesWithExt(dir, ext string) int {
-	count := 0
-	entries, _ := os.ReadDir(dir)
-	for _, e := range entries {
-		if !e.IsDir() && strings.HasSuffix(e.Name(), ext) {
-			count++
-		}
-	}
-	return count
-}
-
-func countFilesWithName(dir, name string) int {
-	count := 0
-	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if err == nil && !info.IsDir() && info.Name() == name {
-			count++
-		}
-		return nil
-	})
-	return count
 }

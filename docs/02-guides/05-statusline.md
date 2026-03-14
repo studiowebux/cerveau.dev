@@ -11,8 +11,7 @@ and renders a two-line display.
 ## Installation
 
 ```bash
-cp _protocol_/statusline.sh ~/.claude/statusline.sh
-chmod +x ~/.claude/statusline.sh
+cerveau install-statusline
 ```
 
 Claude Code looks for `~/.claude/statusline.sh` automatically. No further

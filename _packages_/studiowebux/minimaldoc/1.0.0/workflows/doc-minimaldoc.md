@@ -91,7 +91,7 @@ date: "2026-01-15T00:00:00Z"
 
 ### 7. Add GitHub Actions workflow
 
-Copy the workflow template from the `minimaldoc-ci` workflow rule (`_protocol_/.claude/rules/workflow/minimaldoc-ci.md`). Key steps: checkout project, checkout minimaldoc, setup Go, build binary, build docs, deploy to Pages.
+Copy the workflow template from the `minimaldoc-ci` workflow rule (`_packages_/studiowebux/minimaldoc/1.0.0/workflows/minimaldoc-ci.md`). Key steps: checkout project, checkout minimaldoc, setup Go, build binary, build docs, deploy to Pages.
 
 ### 8. Add features table
 

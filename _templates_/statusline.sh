@@ -1,7 +1,7 @@
 #!/bin/bash
 # Brain status line for Claude Code.
 # Reads JSON from stdin (see: https://code.claude.com/docs/en/statusline)
-# Install: cp _protocol_/statusline.sh ~/.claude/statusline.sh && chmod +x ~/.claude/statusline.sh
+# Install: cerveau install-statusline
 
 input=$(cat)
 
