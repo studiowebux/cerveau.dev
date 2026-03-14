@@ -9,7 +9,7 @@ title: How It Works
 ```
 _protocol_/          _configs_/brains.json        Your code repo
 (rules, hooks,               │                           │
- templates)         rebuild-brain-rules.sh               │
+ templates)           cerveau rebuild                    │
        │                     │                           │
        ├──symlinks──> _brains_/myapp-brain/              │
        │              ├── templates/    (copied on spawn)
@@ -29,10 +29,10 @@ _protocol_/          _configs_/brains.json        Your code repo
 
 | Component                          | Role                                                             |
 | ---------------------------------- | ---------------------------------------------------------------- |
-| `_protocol_/`                      | Source of truth — rules, hooks, templates, Makefile              |
+| `_protocol_/`                      | Source of truth — rules, hooks, templates                        |
 | `_configs_/brains.json`            | Brain registry — declares what each brain loads                  |
 | `_brains_/<name>/`                 | Per-project brain directory (created by `/import-project`)       |
-| `_scripts_/rebuild-brain-rules.sh` | Builds selective symlinks from `brains.json`                     |
+| `bin/cerveau`                      | CLI binary — spawn, rebuild, update, marketplace, etc.           |
 | MDPlanner (MCP)                    | External task/note store — Claude reads and writes via MCP tools |
 
 ## Selective Loading
@@ -52,7 +52,7 @@ Each brain declares exactly what it needs in `brains.json`:
 }
 ```
 
-`rebuild-brain-rules.sh` reads this and creates selective symlinks. Only the
+`cerveau rebuild` reads this and creates selective symlinks. Only the
 declared rules load into Claude Code's context.
 
 | Layer              | Behavior                                          |
@@ -85,7 +85,7 @@ A brain using 2 stacks, 3 practices, 3 workflows, and 2 agents typically loads
 | ------------------------------------------------------ | -------- | ----------------------------------- |
 | `_protocol_/**`                                        | Protocol | Human (templates and rules)         |
 | `_brains_/<brain>/.claude/CLAUDE.md`                   | Protocol | Symlink — auto-updated              |
-| `_brains_/<brain>/.claude/settings.json`               | Brain    | `make onboard` (generated)          |
-| `_brains_/<brain>/.claude/rules/**`                    | Protocol | `rebuild-brain-rules.sh` (symlinks) |
+| `_brains_/<brain>/.claude/settings.json`               | Brain    | `cerveau onboard` (generated)       |
+| `_brains_/<brain>/.claude/rules/**`                    | Protocol | `cerveau rebuild` (symlinks)        |
 | `_brains_/<brain>/.claude/rules/workflow/local-dev.md` | Brain    | Human (real file, not symlinked)    |
 | `_configs_/brains.json`                                | Config   | Human                               |

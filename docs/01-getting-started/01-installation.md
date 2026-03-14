@@ -6,55 +6,77 @@ title: Installation
 
 ## Prerequisites
 
-Install the following tools before starting:
-
 ```bash
-python3 --version   # any version — used by Makefile path calculations
-jq --version        # brew install jq  /  apt install jq
-podman compose version
+curl --version       # included on macOS/Linux
+podman --version     # or: docker --version — either works
+jq --version         # brew install jq  /  apt install jq
+claude --version     # Claude Code CLI
 ```
+
+The installer auto-detects `podman` or `docker` — whichever is available (prefers podman).
 
 `gh` (GitHub CLI) is optional — needed for PR workflows only.
 
-## Clone
+## Install
+
+One command installs everything:
 
 ```bash
-git clone https://github.com/studiowebux/cerveau.dev
+curl -fsSL https://cerveau.dev/install.sh | bash
 ```
 
-You should have:
+This will:
+
+1. Download the protocol to `~/.cerveau/`
+2. Generate an MCP token and write it to `~/.cerveau/.env`
+3. Start MDPlanner via Podman or Docker (auto-detected)
+4. Register the MDPlanner MCP globally (`--scope user`) so every Claude Code session has it
+
+Verify MDPlanner is running:
+
+```bash
+curl -s http://localhost:8003/health
+# expected: {"status":"ok"}
+```
+
+## Directory Layout
+
+After install:
 
 ```
-cerveau.dev/
-  _protocol_/       ← shared rules, hooks, templates (source of truth)
-  _configs_/        ← brains.json registry
-  _brains_/         ← created by make onboard (empty for now)
-  _scripts_/        ← rebuild-brain-rules.sh, backup-claude.sh
-  _projects_/       ← you can put your git submodules/clone here (or anywhere else)
+~/.cerveau/
+  _protocol_/       ← shared rules, hooks, templates
+  _brains_/         ← one directory per brain (created by cerveau spawn)
+  _configs_/        ← brains.json registry, registry.json marketplace
+  _scripts_/        ← backup-claude.sh
+  bin/cerveau        ← CLI binary
+  .env              ← MDPLANNER_MCP_TOKEN (preserved across updates)
+  version.txt       ← installed version
   docker-compose.yml
-  .env.example
-  README.md
 ```
 
 :::info
-Keep `cerveau.dev/` outside any project repo. The brain directory links to
-your project repos — it doesn't live inside them.
+Keep your project repos anywhere — under `~/dev/`, as git submodules, etc.
+The brain links to your project via `additionalDirectories`. No files are added to your project repos.
 :::
 
-## Shell Setup (Optional)
+## Status Line (Optional)
 
-Add to your `~/.zshrc` and reload:
-
-```bash
-alias claude='claude --verbose'
-```
-
-Install the status line:
+Install the status line script and run once after install:
 
 ```bash
-cp cerveau.dev/_protocol_/statusline.sh ~/.claude/statusline.sh
-chmod +x ~/.claude/statusline.sh
+cerveau install-statusline
 ```
+
+## Updating
+
+Pull the latest protocol without losing your config or brains:
+
+```bash
+cerveau update
+```
+
+Or from inside a brain session: `/update`
 
 ## Next
 

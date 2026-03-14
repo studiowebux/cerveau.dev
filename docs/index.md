@@ -10,10 +10,16 @@ Each project gets its own brain with selective rules, hooks, and agents loaded
 from a shared protocol. MDPlanner is the single source of truth for tasks,
 notes, decisions, and progress.
 
-## Get Started
+## Quick Start
+
+```bash
+curl -fsSL https://cerveau.dev/install.sh | bash
+cerveau spawn MyApp /path/to/myapp
+cd ~/.cerveau/_brains_/myapp-brain && claude
+```
 
 → [Installation](01-getting-started/01-installation.md) — prerequisites and setup
-→ [Quick Start](01-getting-started/02-quick-start.md) — 7 steps to your first session
+→ [Quick Start](01-getting-started/02-quick-start.md) — full walkthrough
 → [How It Works](02-guides/01-how-it-works.md) — architecture and selective loading
 
 ## Community

@@ -22,15 +22,15 @@ If NAME or PROJECT are missing, ask the user before proceeding.
 
 ### 2. Spawn the brain
 
-Run from `_protocol_/` (resolve its path relative to cerveau.dev root):
+Run from any directory:
 
 ```bash
-cd <cerveau-root>/_protocol_ && make onboard NAME=<NAME> PROJECT=<PROJECT>
+cerveau onboard <NAME> <PROJECT>
 ```
 
-This creates the brain directory, generates `settings.json`, symlinks rules/hooks/agents, connects MCP, and rebuilds selective rules. Stop and report if this fails.
+This creates the brain directory, generates `settings.json`, symlinks rules/hooks/agents, wires MCP, and rebuilds selective rules. Stop and report if this fails.
 
-**STOP HERE.** Once `make onboard` succeeds, report to the user:
+**STOP HERE.** Once `cerveau onboard` succeeds, report to the user:
 
 ```
 Brain created at: <cerveau-root>/_brains_/<name>-brain
@@ -129,7 +129,7 @@ Summarize what was created:
 
 ## Guards
 
-- Never proceed past Step 2 if `make onboard` fails — fix the error first.
+- Never proceed past Step 2 if `cerveau onboard` fails — fix the error first.
 - Never create duplicate milestones — check with `list_milestones { project: "<NAME>" }` first if unsure.
 - Never invent tasks that aren't grounded in actual code or documentation findings.
 - If the project has no README or docs, do a shallow code scan to infer purpose before creating items.

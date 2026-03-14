@@ -30,9 +30,9 @@ each one loads.
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | yes | Brain name. Used by Makefile (`NAME=`) and rebuild script. Case-sensitive. |
+| `name` | string | yes | Brain name. Used by `cerveau` CLI commands. Case-sensitive. |
 | `path` | string | yes | Relative path to the brain directory from the monorepo root. |
-| `codebase` | string | no | Relative path to the code repo. Added by `make onboard` automatically. |
+| `codebase` | string | no | Relative path to the code repo. Added by `cerveau onboard` automatically. |
 | `isCore` | boolean | no | Reserved for the protocol's own brain. Set `false` for all project brains. |
 | `stacks` | array | yes | Stack rule filenames (without `.md`) to symlink from `_protocol_/.claude/rules/stack/`. |
 | `practices` | array | yes | Practice rule filenames to symlink from `_protocol_/.claude/rules/practices/`. |
@@ -51,13 +51,13 @@ _protocol_/.claude/rules/stack/go.md    →  "stacks": ["go", "docker"]
                                               also needs docker.md to exist
 ```
 
-If a declared rule filename doesn't exist in the protocol, the rebuild script
+If a declared rule filename doesn't exist in the protocol, `cerveau rebuild`
 skips it with a warning.
 
 ## After Editing
 
-Always run the rebuild script after modifying `brains.json`:
+Always rebuild after modifying `brains.json`:
 
 ```bash
-./_scripts_/rebuild-brain-rules.sh MyApp
+cerveau rebuild MyApp
 ```

@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'install.sh'
+      - 'version.txt'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -26,7 +28,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.26'
 
       - name: Install MinimalDoc
         run: go install github.com/studiowebux/minimaldoc/cmd/minimaldoc@v1.4.1
@@ -35,6 +37,8 @@ jobs:
         run: |
           minimaldoc build docs -o public
           cp docs/ecosystem.html public/ecosystem.html
+          cp install.sh public/install.sh
+          cp version.txt public/version.txt
           echo "cerveau.dev" > public/CNAME
 
       - name: Upload artifact

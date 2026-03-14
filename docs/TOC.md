@@ -18,7 +18,7 @@
   - [Agents](02-guides/06-agents.md)
   - [Skills](02-guides/07-skills.md)
 - Reference
-  - [Makefile Targets](03-reference/01-makefile.md)
+  - [CLI Reference](03-reference/01-makefile.md)
   - [brains.json Schema](03-reference/02-brains-json.md)
   - [Session Phases](03-reference/03-session-phases.md)
   - [Directory Structure](03-reference/04-directory-structure.md)

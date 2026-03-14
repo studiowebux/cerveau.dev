@@ -21,7 +21,7 @@ _brains_/<brain>/.claude/rules/workflow/local-dev.md
 
 ## How It Gets Created
 
-`rebuild-brain-rules.sh` copies the template from
+`cerveau rebuild` copies the template from
 `_protocol_/.claude/rules/workflow/local-dev.md` into the brain and
 substitutes three placeholders automatically:
 
@@ -86,7 +86,7 @@ this milestone.
 ```
 
 The absolute path is the most critical value — all git commands, builds, and
-tests must `cd` here first. The rebuild script fills in relative and absolute
+tests must `cd` here first. `cerveau rebuild` fills in relative and absolute
 paths automatically. Remote, version strategy, and latest tag are filled in
 during the first session from `git remote -v` and `git tag -l`.
 
@@ -172,5 +172,5 @@ empty milestone row), Claude treats this as a first session and fills it in:
 6. Writes the completed file back — no placeholders remaining
 
 The file is considered complete when every section has real values and no
-placeholders remain. `make validate NAME=MyApp` checks for leftover
+placeholders remain. `cerveau validate MyApp` checks for leftover
 placeholders.

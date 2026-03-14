@@ -1,7 +1,7 @@
 # Local Development Setup
 
 <!-- TEMPLATE: This file is copied (not symlinked) into each brain by
-     rebuild-brain-rules.sh. Placeholders __PROJECT__, __CODEBASE__,
+     cerveau spawn/rebuild. Placeholders __PROJECT__, __CODEBASE__,
      __CODEBASE_ABS__ are substituted automatically. All other sections
      must be filled in during the first brain session. Every brain's
      local-dev.md MUST follow this exact structure. -->
