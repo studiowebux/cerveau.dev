@@ -139,7 +139,7 @@ func ensureLocalDev(brainAbs string, brain Brain) {
 		return
 	}
 
-	codebaseAbs := filepath.Join(cerveauHome(), brain.Codebase)
+	codebaseAbs := brain.Codebase
 	mdplannerURL := os.Getenv("MDPLANNER_URL")
 	if mdplannerURL == "" {
 		mdplannerURL = "http://localhost:8003"

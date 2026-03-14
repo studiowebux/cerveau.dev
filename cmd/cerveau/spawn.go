@@ -73,9 +73,6 @@ func doSpawn(name, project, dest string, packages []string) error {
 		return fmt.Errorf("cannot create .claude directory: %w", err)
 	}
 
-	repoRoot := filepath.Dir(filepath.Dir(dest))
-	codebaseRel, _ := filepath.Rel(repoRoot, projAbs)
-
 	// Register in brains.json
 	brainPath := "_brains_/" + strings.ToLower(name) + "-brain"
 	cfg := loadBrainsConfig()
@@ -92,7 +89,7 @@ func doSpawn(name, project, dest string, packages []string) error {
 		cfg.Brains = append(cfg.Brains, Brain{
 			Name:     name,
 			Path:     brainPath,
-			Codebase: codebaseRel,
+			Codebase: projAbs,
 			Packages: packages,
 		})
 		saveBrainsConfig(cfg)
@@ -118,7 +115,7 @@ func doSpawn(name, project, dest string, packages []string) error {
 	brain := Brain{
 		Name:     name,
 		Path:     brainPath,
-		Codebase: codebaseRel,
+		Codebase: projAbs,
 		Packages: packages,
 	}
 	rebuildBrain(reg, brain)
