@@ -49,12 +49,11 @@ Close → Write progress note, leave unfinished tasks In Progress (Boot resumes 
 
 ## Adding a Second Brain
 
-Same two-session flow as the first. From `~/.cerveau/_protocol_`:
+Same flow as the first:
 
 ```bash
-cd ~/.cerveau/_protocol_ && claude
-# then: /import-project NAME=ApiServer PROJECT=/path/to/api
-# then: cd ~/.cerveau/_brains_/apiserver-brain && claude
+cerveau spawn ApiServer /path/to/api --packages studiowebux/core
+cd ~/.cerveau/_brains_/apiserver-brain && claude
 # then: /import-project
 ```
 

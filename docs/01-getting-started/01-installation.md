@@ -27,7 +27,7 @@ curl -fsSL https://cerveau.dev/install.sh | bash
 
 This will:
 
-1. Download the protocol to `~/.cerveau/`
+1. Download the packages to `~/.cerveau/`
 2. Generate an MCP token and write it to `~/.cerveau/.env`
 3. Start MDPlanner via Podman or Docker (auto-detected)
 4. Register the MDPlanner MCP globally (`--scope user`) so every Claude Code session has it
@@ -45,9 +45,9 @@ After install:
 
 ```
 ~/.cerveau/
-  _protocol_/       ← shared rules, hooks, templates
+  _packages_/       ← packages (rules, hooks, skills, agents, templates)
   _brains_/         ← one directory per brain (created by cerveau spawn)
-  _configs_/        ← brains.json registry, registry.json marketplace
+  _configs_/        ← brains.json registry, registry.json package catalog
   _scripts_/        ← backup-claude.sh
   bin/cerveau        ← CLI binary
   .env              ← MDPLANNER_MCP_TOKEN (preserved across updates)
@@ -70,7 +70,7 @@ cerveau install-statusline
 
 ## Updating
 
-Pull the latest protocol without losing your config or brains:
+Pull the latest packages without losing your config or brains:
 
 ```bash
 cerveau update

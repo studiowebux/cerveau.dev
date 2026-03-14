@@ -8,63 +8,67 @@ Full annotated layout of a Cerveau installation (`~/.cerveau/`).
 
 ```
 ~/.cerveau/
-├── _protocol_/                          # Shared protocol (single source of truth)
-│   ├── CLAUDE.md                        # Brain protocol (phases split into rule files)
-│   ├── statusline.sh                    # Status bar script (install via cerveau install-statusline)
-│   ├── templates/                       # Note templates
-│   │   ├── architecture.md
-│   │   ├── decision-record.md
-│   │   ├── feature-spec.md
-│   │   └── project-overview.md
-│   └── .claude/
-│       ├── settings.json.template       # Hooks config template (generated into each brain)
-│       ├── hooks/                       # Hook scripts (wholesale symlink in brains)
-│       │   ├── checkpoint-counter.sh
-│       │   ├── commit-validator.sh
-│       │   ├── context-warning.sh
-│       │   ├── post-edit-reminder.sh
-│       │   ├── pre-compact-handoff.sh
-│       │   └── session-context.sh       # Boot reminder + version check
-│       ├── agents/                      # Agent definitions (selective symlink in brains)
-│       │   └── minimaldoc-writer.md     # Example agent (use as template)
-│       ├── skills/                      # Skill definitions (wholesale symlink in brains)
-│       │   ├── import-project/SKILL.md
-│       │   ├── release/SKILL.md
-│       │   ├── update/SKILL.md          # /update — pull latest protocol
-│       │   └── marketplace/SKILL.md     # /marketplace — browse and install packages
-│       └── rules/                       # Rules library (selective symlinks in brains)
-│           ├── phase-boot.md            #   Phase 1 — Boot sequence (core, always loaded)
-│           ├── phase-work.md            #   Phase 2 — Work and commit flow (core, always loaded)
-│           ├── phase-close.md           #   Phase 3+4 — Write back and close (core, always loaded)
-│           ├── code-discipline.md       #   Core (always loaded)
-│           ├── goal-discipline.md       #   Core (always loaded)
-│           ├── stack/                   #   Language/framework rules — add your own
-│           ├── practices/               #   Development practice rules — add your own
-│           └── workflow/                #   Process rules
-│               ├── local-dev.md         #     Brain config table template
-│               └── mdplanner-tasks.md   #     MDPlanner task workflow
+├── _packages_/                          # Shared packages (source of truth)
+│   ├── studiowebux/
+│   │   ├── core/
+│   │   │   └── 1.0.0/
+│   │   │       ├── CLAUDE.md            # Brain protocol (phases split into rule files)
+│   │   │       ├── statusline.sh        # Status bar script (install via cerveau install-statusline)
+│   │   │       ├── templates/           # Note templates
+│   │   │       │   ├── architecture.md
+│   │   │       │   ├── decision-record.md
+│   │   │       │   ├── feature-spec.md
+│   │   │       │   └── project-overview.md
+│   │   │       ├── hooks/               # Hook scripts (wholesale symlink in brains)
+│   │   │       │   ├── checkpoint-counter.sh
+│   │   │       │   ├── commit-validator.sh
+│   │   │       │   ├── context-warning.sh
+│   │   │       │   ├── post-edit-reminder.sh
+│   │   │       │   ├── pre-compact-handoff.sh
+│   │   │       │   └── session-context.sh
+│   │   │       ├── skills/              # Skill definitions (wholesale symlink in brains)
+│   │   │       │   ├── import-project/SKILL.md
+│   │   │       │   ├── release/SKILL.md
+│   │   │       │   ├── update/SKILL.md
+│   │   │       │   └── marketplace/SKILL.md
+│   │   │       ├── rules/               # Rules library (selective symlinks in brains)
+│   │   │       │   ├── phase-boot.md
+│   │   │       │   ├── phase-work.md
+│   │   │       │   ├── phase-close.md
+│   │   │       │   ├── code-discipline.md
+│   │   │       │   ├── goal-discipline.md
+│   │   │       │   ├── stack/           #   Language/framework rules — add your own
+│   │   │       │   ├── practices/       #   Development practice rules — add your own
+│   │   │       │   └── workflow/        #   Process rules
+│   │   │       │       ├── local-dev.md
+│   │   │       │       └── mdplanner-tasks.md
+│   │   │       └── settings.json.template
+│   │   └── minimaldoc/
+│   │       └── 1.0.0/
+│   │           └── agents/              # Agent definitions (selective symlink in brains)
+│   │               └── minimaldoc-writer.md
 │
 ├── _configs_/
-│   ├── brains.json                      # Brain registry (declares what each brain loads)
-│   └── registry.json                    # Marketplace package catalog
+│   ├── brains.json                      # Brain registry (declares packages each brain loads)
+│   └── registry.json                    # Package catalog
 │
 ├── _brains_/                            # One directory per brain (created by cerveau spawn/onboard)
 │   └── <brain-name>/
-│       ├── templates/                   # Symlink → _protocol_/templates
+│       ├── templates/                   # Copied from package on spawn
 │       └── .claude/
-│           ├── CLAUDE.md                # Symlink → _protocol_/CLAUDE.md
+│           ├── CLAUDE.md                # Symlink → package CLAUDE.md
 │           ├── settings.json            # Generated — hooks + additionalDirectories (absolute path)
 │           ├── settings.local.json      # Local overrides (not committed)
-│           ├── hooks  -> _protocol_/.claude/hooks    # Wholesale symlink
-│           ├── skills -> _protocol_/.claude/skills   # Wholesale symlink
-│           ├── agents/                  # Selective symlinks (only declared agents)
-│           └── rules/                   # Selective symlinks (only declared rules)
+│           ├── hooks  -> _packages_/.../hooks     # Wholesale symlink
+│           ├── skills -> _packages_/.../skills    # Wholesale symlink
+│           ├── agents/                  # Selective symlinks (only from declared packages)
+│           └── rules/                   # Selective symlinks (only from declared packages)
 │               ├── phase-boot.md  -> ...
 │               ├── phase-work.md  -> ...
 │               ├── phase-close.md -> ...
-│               ├── stack/               #   Only stacks declared in brains.json
-│               ├── practices/           #   Only practices declared in brains.json
-│               └── workflow/            #   Only workflows declared in brains.json
+│               ├── stack/
+│               ├── practices/
+│               └── workflow/
 │                   └── local-dev.md     #   Real file (not symlink) — brain-specific config
 │
 ├── _scripts_/

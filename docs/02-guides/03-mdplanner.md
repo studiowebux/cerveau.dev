@@ -24,12 +24,12 @@ Edit `.env`:
 
 ```env
 MDPLANNER_MCP_TOKEN=replace-with-a-random-secret
-MDPLANNER_BRAINS_CONFIG=/cerveau/_configs_/brains.json  # enables Brain Manager UI
+MDPLANNER_CERVEAU_DIR=/cerveau  # enables Brain Manager UI
 MDPLANNER_CACHE=1              # enables SQLite FTS5 full-text search
 MDPLANNER_BACKUP_INTERVAL=24   # daily backups
 ```
 
-`MDPLANNER_BRAINS_CONFIG` points to `brains.json` inside the container.
+`MDPLANNER_CERVEAU_DIR` points to the Cerveau root inside the container.
 The `docker-compose.yml` mounts `~/.cerveau/` at `/cerveau` and `~/.claude` at
 `/root/.claude`, so the path above works out of the box.
 

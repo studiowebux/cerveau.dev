@@ -17,10 +17,7 @@ each one loads.
       "path": "_brains_/myapp-brain",
       "codebase": "_projects_/myapp",
       "isCore": false,
-      "stacks": ["go", "docker"],
-      "practices": ["testing", "code-review"],
-      "workflows": ["git", "local-dev", "mdplanner-tasks"],
-      "agents": ["goal-planner"]
+      "packages": ["studiowebux/core", "studiowebux/minimaldoc"]
     }
   ]
 }
@@ -33,25 +30,20 @@ each one loads.
 | `name` | string | yes | Brain name. Used by `cerveau` CLI commands. Case-sensitive. |
 | `path` | string | yes | Relative path to the brain directory from the monorepo root. |
 | `codebase` | string | no | Relative path to the code repo. Added by `cerveau onboard` automatically. |
-| `isCore` | boolean | no | Reserved for the protocol's own brain. Set `false` for all project brains. |
-| `stacks` | array | yes | Stack rule filenames (without `.md`) to symlink from `_protocol_/.claude/rules/stack/`. |
-| `practices` | array | yes | Practice rule filenames to symlink from `_protocol_/.claude/rules/practices/`. |
-| `workflows` | array | yes | Workflow rule filenames to symlink from `_protocol_/.claude/rules/workflow/`. |
-| `agents` | array | yes | Agent filenames (without `.md`) to symlink from `_protocol_/.claude/agents/`. |
+| `isCore` | boolean | no | Reserved for internal use. Set `false` for all project brains. |
+| `packages` | array | yes | Qualified package IDs to load (e.g. `"studiowebux/core"`). Resolved via `_packages_/{org}/{pkg}/{version}/` and `registry.json`. |
 
 ## Selective Loading Rules
 
-Array values must exactly match filenames in the protocol directories
-(without `.md`):
+Package IDs must match entries in `registry.json` and correspond to
+directories under `_packages_/`:
 
 ```
-_protocol_/.claude/rules/stack/go.md    →  "stacks": ["go"]
-_protocol_/.claude/rules/stack/go.md    →  "stacks": ["go", "docker"]
-                                                               ↑
-                                              also needs docker.md to exist
+_packages_/studiowebux/core/1.0.0/rules/stack/go.md    →  package "studiowebux/core" provides go stack rule
+_packages_/studiowebux/minimaldoc/1.0.0/agents/         →  package "studiowebux/minimaldoc" provides agents
 ```
 
-If a declared rule filename doesn't exist in the protocol, `cerveau rebuild`
+If a declared package doesn't exist in the registry, `cerveau rebuild`
 skips it with a warning.
 
 ## After Editing

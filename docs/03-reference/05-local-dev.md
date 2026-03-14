@@ -5,7 +5,7 @@ title: local-dev.md
 # local-dev.md
 
 `local-dev.md` is the brain's configuration file. It is the **only real file**
-in a brain's rules directory — everything else is a symlink to the protocol.
+in a brain's rules directory — everything else is a symlink to the packages.
 It is never symlinked, never shared, and never overwritten by the rebuild
 script once it exists.
 
@@ -22,7 +22,7 @@ _brains_/<brain>/.claude/rules/workflow/local-dev.md
 ## How It Gets Created
 
 `cerveau rebuild` copies the template from
-`_protocol_/.claude/rules/workflow/local-dev.md` into the brain and
+`_packages_/studiowebux/core/1.0.0/rules/workflow/local-dev.md` into the brain and
 substitutes three placeholders automatically:
 
 | Placeholder | Replaced with |

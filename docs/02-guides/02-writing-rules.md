@@ -4,17 +4,17 @@ title: Writing Rules
 
 # Writing Rules
 
-The protocol ships with no rules — you generate them for your stack. Claude
+The core package ships with no rules — you generate them for your stack. Claude
 Code can write them for you.
 
 ## Rule Types
 
 | Type | Directory | Loaded when |
 |---|---|---|
-| **Stack** | `_protocol_/.claude/rules/stack/` | Brain declares the stack |
-| **Practice** | `_protocol_/.claude/rules/practices/` | Brain declares the practice |
-| **Workflow** | `_protocol_/.claude/rules/workflow/` | Brain declares the workflow |
-| **Core** | `_protocol_/.claude/rules/` | Always — every brain |
+| **Stack** | `_packages_/studiowebux/core/1.0.0/rules/stack/` | Brain declares the stack |
+| **Practice** | `_packages_/studiowebux/core/1.0.0/rules/practices/` | Brain declares the practice |
+| **Workflow** | `_packages_/studiowebux/core/1.0.0/rules/workflow/` | Brain declares the workflow |
+| **Core** | `_packages_/studiowebux/core/1.0.0/rules/` | Always — every brain |
 
 ## Scoping Rules to File Patterns
 
@@ -94,10 +94,7 @@ Add the rule name (filename without `.md`) to the brain's array:
   "path": "_brains_/myapp-brain",
   "codebase": "_projects_/myapp",
   "isCore": false,
-  "stacks": ["go"],
-  "practices": ["testing", "code-review"],
-  "workflows": ["git", "mdplanner-tasks", "local-dev"],
-  "agents": ["goal-planner"]
+  "packages": ["studiowebux/core"]
 }
 ```
 
