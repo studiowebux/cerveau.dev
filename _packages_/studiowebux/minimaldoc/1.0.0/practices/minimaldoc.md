@@ -11,7 +11,7 @@ Use MinimalDoc for all documentation sites. Reference: https://github.com/studio
 
 ## config.yaml
 
-Every `docs/` directory must have a `config.yaml` using the 1.4.2 format.
+Every `docs/` directory must have a `config.yaml` using the 1.5.0 format.
 
 Required fields:
 
