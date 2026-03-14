@@ -1,29 +1,51 @@
 {
-  "version": "2.0.0",
+  "version": "3.0.0",
   "packages": [
     {
-      "name": "workflow-minimaldoc",
-      "description": "MinimalDoc documentation site CI and authoring workflow",
-      "type": "workflow",
+      "name": "core",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/core/1.0.0",
+      "description": "Base brain protocol — session phases, discipline rules, hooks, skills, and templates",
       "files": [
-        "rules/workflow/doc-minimaldoc.md",
-        "rules/workflow/minimaldoc-ci.md"
+        {"name": "CLAUDE.md", "type": "claude"},
+        {"name": "code-discipline.md", "type": "rules"},
+        {"name": "goal-discipline.md", "type": "rules"},
+        {"name": "phase-boot.md", "type": "rules"},
+        {"name": "phase-close.md", "type": "rules"},
+        {"name": "phase-work.md", "type": "rules"},
+        {"name": "local-dev.md", "type": "workflows", "realFile": true},
+        {"name": "mdplanner-tasks.md", "type": "workflows"},
+        {"name": "checkpoint-counter.sh", "type": "hooks"},
+        {"name": "commit-validator.sh", "type": "hooks"},
+        {"name": "context-warning.sh", "type": "hooks"},
+        {"name": "post-edit-reminder.sh", "type": "hooks"},
+        {"name": "pre-compact-handoff.sh", "type": "hooks"},
+        {"name": "session-context.sh", "type": "hooks"},
+        {"name": "import-project/SKILL.md", "type": "skills"},
+        {"name": "marketplace/SKILL.md", "type": "skills"},
+        {"name": "release/SKILL.md", "type": "skills"},
+        {"name": "update/SKILL.md", "type": "skills"},
+        {"name": "architecture.md", "type": "templates"},
+        {"name": "decision-record.md", "type": "templates"},
+        {"name": "feature-spec.md", "type": "templates"},
+        {"name": "project-overview.md", "type": "templates"}
+      ],
+      "tags": ["core", "protocol"]
+    },
+    {
+      "name": "minimaldoc",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/minimaldoc/1.0.0",
+      "description": "MinimalDoc documentation site — CI workflow, writing practices, and doc writer agent",
+      "files": [
+        {"name": "doc-minimaldoc.md", "type": "workflows"},
+        {"name": "minimaldoc-ci.md", "type": "workflows"},
+        {"name": "minimaldoc.md", "type": "practices"},
+        {"name": "minimaldoc-writer.md", "type": "agents"}
       ],
       "tags": ["docs", "minimaldoc"]
-    },
-    {
-      "name": "practice-minimaldoc",
-      "description": "MinimalDoc writing and formatting practices",
-      "type": "practice",
-      "files": ["rules/practices/minimaldoc.md"],
-      "tags": ["docs", "minimaldoc"]
-    },
-    {
-      "name": "agent-minimaldoc-writer",
-      "description": "Sub-agent for automated MinimalDoc documentation writing",
-      "type": "agent",
-      "files": ["agents/minimaldoc-writer.md"],
-      "tags": ["docs", "minimaldoc", "agent"]
     }
   ]
 }
