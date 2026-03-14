@@ -46,6 +46,19 @@ landing:
         url: "https://github.com/studiowebux/cerveau.dev"
         primary: false
 
+  steps:
+    title: "Quick Start"
+    items:
+      - title: "Install"
+        description: "One command installs the protocol, starts MDPlanner, and registers MCP globally."
+        code: "curl -fsSL https://cerveau.dev/install.sh | bash"
+      - title: "Create a Brain"
+        description: "Spawn a brain for your project. Zero files added to your codebase."
+        code: "cerveau spawn MyApp /path/to/myapp"
+      - title: "Launch"
+        description: "Open the brain session. Claude boots with full context automatically."
+        code: "cd ~/.cerveau/_brains_/myapp-brain && claude"
+
   features:
     title: "Why Cerveau.dev?"
     items:
@@ -124,7 +137,7 @@ footer:
           url: "/guides/hooks.html"
     - title: "Reference"
       items:
-        - text: "Makefile Targets"
+        - text: "CLI Reference"
           url: "/reference/makefile.html"
         - text: "brains.json Schema"
           url: "/reference/brains-json.html"

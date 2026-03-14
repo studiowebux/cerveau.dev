@@ -2,3 +2,5 @@ _backups_/
 _brains_/*/HANDOFF.md
 .DS_Store
 tmp/
+/cerveau
+/bin/

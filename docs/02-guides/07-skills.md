@@ -16,25 +16,33 @@ Skills live in `_protocol_/.claude/skills/<name>/SKILL.md`:
 _protocol_/.claude/skills/
   release/
     SKILL.md
-  deploy/
+  import-project/
+    SKILL.md
+  update/
+    SKILL.md
+  marketplace/
     SKILL.md
 ```
 
-The skill name is the directory name. Invoke it with `/release`, `/deploy`, etc.
+The skill name is the directory name. Invoke it with `/release`, `/update`, etc.
 
 A `SKILL.md` is a markdown document describing what Claude should do step by
 step. No special syntax — just clear instructions.
 
 ## Included Skills
 
-The protocol ships with two skills:
+The protocol ships with four skills:
 
 - `/release` — full release workflow: version bump, changelog, build
   verification, tag, push, GitHub release, MDPlanner progress note.
 - `/import-project` — onboard a codebase into MDPlanner and spawn its brain
   in one automated flow. Accepts `NAME=MyApp PROJECT=/path/to/code` as
-  arguments. Run this from the cerveau.dev root session to bootstrap a new
-  project.
+  arguments. Run this from the protocol session to bootstrap a new project.
+- `/update` — download and install the latest Cerveau protocol. Preserves
+  `.env`, `_brains_/`, and `brains.json`. Reports the version before and after.
+- `/marketplace` — browse available packages and install them into a brain.
+  Use `/marketplace` to list, or `/marketplace install <pkg> [brain]` to
+  install a package.
 
 Read the `SKILL.md` files in `_protocol_/.claude/skills/` for the full
 procedures and use them as templates when writing your own.

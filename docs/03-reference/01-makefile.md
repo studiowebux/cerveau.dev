@@ -1,63 +1,110 @@
 ---
-title: Makefile Targets
+title: CLI Reference
 ---
 
-# Makefile Targets
+# CLI Reference
 
-All targets run from `cerveau.dev/_protocol_/`:
-
-```bash
-cd cerveau.dev/_protocol_
-make help
-```
-
-## Targets
-
-### onboard
-
-Spawn + connect MCP + rebuild rules in one step. The fastest path to a working brain.
+The `cerveau` binary is installed at `~/.cerveau/bin/cerveau`. The installer adds it to your `PATH`.
 
 ```bash
-make onboard NAME=MyApp PROJECT=/absolute/path/to/your/code
+cerveau help
 ```
 
-Runs `spawn`, then `rebuild-brain-rules.sh`, then `claude mcp add` automatically.
-Use this for new brains. Use `spawn` + manual steps if you need more control.
+## Commands
 
 ### spawn
 
 Create a new brain and wire `.claude` into it.
 
 ```bash
-make spawn NAME=MyApp PROJECT=/absolute/path/to/your/code
+cerveau spawn MyApp /absolute/path/to/your/code
 ```
 
-- `NAME` — brain name (creates `_brains_/myapp-brain/`)
-- `PROJECT` — absolute path to your code repo
+- First argument — brain name (creates `~/.cerveau/_brains_/myapp-brain/`)
+- Second argument — absolute path to your code repo
 
 What it does:
-- Creates `_brains_/myapp-brain/` with all templates
-- Replaces `__PROJECT__` placeholders with `NAME`
-- Creates selective symlinks for rules, agents, hooks
-- Generates `settings.json` with `additionalDirectories` pointing to `PROJECT`
-- Adds an entry to `_configs_/brains.json`
 
-### install
+- Creates `_brains_/myapp-brain/` with all templates and symlinks
+- Replaces `__PROJECT__` placeholders with the brain name
+- Generates `settings.json` with `additionalDirectories` pointing to the absolute project path
+- Adds an entry to `_configs_/brains.json`
+- Auto-wires MCP globally from `~/.cerveau/.env` if present (no extra step needed)
+
+### onboard
+
+Spawn + rebuild rules in one step. The fastest path to a working brain.
+
+```bash
+cerveau onboard MyApp /absolute/path/to/your/code
+```
+
+Runs `spawn` (which handles MCP), then `rebuild`.
+Use this for new brains when you already know which stacks/practices you want.
+
+### rebuild
+
+Rebuild selective symlinks from `brains.json` for a brain.
+
+```bash
+cerveau rebuild MyApp
+```
+
+Reads the brain's entry in `_configs_/brains.json` and creates selective symlinks for rules and agents. Run this after editing `brains.json`.
+
+### update
+
+Download and apply the latest Cerveau protocol. Preserves `.env`, `_brains_/`, and `brains.json`.
+
+```bash
+cerveau update
+```
+
+Or from a brain session: `/update`
+
+Safe to run at any time — your config and brains are never overwritten.
+
+### marketplace list
+
+List all available packages in the Cerveau marketplace.
+
+```bash
+cerveau marketplace list
+```
+
+Prints each package with its name, type, description, and tags.
+
+### marketplace install
+
+Install a marketplace package into a brain.
+
+```bash
+cerveau marketplace install workflow-minimaldoc MyApp
+```
+
+- First argument — package name from `marketplace list`
+- Second argument — brain name to install into
+
+Adds the package files to the brain's `brains.json` entry (under the appropriate type key: `workflows`, `practices`, `agents`, or `stacks`), then rebuilds rules automatically.
+
+Or from a brain session: `/marketplace install workflow-minimaldoc MyApp`
+
+### install-statusline
 
 Install the status line script to `~/.claude/statusline.sh`.
 
 ```bash
-make install
+cerveau install-statusline
 ```
 
-Copies `_protocol_/statusline.sh` and makes it executable. Run once after cloning.
+Copies `_protocol_/statusline.sh` and makes it executable. Run once after installing Cerveau.
 
 ### status
 
 Show install status for a brain.
 
 ```bash
-make status NAME=MyApp
+cerveau status MyApp
 ```
 
 Reports: symlink status for rules/hooks/agents, settings.json validity,
@@ -68,7 +115,7 @@ presence of CLAUDE.md files.
 List all existing brains.
 
 ```bash
-make list
+cerveau list
 ```
 
 Scans `_brains_/` and prints all `*-brain` directories with their paths.
@@ -78,51 +125,45 @@ Scans `_brains_/` and prints all `*-brain` directories with their paths.
 Check a brain has no remaining `__PROJECT__` placeholders.
 
 ```bash
-make validate NAME=MyApp
+cerveau validate MyApp
 # expected: OK: No __PROJECT__ placeholders found
 ```
 
-Run this after `make spawn` to confirm the template was fully substituted.
+Run this after `cerveau spawn` to confirm the template was fully substituted.
 
 ### diff
 
 Show what changed between the protocol template and a brain.
 
 ```bash
-make diff NAME=MyApp
+cerveau diff MyApp
 ```
 
 Useful for reviewing customizations made to a brain after spawning.
 
-### sync-shareable
-
-Copy changed protocol files to `_shareable_/`. Only updates files that differ.
-
-```bash
-make sync-shareable
-```
-
-Run this from the monorepo `_protocol_/` (not from `_shareable_/_protocol_/`).
-Then `cd _shareable_` and commit + push to GitHub.
-
 ### help
 
-Print all available targets with descriptions.
+Print all available commands with descriptions.
 
 ```bash
-make help
+cerveau help
 ```
 
 ## Workflow
 
 ```bash
-# Fast path — all in one
-make onboard NAME=MyApp PROJECT=/path/to/myapp
+# Install once
+curl -fsSL https://cerveau.dev/install.sh | bash
 
-# Manual path — step by step
-make spawn NAME=MyApp PROJECT=/path/to/myapp
-cd ../_brains_/myapp-brain && claude mcp add --transport http mdplanner \
-  http://localhost:8003/mcp --header "Authorization: Bearer <token>"
-cd cerveau.dev && ./_scripts_/rebuild-brain-rules.sh MyApp
-cd _brains_/myapp-brain && claude
+# Create a brain
+cerveau spawn MyApp /path/to/myapp
+
+# Launch the brain
+cd ~/.cerveau/_brains_/myapp-brain && claude
+
+# Add a marketplace package
+cerveau marketplace install workflow-minimaldoc MyApp
+
+# Update to the latest protocol
+cerveau update
 ```

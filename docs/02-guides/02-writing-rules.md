@@ -41,7 +41,7 @@ Keep general practices (error handling, architecture, security) as always-loaded
 
 ## Generate with Claude
 
-Open Claude Code inside `cerveau.dev/` and use these prompts:
+Open Claude Code inside `~/.cerveau/` and use these prompts:
 
 ### Stack rules
 
@@ -104,7 +104,7 @@ Add the rule name (filename without `.md`) to the brain's array:
 Then rebuild:
 
 ```bash
-./_scripts_/rebuild-brain-rules.sh MyApp
+cerveau rebuild MyApp
 ```
 
 ## Evolving Rules

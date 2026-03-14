@@ -10,10 +10,13 @@ to.
 
 ## Container Setup
 
-The `compose.yml` and `.env.example` are at the cerveau.dev root:
+If you used `curl -fsSL https://cerveau.dev/install.sh | bash`, MDPlanner is
+already running and MCP is registered globally. Skip to [Session Workflow](#session-workflow).
+
+For manual setup, the `docker-compose.yml` and `.env.example` are at `~/.cerveau/`:
 
 ```bash
-cd cerveau.dev
+cd ~/.cerveau
 cp .env.example .env
 ```
 
@@ -27,7 +30,7 @@ MDPLANNER_BACKUP_INTERVAL=24   # daily backups
 ```
 
 `MDPLANNER_BRAINS_CONFIG` points to `brains.json` inside the container.
-The `compose.yml` mounts `cerveau.dev/` at `/cerveau` and `~/.claude` at
+The `docker-compose.yml` mounts `~/.cerveau/` at `/cerveau` and `~/.claude` at
 `/root/.claude`, so the path above works out of the box.
 
 Generate a token:
@@ -70,6 +73,10 @@ Start:
 podman compose up -d
 ```
 
+:::info
+Replace `podman` with `docker` if that's your container runtime. Both work identically.
+:::
+
 Verify:
 
 ```bash
@@ -78,25 +85,19 @@ curl -s http://localhost:8003/health
 
 Open http://localhost:8003 to confirm the UI loads.
 
-## Connect the Brain
+## MCP Registration
 
-Run this from inside your brain directory:
+The installer registers MCP globally (`--scope user`), so every Claude Code
+session has access. To verify or re-register manually:
 
 ```bash
-cd cerveau.dev/_brains_/myapp-brain
+# Verify
+claude mcp list
 
-claude mcp add --transport http mdplanner \
+# Re-register (token from ~/.cerveau/.env)
+claude mcp add --transport http --scope user mdplanner \
   http://localhost:8003/mcp \
   --header "Authorization: Bearer YOUR_TOKEN_HERE"
-```
-
-Replace `YOUR_TOKEN_HERE` with the value from `.env`.
-
-Verify:
-
-```bash
-claude mcp list
-# mdplanner  http  http://localhost:8003/mcp
 ```
 
 ## Session Workflow

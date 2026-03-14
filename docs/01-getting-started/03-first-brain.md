@@ -9,7 +9,7 @@ What happens when you launch your first session.
 ## Launch
 
 ```bash
-cd cerveau.dev/_brains_/myapp-brain && claude
+cd ~/.cerveau/_brains_/myapp-brain && claude
 ```
 
 ## Phase 1 — Boot
@@ -49,34 +49,34 @@ Close → Write progress note, leave unfinished tasks In Progress (Boot resumes 
 
 ## Adding a Second Brain
 
-Same two-session flow as the first. From `cerveau.dev/_protocol_`:
+Same two-session flow as the first. From `~/.cerveau/_protocol_`:
 
 ```bash
-cd cerveau.dev/_protocol_ && claude
+cd ~/.cerveau/_protocol_ && claude
 # then: /import-project NAME=ApiServer PROJECT=/path/to/api
-# then: cd ../../_brains_/api-brain && claude
+# then: cd ~/.cerveau/_brains_/apiserver-brain && claude
 # then: /import-project
 ```
 
 ## Adding a Project Repo
 
-Projects live under `_projects_/` as git submodules or local directories:
+Projects live anywhere on disk — your existing repos, git submodules, etc.:
 
 ```bash
-git submodule add git@github.com:org/repo.git _projects_/myapp
+cerveau spawn MyApp /path/to/myapp
 ```
 
-The brain's `settings.json` links to the project via `additionalDirectories`. Zero files are added to the project repository — the project stays unaware of cerveau.dev.
+The brain's `settings.json` links to the project via `additionalDirectories`. Zero files are added to the project repository — the project stays unaware of Cerveau.
 
 ## Troubleshooting
 
-| Symptom                         | Fix                                                                           |
-| ------------------------------- | ----------------------------------------------------------------------------- |
-| `curl health` fails             | `podman compose up -d` from the cerveau.dev root                              |
-| `claude mcp list` shows nothing | Re-run `claude mcp add` from inside the brain directory                       |
-| Claude doesn't run Boot         | Check `.claude/CLAUDE.md` exists in the brain dir                             |
-| `__PROJECT__` still in files    | `make validate NAME=X` shows where, re-run `make onboard`                     |
-| Rules not loading               | Re-run `rebuild-brain-rules.sh`, check names match filenames in `brains.json` |
-| Hook errors about `jq`          | `brew install jq` or `apt install jq`                                         |
-| MCP auth fails (401)            | Token in `claude mcp add` must match `MDPLANNER_MCP_TOKEN` in `.env`          |
-| Port 8003 already in use        | Edit `compose.yml` to change the host port                                    |
+| Symptom                         | Fix                                                                              |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| `curl health` fails             | `podman compose -f ~/.cerveau/docker-compose.yml up -d` (or `docker compose`)    |
+| `claude mcp list` shows nothing | Re-run the installer or: `claude mcp add --scope user ...` (see `.env` for token) |
+| Claude doesn't run Boot         | Check `.claude/CLAUDE.md` exists in the brain dir                                |
+| `__PROJECT__` still in files    | `cerveau validate X` shows where; re-run `cerveau onboard X /path` |
+| Rules not loading               | Re-run `cerveau rebuild X`, check names match `brains.json` |
+| Hook errors about `jq`          | `brew install jq` or `apt install jq`                                            |
+| MCP auth fails (401)            | Token in `claude mcp add` must match `MDPLANNER_MCP_TOKEN` in `~/.cerveau/.env` |
+| Port 8003 already in use        | Edit `~/.cerveau/docker-compose.yml` to change the host port                    |

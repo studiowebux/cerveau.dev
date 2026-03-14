@@ -28,7 +28,7 @@ array:
 An empty array (`[]`) links all agents from `_protocol_/.claude/agents/` into
 the brain.
 
-After editing `brains.json`, run `rebuild-brain-rules.sh MyApp` to update the
+After editing `brains.json`, run `cerveau rebuild MyApp` to update the
 symlinks.
 
 ## Writing Agents with Claude

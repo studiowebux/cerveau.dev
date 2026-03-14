@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "packages": [
+    {
+      "name": "workflow-minimaldoc",
+      "description": "MinimalDoc documentation site CI and authoring workflow",
+      "type": "workflow",
+      "files": [
+        "rules/workflow/doc-minimaldoc.md",
+        "rules/workflow/minimaldoc-ci.md"
+      ],
+      "tags": ["docs", "minimaldoc"]
+    },
+    {
+      "name": "practice-minimaldoc",
+      "description": "MinimalDoc writing and formatting practices",
+      "type": "practice",
+      "files": ["rules/practices/minimaldoc.md"],
+      "tags": ["docs", "minimaldoc"]
+    },
+    {
+      "name": "agent-minimaldoc-writer",
+      "description": "Sub-agent for automated MinimalDoc documentation writing",
+      "type": "agent",
+      "files": ["agents/minimaldoc-writer.md"],
+      "tags": ["docs", "minimaldoc", "agent"]
+    }
+  ]
+}
