@@ -32,7 +32,7 @@ _packages_/                  _configs_/brains.json        Your code repo
 | ---------------------------------- | ---------------------------------------------------------------- |
 | `_packages_/`                      | Source of truth — rules, hooks, skills, agents, templates        |
 | `_configs_/brains.json`            | Brain registry — declares what each brain loads                  |
-| `_brains_/<name>/`                 | Per-project brain directory (created by `/import-project`)       |
+| `_brains_/<name>/`                 | Per-project brain directory (created by `cerveau spawn`)         |
 | `bin/cerveau`                      | CLI binary — spawn, rebuild, update, marketplace, etc.           |
 | MDPlanner (MCP)                    | External task/note store — Claude reads and writes via MCP tools |
 
@@ -84,7 +84,7 @@ A brain using 2 stacks, 3 practices, 3 workflows, and 2 agents typically loads
 | ------------------------------------------------------ | -------- | ----------------------------------- |
 | `_packages_/**`                                        | Packages | Human (templates and rules)         |
 | `_brains_/<brain>/.claude/CLAUDE.md`                   | Packages | Symlink — auto-updated              |
-| `_brains_/<brain>/.claude/settings.json`               | Brain    | `cerveau onboard` (generated)       |
+| `_brains_/<brain>/.claude/settings.json`               | Brain    | `cerveau spawn` (generated)         |
 | `_brains_/<brain>/.claude/rules/**`                    | Packages | `cerveau rebuild` (symlinks)        |
 | `_brains_/<brain>/.claude/rules/workflow/local-dev.md` | Brain    | Human (real file, not symlinked)    |
 | `_configs_/brains.json`                                | Config   | Human                               |

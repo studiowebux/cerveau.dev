@@ -29,7 +29,7 @@ each one loads.
 |---|---|---|---|
 | `name` | string | yes | Brain name. Used by `cerveau` CLI commands. Case-sensitive. |
 | `path` | string | yes | Relative path to the brain directory from the monorepo root. |
-| `codebase` | string | no | Relative path to the code repo. Added by `cerveau onboard` automatically. |
+| `codebase` | string | no | Relative path to the code repo. Added by `cerveau spawn` automatically. |
 | `isCore` | boolean | no | Reserved for internal use. Set `false` for all project brains. |
 | `packages` | array | yes | Qualified package IDs to load (e.g. `"studiowebux/core"`). Resolved via `_packages_/{org}/{pkg}/{version}/` and `registry.json`. |
 

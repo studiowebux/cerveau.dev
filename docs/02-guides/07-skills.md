@@ -16,8 +16,6 @@ Skills live in `_packages_/studiowebux/core/1.0.0/skills/<name>/SKILL.md`:
 _packages_/studiowebux/core/1.0.0/skills/
   release/
     SKILL.md
-  import-project/
-    SKILL.md
   update/
     SKILL.md
   marketplace/
@@ -31,13 +29,10 @@ step. No special syntax — just clear instructions.
 
 ## Included Skills
 
-The core package ships with four skills:
+The core package ships with three skills:
 
 - `/release` — full release workflow: version bump, changelog, build
   verification, tag, push, GitHub release, MDPlanner progress note.
-- `/import-project` — onboard a codebase into MDPlanner and spawn its brain
-  in one automated flow. Accepts `NAME=MyApp PROJECT=/path/to/code` as
-  arguments. Run this from the protocol session to bootstrap a new project.
 - `/update` — download and install the latest Cerveau protocol. Preserves
   `.env`, `_brains_/`, and `brains.json`. Reports the version before and after.
 - `/marketplace` — browse available packages and install them into a brain.

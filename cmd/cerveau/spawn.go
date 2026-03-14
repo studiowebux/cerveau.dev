@@ -46,10 +46,15 @@ func doSpawn(name, project, dest string, packages []string) error {
 	}
 
 	if dirExists(dest) {
-		return fmt.Errorf("%s already exists", dest)
+		fmt.Fprintf(os.Stderr, "Error: %s already exists\n", dest)
+		fmt.Fprintln(os.Stderr, "Use 'cerveau destroy' to remove it first, or pick a different name.")
+		os.Exit(1)
 	}
 	if !dirExists(projAbs) {
-		return fmt.Errorf("project directory %s does not exist", project)
+		if err := os.MkdirAll(projAbs, 0755); err != nil {
+			return fmt.Errorf("cannot create project directory %s: %w", projAbs, err)
+		}
+		fmt.Printf("  Created project directory: %s\n", projAbs)
 	}
 
 	// Validate all packages exist in registry
@@ -130,6 +135,8 @@ func doSpawn(name, project, dest string, packages []string) error {
 	fmt.Println()
 	fmt.Printf("  cd %s && claude\n", dest)
 	fmt.Println()
+	fmt.Println("Then type 'boot' to configure the brain.")
+	fmt.Println()
 	fmt.Println("To add more packages:")
 	fmt.Printf("  cerveau marketplace install <org/pkg> %s\n", name)
 	fmt.Println()
@@ -137,23 +144,6 @@ func doSpawn(name, project, dest string, packages []string) error {
 	return nil
 }
 
-func cmdOnboard(name, project string, packages []string) {
-	dest := brainDirFor(name)
-
-	if err := doSpawn(name, project, dest, packages); err != nil {
-		os.RemoveAll(dest)
-		rollbackBrainsJSON(name)
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Rolled back: removed %s\n", dest)
-		os.Exit(1)
-	}
-
-	fmt.Println("Brain ready. Launch and run the import skill:")
-	fmt.Println()
-	fmt.Printf("  cd %s && claude\n", dest)
-	fmt.Println("  Then: /import-project")
-	fmt.Println()
-}
 
 func autoWireMCP() {
 	envFile := filepath.Join(cerveauHome(), ".env")

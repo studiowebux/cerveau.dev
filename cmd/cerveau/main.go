@@ -20,13 +20,6 @@ func main() {
 		packages := parsePackagesFlag(os.Args[4:])
 		cmdSpawn(os.Args[2], os.Args[3], packages)
 
-	case "onboard":
-		if len(os.Args) < 4 {
-			fatal("Usage: cerveau onboard <name> <project-path> [--packages org/pkg,org/pkg]")
-		}
-		packages := parsePackagesFlag(os.Args[4:])
-		cmdOnboard(os.Args[2], os.Args[3], packages)
-
 	case "rebuild":
 		name := ""
 		if len(os.Args) > 2 {

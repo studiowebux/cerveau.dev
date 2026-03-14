@@ -51,9 +51,7 @@ See [Writing Rules](../02-guides/02-writing-rules.md) for more prompts.
 
 ---
 
-## Step 3 — Onboard a Project
-
-Use the CLI to spawn a brain and onboard a project:
+## Step 3 — Spawn a Brain
 
 ```bash
 cerveau spawn MyApp /absolute/path/to/your/code --packages studiowebux/core
@@ -81,20 +79,12 @@ cd ~/.cerveau/_brains_/myapp-brain && claude
 
 ---
 
-## Step 5 — Complete Setup
+## Step 5 — Boot
 
-Inside the brain session, run the skill again:
+Inside the brain session, type `boot`. Claude will read the rules,
+explore the codebase, fill `local-dev.md`, and set up MDPlanner state.
 
-```
-/import-project
-```
-
-Claude will explore the codebase, fill `local-dev.md`, and create the full
-MDPlanner state: portfolio item, brief, architecture note, milestones, and
-tasks.
-
-From the second session on, Boot happens automatically and Claude picks up
-where it left off.
+Type `boot` at the start of every session to trigger Phase 1.
 
 ---
 

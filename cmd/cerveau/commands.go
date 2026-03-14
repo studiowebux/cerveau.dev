@@ -165,7 +165,6 @@ Usage: cerveau <command> [args]
 
 Commands:
   spawn <name> <project> [--packages p1,p2]   Create a new brain (default: studiowebux/core)
-  onboard <name> <project> [--packages p1,p2]  Spawn + import in one step
   rebuild [name]                                Rebuild brain from packages
   update                                        Download the latest Cerveau packages
   marketplace list                              List available packages

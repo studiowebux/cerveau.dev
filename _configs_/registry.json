@@ -1,5 +1,5 @@
 {
-  "version": "3.0.0",
+  "version": "1.0.0",
   "packages": [
     {
       "name": "core",
@@ -22,7 +22,6 @@
         {"name": "post-edit-reminder.sh", "type": "hooks"},
         {"name": "pre-compact-handoff.sh", "type": "hooks"},
         {"name": "session-context.sh", "type": "hooks"},
-        {"name": "import-project/SKILL.md", "type": "skills"},
         {"name": "marketplace/SKILL.md", "type": "skills"},
         {"name": "release/SKILL.md", "type": "skills"},
         {"name": "update/SKILL.md", "type": "skills"},

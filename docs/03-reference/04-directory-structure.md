@@ -27,7 +27,6 @@ Full annotated layout of a Cerveau installation (`~/.cerveau/`).
 │   │   │       │   ├── pre-compact-handoff.sh
 │   │   │       │   └── session-context.sh
 │   │   │       ├── skills/              # Skill definitions (wholesale symlink in brains)
-│   │   │       │   ├── import-project/SKILL.md
 │   │   │       │   ├── release/SKILL.md
 │   │   │       │   ├── update/SKILL.md
 │   │   │       │   └── marketplace/SKILL.md
@@ -52,7 +51,7 @@ Full annotated layout of a Cerveau installation (`~/.cerveau/`).
 │   ├── brains.json                      # Brain registry (declares packages each brain loads)
 │   └── registry.json                    # Package catalog
 │
-├── _brains_/                            # One directory per brain (created by cerveau spawn/onboard)
+├── _brains_/                            # One directory per brain (created by cerveau spawn)
 │   └── <brain-name>/
 │       ├── templates/                   # Copied from package on spawn
 │       └── .claude/

@@ -130,7 +130,7 @@ Register them in `_configs_/registry.local.json`:
 
 ```json
 {
-  "version": "3.0.0",
+  "version": "1.0.0",
   "packages": [
     {
       "name": "my-hooks",

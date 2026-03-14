@@ -54,7 +54,7 @@ Same flow as the first:
 ```bash
 cerveau spawn ApiServer /path/to/api --packages studiowebux/core
 cd ~/.cerveau/_brains_/apiserver-brain && claude
-# then: /import-project
+# then type: boot
 ```
 
 ## Adding a Project Repo
@@ -74,7 +74,7 @@ The brain's `settings.json` links to the project via `additionalDirectories`. Ze
 | `curl health` fails             | `podman compose -f ~/.cerveau/docker-compose.yml up -d` (or `docker compose`)    |
 | `claude mcp list` shows nothing | Re-run the installer or: `claude mcp add --scope user ...` (see `.env` for token) |
 | Claude doesn't run Boot         | Check `.claude/CLAUDE.md` exists in the brain dir                                |
-| `__PROJECT__` still in files    | `cerveau validate X` shows where; re-run `cerveau onboard X /path` |
+| `__PROJECT__` still in files    | `cerveau validate X` shows where; re-run `cerveau spawn X /path` |
 | Rules not loading               | Re-run `cerveau rebuild X`, check names match `brains.json` |
 | Hook errors about `jq`          | `brew install jq` or `apt install jq`                                            |
 | MCP auth fails (401)            | Token in `claude mcp add` must match `MDPLANNER_MCP_TOKEN` in `~/.cerveau/.env` |

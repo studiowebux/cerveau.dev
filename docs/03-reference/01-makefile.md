@@ -31,16 +31,6 @@ What it does:
 - Adds an entry to `_configs_/brains.json`
 - Auto-wires MCP globally from `~/.cerveau/.env` if present (no extra step needed)
 
-### onboard
-
-Spawn + rebuild rules in one step. The fastest path to a working brain.
-
-```bash
-cerveau onboard MyApp /absolute/path/to/your/code
-```
-
-Runs `spawn` (which handles MCP), then `rebuild`.
-Use this for new brains when you already know which stacks/practices you want.
 
 ### rebuild
 

@@ -87,7 +87,7 @@ func installPackageFiles(brainAbs string, pkg Package) (int, int) {
 
 		destPath := filepath.Join(brainAbs, destDir, f.Name)
 
-		// Ensure parent directory exists (handles skills/import-project/SKILL.md)
+		// Ensure parent directory exists (handles nested paths like skills/foo/SKILL.md)
 		os.MkdirAll(filepath.Dir(destPath), 0755)
 
 		// Preserve existing real files

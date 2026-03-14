@@ -77,7 +77,7 @@ The rule files and registry entry must ship together in the same PR.
 
 ```json
 {
-  "version": "3.0.0",
+  "version": "1.0.0",
   "packages": [
     {
       "name": "package-name",
