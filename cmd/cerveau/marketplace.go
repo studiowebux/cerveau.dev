@@ -2,50 +2,77 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
+	"os"
 	"strings"
 )
 
 func cmdMarketplaceList() {
-	if !fileExists(registryJSONPath()) {
-		fmt.Println("No marketplace registry found. Run 'cerveau update' to fetch the latest catalog.")
-		return
-	}
-	reg := loadRegistry()
+	reg := loadMergedRegistry()
 
 	fmt.Println()
 	fmt.Printf("Cerveau Marketplace — %d packages\n", len(reg.Packages))
 	fmt.Println()
 
 	for _, p := range reg.Packages {
-		fmt.Printf("  %-35s [%s]  %s\n", p.Name, p.Type, p.Description)
+		fmt.Printf("  %-40s v%-8s %s\n", p.QualifiedID(), p.Version, p.Description)
 		if len(p.Tags) > 0 {
-			fmt.Printf("  %-35s              tags: %s\n", "", strings.Join(p.Tags, ", "))
+			fmt.Printf("  %-40s          tags: %s\n", "", strings.Join(p.Tags, ", "))
 		}
 	}
 	fmt.Println()
 }
 
-func cmdMarketplaceInstall(pkgName, brainName string) {
-	if !fileExists(registryJSONPath()) {
-		fatal("No marketplace registry found. Run 'cerveau update' to fetch the latest catalog.")
+func cmdMarketplaceInfo(qualifiedID string) {
+	reg := loadMergedRegistry()
+	pkg := findPackage(reg, qualifiedID)
+	if pkg == nil {
+		fatalf("Package %q not found. Run: cerveau marketplace list", qualifiedID)
 	}
-	reg := loadRegistry()
-	cfg := loadBrainsConfig()
 
-	// Find package
-	var pkg *Package
-	for i := range reg.Packages {
-		if reg.Packages[i].Name == pkgName {
-			pkg = &reg.Packages[i]
-			break
+	fmt.Println()
+	fmt.Printf("  Package:     %s\n", pkg.QualifiedID())
+	fmt.Printf("  Version:     %s\n", pkg.Version)
+	fmt.Printf("  Description: %s\n", pkg.Description)
+	fmt.Printf("  Path:        %s\n", pkg.Path)
+	if len(pkg.Tags) > 0 {
+		fmt.Printf("  Tags:        %s\n", strings.Join(pkg.Tags, ", "))
+	}
+	fmt.Println()
+	fmt.Printf("  Files (%d):\n", len(pkg.Files))
+	for _, f := range pkg.Files {
+		flag := ""
+		if f.RealFile {
+			flag = " (real file)"
+		}
+		fmt.Printf("    [%-10s] %s%s\n", f.Type, f.Name, flag)
+	}
+	fmt.Println()
+}
+
+func cmdMarketplaceInstall(qualifiedID, brainName string) {
+	reg := loadMergedRegistry()
+
+	// Validate package
+	pkg := findPackage(reg, qualifiedID)
+	if pkg == nil {
+		fatalf("Package %q not found. Run: cerveau marketplace list", qualifiedID)
+	}
+
+	// Validate package files exist on disk
+	missing := 0
+	for _, f := range pkg.Files {
+		src := resolveFilePath(*pkg, f)
+		if !fileExists(src) {
+			fmt.Fprintf(os.Stderr, "  Warning: %s not found at %s\n", f.Name, src)
+			missing++
 		}
 	}
-	if pkg == nil {
-		fatalf("Error: package not found: %s", pkgName)
+	if missing > 0 {
+		fmt.Fprintf(os.Stderr, "  %d file(s) missing from package. Install may be incomplete.\n", missing)
 	}
 
-	// Find brain
+	// Validate brain
+	cfg := loadBrainsConfig()
 	var brain *Brain
 	for i := range cfg.Brains {
 		if cfg.Brains[i].Name == brainName {
@@ -54,40 +81,60 @@ func cmdMarketplaceInstall(pkgName, brainName string) {
 		}
 	}
 	if brain == nil {
-		fatalf("Error: brain not found in brains.json: %s", brainName)
+		fatalf("Brain %q not found in brains.json. Run: cerveau list", brainName)
 	}
 
-	// Map package type to brains.json key
-	typeMap := map[string]*[]string{
-		"workflow": &brain.Workflows,
-		"practice": &brain.Practices,
-		"agent":    &brain.Agents,
-		"stack":    &brain.Stacks,
+	// Check if already installed
+	if contains(brain.Packages, qualifiedID) {
+		fmt.Printf("  Already installed: %s in %s\n", qualifiedID, brainName)
+		return
 	}
 
-	target, ok := typeMap[pkg.Type]
-	if !ok {
-		fatalf("Error: unknown package type: %s", pkg.Type)
-	}
+	// Add package and save
+	brain.Packages = append(brain.Packages, qualifiedID)
+	saveBrainsConfig(cfg)
+	fmt.Printf("  Added %s to %s\n", qualifiedID, brainName)
 
-	// Extract stems from file paths
-	var added []string
-	for _, f := range pkg.Files {
-		stem := strings.TrimSuffix(filepath.Base(f), ".md")
-		if !contains(*target, stem) {
-			*target = append(*target, stem)
-			added = append(added, stem)
+	// Rebuild
+	fmt.Println("  Rebuilding rules...")
+	rebuildBrain(reg, *brain)
+	fmt.Println("Done.")
+}
+
+func cmdMarketplaceUninstall(qualifiedID, brainName string) {
+	cfg := loadBrainsConfig()
+
+	var brain *Brain
+	for i := range cfg.Brains {
+		if cfg.Brains[i].Name == brainName {
+			brain = &cfg.Brains[i]
+			break
 		}
 	}
-
-	if len(added) > 0 {
-		saveBrainsConfig(cfg)
-		fmt.Printf("  Added to %ss: %s\n", pkg.Type, strings.Join(added, ", "))
-	} else {
-		fmt.Printf("  Already installed: %s\n", pkgName)
+	if brain == nil {
+		fatalf("Brain %q not found in brains.json. Run: cerveau list", brainName)
 	}
 
+	// Find and remove
+	found := false
+	for i, p := range brain.Packages {
+		if p == qualifiedID {
+			brain.Packages = append(brain.Packages[:i], brain.Packages[i+1:]...)
+			found = true
+			break
+		}
+	}
+	if !found {
+		fmt.Printf("  Package %s is not installed in %s\n", qualifiedID, brainName)
+		return
+	}
+
+	saveBrainsConfig(cfg)
+	fmt.Printf("  Removed %s from %s\n", qualifiedID, brainName)
+
+	// Rebuild to clean up stale symlinks
 	fmt.Println("  Rebuilding rules...")
-	cmdRebuild(brainName)
+	reg := loadMergedRegistry()
+	rebuildBrain(reg, *brain)
 	fmt.Println("Done.")
 }
