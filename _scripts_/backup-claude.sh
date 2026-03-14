@@ -2,7 +2,7 @@
 set -euo pipefail
 
 CLAUDE_DIR="${HOME}/.claude"
-BACKUP_DIR="$(cd "$(dirname "$0")/../_backups_" && pwd)"
+BACKUP_DIR="$(mkdir -p "$(dirname "$0")/../backups" && cd "$(dirname "$0")/../backups" && pwd)"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 ARCHIVE="${BACKUP_DIR}/claude-${TIMESTAMP}.tar.gz"
 
