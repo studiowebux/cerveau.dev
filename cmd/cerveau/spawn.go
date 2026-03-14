@@ -78,7 +78,6 @@ func doSpawn(name, project, dest string, packages []string) error {
 
 	// Register in brains.json
 	brainPath := "_brains_/" + strings.ToLower(name) + "-brain"
-	bjPath := brainsJSONPath()
 	cfg := loadBrainsConfig()
 	exists := false
 	for _, b := range cfg.Brains {
@@ -99,7 +98,6 @@ func doSpawn(name, project, dest string, packages []string) error {
 		saveBrainsConfig(cfg)
 		fmt.Printf("  brains.json: added %s\n", name)
 	}
-	_ = bjPath
 
 	// Generate settings.json
 	templatePath := filepath.Join(templatesDir(), "settings.json.template")

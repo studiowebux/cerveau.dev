@@ -73,7 +73,6 @@ func cerveauHome() string {
 	return filepath.Join(home, ".cerveau")
 }
 
-func packagesDir() string  { return filepath.Join(cerveauHome(), "_packages_") }
 func brainBaseDir() string { return filepath.Join(cerveauHome(), "_brains_") }
 func configsDir() string   { return filepath.Join(cerveauHome(), "_configs_") }
 func templatesDir() string { return filepath.Join(cerveauHome(), "_templates_") }
@@ -206,32 +205,7 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
-func must(err error) {
-	if err != nil {
-		fatalf("Error: %v", err)
-	}
-}
 
-func loadJSONMap(path string) map[string]any {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		fatalf("Cannot read %s: %v", path, err)
-	}
-	var m map[string]any
-	if err := json.Unmarshal(data, &m); err != nil {
-		fatalf("Invalid JSON in %s: %v", path, err)
-	}
-	return m
-}
-
-func saveJSONMap(path string, m map[string]any) {
-	data, err := json.MarshalIndent(m, "", "  ")
-	if err != nil {
-		fatalf("Cannot serialize JSON: %v", err)
-	}
-	data = append(data, '\n')
-	must(os.WriteFile(path, data, 0644))
-}
 
 func replaceInFile(path string, replacements map[string]string) error {
 	data, err := os.ReadFile(path)
