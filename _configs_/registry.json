@@ -111,6 +111,17 @@
         {"name": "webuxlab.md", "type": "stacks"}
       ],
       "tags": ["theme", "tailwind", "light-dark"]
+    },
+    {
+      "name": "design-tools",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/design-tools/1.0.0",
+      "description": "Design extraction agent — scans codebases and produces structured design sheets from stylesheets, inline styles, and configs",
+      "files": [
+        {"name": "theme-extractor.md", "type": "agents"}
+      ],
+      "tags": ["design", "agent", "extraction"]
     }
   ]
 }

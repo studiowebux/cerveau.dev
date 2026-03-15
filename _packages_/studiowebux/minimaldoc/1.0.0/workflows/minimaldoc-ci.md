@@ -14,7 +14,7 @@ documentation sites to GitHub Pages.
 Use `go install` with the full subpackage path and a pinned version:
 
 ```bash
-go install github.com/studiowebux/minimaldoc/cmd/minimaldoc@v1.6.0
+go install github.com/studiowebux/minimaldoc/cmd/minimaldoc@v1.7.0
 ```
 
 ## Workflow template
@@ -51,7 +51,7 @@ jobs:
           go-version: '1.26'
 
       - name: Install MinimalDoc
-        run: go install github.com/studiowebux/minimaldoc/cmd/minimaldoc@v1.6.0
+        run: go install github.com/studiowebux/minimaldoc/cmd/minimaldoc@v1.7.0
 
       - name: Build Documentation
         run: minimaldoc build docs -o public
