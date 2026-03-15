@@ -6,14 +6,70 @@ import (
 	"strings"
 )
 
-func cmdMarketplaceList() {
+func cmdMarketplaceList(args []string) {
 	reg := loadMergedRegistry()
 
+	// Parse filter flags
+	var filterText, filterTag, filterOrg string
+	for i := 0; i < len(args); i++ {
+		switch {
+		case args[i] == "--tag" && i+1 < len(args):
+			filterTag = strings.ToLower(args[i+1])
+			i++
+		case strings.HasPrefix(args[i], "--tag="):
+			filterTag = strings.ToLower(strings.TrimPrefix(args[i], "--tag="))
+		case args[i] == "--org" && i+1 < len(args):
+			filterOrg = strings.ToLower(args[i+1])
+			i++
+		case strings.HasPrefix(args[i], "--org="):
+			filterOrg = strings.ToLower(strings.TrimPrefix(args[i], "--org="))
+		default:
+			filterText = strings.ToLower(args[i])
+		}
+	}
+
+	var matched []Package
+	for _, p := range reg.Packages {
+		if filterOrg != "" && strings.ToLower(p.Org) != filterOrg {
+			continue
+		}
+		if filterTag != "" {
+			hasTag := false
+			for _, t := range p.Tags {
+				if strings.ToLower(t) == filterTag {
+					hasTag = true
+					break
+				}
+			}
+			if !hasTag {
+				continue
+			}
+		}
+		if filterText != "" {
+			haystack := strings.ToLower(p.QualifiedID() + " " + p.Description + " " + strings.Join(p.Tags, " "))
+			if !strings.Contains(haystack, filterText) {
+				continue
+			}
+		}
+		matched = append(matched, p)
+	}
+
 	fmt.Println()
-	fmt.Printf("Cerveau Marketplace — %d packages\n", len(reg.Packages))
+	if filterText != "" || filterTag != "" || filterOrg != "" {
+		fmt.Printf("Cerveau Marketplace — %d/%d packages\n", len(matched), len(reg.Packages))
+	} else {
+		fmt.Printf("Cerveau Marketplace — %d packages\n", len(reg.Packages))
+	}
 	fmt.Println()
 
-	for _, p := range reg.Packages {
+	if len(matched) == 0 {
+		filter := filterText + filterTag + filterOrg
+		fmt.Printf("  No packages match filter: %s\n", filter)
+		fmt.Println()
+		return
+	}
+
+	for _, p := range matched {
 		fmt.Printf("  %-40s v%-8s %s\n", p.QualifiedID(), p.Version, p.Description)
 		if len(p.Tags) > 0 {
 			fmt.Printf("  %-40s          tags: %s\n", "", strings.Join(p.Tags, ", "))

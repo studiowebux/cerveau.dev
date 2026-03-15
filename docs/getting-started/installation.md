@@ -86,6 +86,17 @@ Install the status line script after install:
 cerveau install-statusline
 ```
 
+## Shell Completions (Recommended)
+
+Enable tab-tab for all commands, brain names, and packages:
+
+```bash
+eval "$(cerveau completion zsh)"    # add to .zshrc
+eval "$(cerveau completion bash)"   # add to .bashrc
+```
+
+This also enables `cerveau cd brain|code <name>` to navigate to brain or codebase directories.
+
 ## Updating
 
 Pull the latest packages without losing your config or brains:
@@ -95,6 +106,26 @@ cerveau update
 ```
 
 Or from inside a brain session: `/update`
+
+## Backup & Restore
+
+Create a backup of your environment:
+
+```bash
+cerveau backup                    # everything (default)
+cerveau backup --cerveau          # brains, configs, packages, .env
+cerveau backup --mdplanner        # MDPlanner data only
+cerveau backup --claude           # ~/.claude/ (can be large)
+```
+
+Restore from a backup:
+
+```bash
+cerveau restore backup.tar.gz              # restore all sections in archive
+cerveau restore backup.tar.gz --cerveau    # restore only cerveau section
+```
+
+See [CLI Reference](../reference/makefile.md) for all options.
 
 ## Next
 

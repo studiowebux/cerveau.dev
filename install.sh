@@ -35,16 +35,62 @@ echo "Installing Cerveau to $CERVEAU_HOME"
 echo "  Container runtime: $RUNTIME"
 echo ""
 
-# ── Download packages ─────────────────────────────────────────────────────────
-mkdir -p "$CERVEAU_HOME"
+# ── Download to /tmp, copy only runtime files ────────────────────────────────
+STAGING=$(mktemp -d "${TMPDIR:-/tmp}/cerveau-install-XXXXXX")
+trap 'rm -rf "$STAGING"' EXIT
 
 echo "  Downloading latest packages..."
 TARBALL="https://github.com/${GITHUB_REPO}/archive/refs/heads/main.tar.gz"
 curl -sL "$TARBALL" \
-  | tar -xz --strip-components=1 -C "$CERVEAU_HOME" 2>/dev/null \
+  | tar -xz --strip-components=1 -C "$STAGING" 2>/dev/null \
   || { echo "Error: Download failed. Check your internet connection."; exit 1; }
 
+# Create CERVEAU_HOME structure
+mkdir -p "$CERVEAU_HOME"
+
+# Runtime paths to copy (allowlist). Everything else is discarded.
+RUNTIME_PATHS=(
+  "_packages_"
+  "_templates_"
+  "_scripts_"
+  "_configs_"
+  "docker-compose.yml"
+  ".env.example"
+  "version.txt"
+)
+
+# Files that always overwrite (runtime, not user data)
+for item in "_templates_" "_scripts_" "docker-compose.yml" ".env.example" "version.txt"; do
+  src="$STAGING/$item"
+  dest="$CERVEAU_HOME/$item"
+  [ ! -e "$src" ] && continue
+  if [ -d "$src" ]; then
+    rm -rf "$dest"
+    cp -r "$src" "$dest"
+  else
+    cp "$src" "$dest"
+  fi
+done
+
+# Overwrite community packages but never _local_
+if [ -d "$STAGING/_packages_" ]; then
+  for org_dir in "$STAGING/_packages_/"*/; do
+    org=$(basename "$org_dir")
+    [ "$org" = "_local_" ] && continue
+    rm -rf "$CERVEAU_HOME/_packages_/$org"
+    mkdir -p "$CERVEAU_HOME/_packages_/$org"
+    cp -r "$org_dir." "$CERVEAU_HOME/_packages_/$org/"
+  done
+fi
+
+# Overwrite registry.json but preserve brains.json and registry.local.json
+if [ -f "$STAGING/_configs_/registry.json" ]; then
+  mkdir -p "$CERVEAU_HOME/_configs_"
+  cp "$STAGING/_configs_/registry.json" "$CERVEAU_HOME/_configs_/registry.json"
+fi
+
 mkdir -p "$CERVEAU_HOME/_packages_/_local_"
+mkdir -p "$CERVEAU_HOME/_brains_"
 echo "  Packages → $CERVEAU_HOME"
 
 # ── Install CLI binary ───────────────────────────────────────────────────────
@@ -63,9 +109,9 @@ echo "  Downloading cerveau CLI (${OS}/${ARCH})..."
 if curl -sfL "$BINARY_URL" -o "$BIN_DIR/cerveau" 2>/dev/null; then
   chmod +x "$BIN_DIR/cerveau"
   echo "  CLI → $BIN_DIR/cerveau"
-elif command -v go >/dev/null 2>&1 && [ -f "$CERVEAU_HOME/go.mod" ]; then
+elif command -v go >/dev/null 2>&1 && [ -f "$STAGING/go.mod" ]; then
   echo "  Pre-built binary not available, building from source..."
-  if (cd "$CERVEAU_HOME" && go build -o "$BIN_DIR/cerveau" ./cmd/cerveau/) 2>/dev/null; then
+  if (cd "$STAGING" && go build -o "$BIN_DIR/cerveau" ./cmd/cerveau/) 2>/dev/null; then
     echo "  CLI → $BIN_DIR/cerveau (built from source)"
   else
     echo "  Warning: Build from source failed. Install manually:"
@@ -156,5 +202,5 @@ echo "  cerveau spawn MyApp /path/to/myapp"
 echo ""
 echo "Then:"
 echo ""
-echo "  cd $CERVEAU_HOME/_brains_/myapp-brain && claude"
+echo "  cerveau boot MyApp"
 echo ""

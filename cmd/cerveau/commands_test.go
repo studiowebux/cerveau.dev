@@ -25,18 +25,17 @@ func TestCmdValidate_PassesWhenNoPlaceholders(t *testing.T) {
 func TestCmdInstallStatusline_CopiesScript(t *testing.T) {
 	cerveauHome := setupTestHome(t)
 
+	// Redirect HOME to a temp dir so we don't overwrite the real ~/.claude/statusline.sh
+	fakeHome := t.TempDir()
+	t.Setenv("HOME", fakeHome)
+
 	// Create source template
 	src := filepath.Join(cerveauHome, "_templates_", "statusline.sh")
 	writeFile(t, src, "#!/bin/bash\necho 'status'\n")
 
 	cmdInstallStatusline()
 
-	// Destination is $HOME/.claude/statusline.sh (not CERVEAU_HOME)
-	userHome, err := os.UserHomeDir()
-	if err != nil {
-		t.Skip("cannot determine home dir")
-	}
-	dest := filepath.Join(userHome, ".claude", "statusline.sh")
+	dest := filepath.Join(fakeHome, ".claude", "statusline.sh")
 	if !fileExists(dest) {
 		t.Fatal("statusline.sh was not installed")
 	}

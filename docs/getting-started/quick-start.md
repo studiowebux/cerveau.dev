@@ -176,6 +176,19 @@ Added a local package after spawning? Register it in `registry.local.json`, add 
 ## Step 4 — Launch the Brain Session
 
 ```bash
+cerveau boot MyApp
+```
+
+This launches Claude Code inside the brain directory — works from anywhere. To enable tab completion for brain names and other commands, add this to your shell config:
+
+```bash
+eval "$(cerveau completion zsh)"    # .zshrc
+eval "$(cerveau completion bash)"   # .bashrc
+```
+
+Or manually without the `boot` command:
+
+```bash
 cd ~/.cerveau/_brains_/myapp-brain && claude
 ```
 

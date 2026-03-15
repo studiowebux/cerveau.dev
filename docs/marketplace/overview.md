@@ -93,11 +93,15 @@ This removes the package from `brains.json` and cleans up symlinks on rebuild.
 ## Browsing
 
 ```bash
-cerveau marketplace list
-cerveau marketplace info studiowebux/core
+cerveau marketplace list                        # all packages
+cerveau marketplace list theme                  # free-text search
+cerveau marketplace list --tag design           # filter by tag
+cerveau marketplace list --org studiowebux      # filter by org
+cerveau marketplace list --org _local_          # show only local packages
+cerveau marketplace info studiowebux/core       # show package details
 ```
 
-`list` shows all packages from both `registry.json` and `registry.local.json`.
+`list` shows packages from both `registry.json` and `registry.local.json`. Filters are case-insensitive.
 `info` shows the full file list with types.
 
 ## Customizing Package Files

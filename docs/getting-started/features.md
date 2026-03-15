@@ -13,7 +13,10 @@ title: Features
 | **Protocol-Driven Workflow** | Four phases. Boot → Work → Write Back → Close. Zero drift between sessions.                                  |
 | **Zero Footprint**           | No files added to your project repos. The brain lives outside your code. Your codebase stays clean.          |
 | **Bring Your Own Rules**     | No rules ship by default. Generate stack, practice, and workflow rules with a single Claude prompt.          |
-| **Marketplace**              | Browse and install community packages (workflows, practices, agents) into any brain with one command.        |
+| **Marketplace**              | Browse and install community packages (workflows, practices, agents) into any brain with one command. Filter by text, tag, or org. |
+| **Shell Completions**        | Tab-tab support for all commands, brain names, packages, tags, and orgs. Includes `cerveau cd` shell wrapper. |
+| **Boot from Anywhere**       | `cerveau boot <name>` launches Claude Code in any brain from any directory. No `cd` needed.                  |
+| **Backup & Restore**         | `cerveau backup` archives `~/.cerveau/`, `~/.claude/`, and MDPlanner data. Selective with `--cerveau`, `--mdplanner`, `--claude`. |
 | **Auto-Update**              | Version check on session start. Update the protocol in place — `.env`, brains, and config are preserved.     |
 | **One-Line Install**         | `curl -fsSL https://cerveau.dev/install.sh \| bash` — installs protocol, starts MDPlanner, wires MCP.         |
 | **Open Source**              | AGPL-3.0. Self-host everything. MDPlanner runs in a container. No external dependencies required.            |

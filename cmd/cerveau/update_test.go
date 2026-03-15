@@ -264,10 +264,14 @@ func TestApplyUpdate_SkipsProtectedPaths(t *testing.T) {
 	}
 }
 
-func TestApplyUpdate_AllowsBrainsGitkeep(t *testing.T) {
+func TestApplyUpdate_NeverTouchesBrains(t *testing.T) {
 	src := t.TempDir()
 	dest := t.TempDir()
 
+	// Pre-create user brain in dest
+	writeFile(t, filepath.Join(dest, "_brains_", "myapp-brain", "local-dev.md"), "my data")
+	// Src has different content — should never overwrite
+	writeFile(t, filepath.Join(src, "_brains_", "myapp-brain", "local-dev.md"), "overwritten")
 	writeFile(t, filepath.Join(src, "_brains_", ".gitkeep"), "")
 
 	err := applyUpdate(src, dest)
@@ -275,8 +279,89 @@ func TestApplyUpdate_AllowsBrainsGitkeep(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !fileExists(filepath.Join(dest, "_brains_", ".gitkeep")) {
-		t.Error("_brains_/.gitkeep should be allowed through")
+	// User data must be untouched
+	data, _ := os.ReadFile(filepath.Join(dest, "_brains_", "myapp-brain", "local-dev.md"))
+	if string(data) != "my data" {
+		t.Errorf("_brains_ content was overwritten: got %q", string(data))
+	}
+}
+
+func TestApplyUpdate_NeverTouchesLocalPackages(t *testing.T) {
+	src := t.TempDir()
+	dest := t.TempDir()
+
+	// Pre-create local package in dest
+	writeFile(t, filepath.Join(dest, "_packages_", "_local_", "mystack", "rule.md"), "my rule")
+	// Src has different content
+	writeFile(t, filepath.Join(src, "_packages_", "_local_", "mystack", "rule.md"), "overwritten")
+	// Src also has a non-local package that should be updated
+	writeFile(t, filepath.Join(src, "_packages_", "studiowebux", "core", "1.0.0", "rules", "code.md"), "new code")
+
+	err := applyUpdate(src, dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// _local_ must be untouched
+	data, _ := os.ReadFile(filepath.Join(dest, "_packages_", "_local_", "mystack", "rule.md"))
+	if string(data) != "my rule" {
+		t.Errorf("_local_ package was overwritten: got %q", string(data))
+	}
+
+	// Non-local package should be updated
+	data, _ = os.ReadFile(filepath.Join(dest, "_packages_", "studiowebux", "core", "1.0.0", "rules", "code.md"))
+	if string(data) != "new code" {
+		t.Errorf("non-local package was not updated: got %q", string(data))
+	}
+}
+
+func TestApplyUpdate_NeverTouchesData(t *testing.T) {
+	src := t.TempDir()
+	dest := t.TempDir()
+
+	writeFile(t, filepath.Join(dest, "data", "tasks.json"), "my tasks")
+	writeFile(t, filepath.Join(src, "data", "tasks.json"), "overwritten")
+	writeFile(t, filepath.Join(src, "version.txt"), "2.0.0")
+
+	err := applyUpdate(src, dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data, _ := os.ReadFile(filepath.Join(dest, "data", "tasks.json"))
+	if string(data) != "my tasks" {
+		t.Errorf("data/ was overwritten: got %q", string(data))
+	}
+}
+
+func TestApplyUpdate_SkipsNonRuntimeFiles(t *testing.T) {
+	src := t.TempDir()
+	dest := t.TempDir()
+
+	writeFile(t, filepath.Join(src, "cmd", "cerveau", "main.go"), "package main")
+	writeFile(t, filepath.Join(src, "docs", "README.md"), "docs")
+	writeFile(t, filepath.Join(src, "go.mod"), "module cerveau")
+	writeFile(t, filepath.Join(src, "install.sh"), "#!/bin/bash")
+	writeFile(t, filepath.Join(src, "LICENSE"), "AGPL")
+	writeFile(t, filepath.Join(src, "README.md"), "readme")
+	writeFile(t, filepath.Join(src, "version.txt"), "2.0.0")
+
+	err := applyUpdate(src, dest)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// None of the non-runtime files should exist in dest
+	for _, path := range []string{"cmd", "docs", "go.mod", "install.sh", "LICENSE", "README.md"} {
+		full := filepath.Join(dest, path)
+		if fileExists(full) || dirExists(full) {
+			t.Errorf("non-runtime file/dir should not be copied: %s", path)
+		}
+	}
+
+	// version.txt should be copied
+	if !fileExists(filepath.Join(dest, "version.txt")) {
+		t.Error("version.txt should be copied")
 	}
 }
 

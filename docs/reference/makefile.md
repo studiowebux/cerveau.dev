@@ -32,6 +32,20 @@ What it does:
 - Auto-wires MCP globally from `~/.cerveau/.env` if present (no extra step needed)
 
 
+### boot
+
+Launch Claude Code inside a brain directory. Works from anywhere.
+
+```bash
+cerveau boot MyApp
+cerveau boot MyApp --resume
+```
+
+- First argument — brain name
+- Remaining arguments are passed through to `claude`
+
+Replaces the manual `cd ~/.cerveau/_brains_/myapp-brain && claude` workflow.
+
 ### rebuild
 
 Rebuild selective symlinks from `brains.json` for a brain.
@@ -56,13 +70,17 @@ Safe to run at any time — your config and brains are never overwritten.
 
 ### marketplace list
 
-List all available packages in the Cerveau marketplace.
+List available packages in the Cerveau marketplace, with optional filtering.
 
 ```bash
-cerveau marketplace list
+cerveau marketplace list                        # all packages
+cerveau marketplace list theme                  # free-text search
+cerveau marketplace list --tag design           # filter by tag
+cerveau marketplace list --org studiowebux      # filter by org
+cerveau marketplace list --org _local_          # show only local packages
 ```
 
-Prints each package with its name, type, description, and tags.
+Prints each package with its name, type, description, and tags. Filters are case-insensitive.
 
 ### marketplace install
 
@@ -131,6 +149,81 @@ cerveau diff MyApp
 
 Useful for reviewing customizations made to a brain after spawning.
 
+### backup
+
+Create a backup archive of your Cerveau environment.
+
+```bash
+cerveau backup                              # backup everything (default: --all)
+cerveau backup --cerveau                    # brains, configs, packages, .env
+cerveau backup --mdplanner                  # MDPlanner data only (~/.cerveau/data/)
+cerveau backup --claude                     # ~/.claude/ (can be large — includes session history)
+cerveau backup --cerveau --mdplanner        # combine flags
+cerveau backup --all -o /tmp/bk.tar.gz     # custom output path
+```
+
+| Flag | What's included |
+|------|----------------|
+| `--all` | Everything (default when no flags) |
+| `--cerveau` | `~/.cerveau/` brains, configs, packages, .env (excludes MDPlanner data) |
+| `--mdplanner` | `~/.cerveau/data/` only |
+| `--claude` | `~/.claude/` (settings, keybindings, MCP config, session history) |
+
+The archive includes a `manifest.json` with metadata (timestamp, version, sections). Runtime files (`bin/`, `cmd/`, `docs/`) are excluded — reinstall via `cerveau update`.
+
+For a consistent MDPlanner backup, stop the container first.
+
+### restore
+
+Restore from a backup archive.
+
+```bash
+cerveau restore backup-2026-03-15.tar.gz              # restore everything in archive
+cerveau restore backup-2026-03-15.tar.gz --claude      # restore only ~/.claude/
+cerveau restore backup-2026-03-15.tar.gz --mdplanner   # restore only MDPlanner data
+```
+
+Restore shows what will be overwritten and asks for confirmation before proceeding.
+
+### dir
+
+Print the absolute path to a brain or its codebase directory. Output is a single line with no decoration — designed for scripting and piping.
+
+```bash
+cerveau dir brain MyApp    # prints ~/.cerveau/_brains_/myapp-brain
+cerveau dir code MyApp     # prints the codebase path from brains.json
+```
+
+### cd
+
+Navigate to a brain or codebase directory. Requires the shell wrapper from `cerveau completion`.
+
+```bash
+cerveau cd brain MyApp     # cd to the brain directory
+cerveau cd code MyApp      # cd to the codebase directory
+```
+
+Since a subprocess cannot change the parent shell's working directory, `cerveau cd` is implemented as a shell function that calls `cerveau dir` internally. The function is included in the completion script output — see `cerveau completion` below.
+
+### completion
+
+Output a shell completion script for tab-tab support.
+
+```bash
+eval "$(cerveau completion zsh)"     # add to .zshrc
+eval "$(cerveau completion bash)"    # add to .bashrc
+```
+
+This enables:
+
+- `cerveau <tab>` — list all commands
+- `cerveau boot <tab>` — list brain names
+- `cerveau cd <tab>` — complete `brain` or `code`, then brain names
+- `cerveau marketplace <tab>` — list subcommands
+- `cerveau marketplace list --tag <tab>` — list available tags
+
+The completion script also installs a shell wrapper function that makes `cerveau cd` work.
+
 ### help
 
 Print all available commands with descriptions.
@@ -149,7 +242,10 @@ curl -fsSL https://cerveau.dev/install.sh | bash
 cerveau spawn MyApp /path/to/myapp
 
 # Launch the brain
-cd ~/.cerveau/_brains_/myapp-brain && claude
+cerveau boot MyApp
+
+# Navigate to the codebase
+cerveau cd code MyApp
 
 # Add a marketplace package
 cerveau marketplace install workflow-minimaldoc MyApp
