@@ -1,13 +1,8 @@
 # Theme: StudioWebux
 
-Bold marketing / landing page aesthetic. Used in the StudioWebux brand site
-(`_projects_/_content_/landing/`).
+High-contrast. One accent color (`#f4cb00`) does all the work. Everything else is black or white. Sharp edges, strong typography, yellow as the only pop of color.
 
-Principle: contrast sells. One strong accent color (`#f4cb00`) does all the work.
-Everything else is black or white. No gradients, no rounded softness — sharp edges,
-strong typography, and the yellow accent as the only pop of color.
-
-## Color Tokens
+## Palette
 
 ```css
 :root {
@@ -29,22 +24,18 @@ strong typography, and the yellow accent as the only pop of color.
 }
 ```
 
-`--primary-yellow` does not change between light and dark. It is the brand color.
-Footer is always `#000` background regardless of theme.
+`--primary-yellow` never changes between modes. Footer is always `#000` regardless of theme.
+
+Theme persisted to `localStorage`. Body uses `transition: background-color 0.3s ease, color 0.3s ease` for smooth toggle.
 
 ## Typography
 
 ```css
-body {
-  font-family: "Montserrat", sans-serif;
-  line-height: 1.6;
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
+font-family: "Montserrat", sans-serif;
+line-height: 1.6;
 ```
 
-Font weights in use: 300 (light, hero subtitle), 400 (body), 600 (headings, buttons), 700 (hero title).
+Google Fonts: Montserrat weights 300, 400, 600, 700.
 
 | Element | Size | Weight |
 |---------|------|--------|
@@ -52,179 +43,128 @@ Font weights in use: 300 (light, hero subtitle), 400 (body), 600 (headings, butt
 | Hero subtitle | 1.5rem | 300 |
 | Section headings | 2.5rem | 600 |
 | Card headings | 1.5rem | 600 |
+| Why-us headings | 1.3rem | — |
 | Body text | 1rem | 400 |
-| Buttons | 1.1rem | 600 |
+| Buttons / CTA | 1.1rem | 600 |
+| Intro text | 1.2rem | 400 |
 | Meta / footer | 0.9rem | 400 |
+| Controls (small) | 14px | 600 |
 
-## Hero Section
-
-Full-viewport with dark overlay over a background image. White text on dark overlay.
-
-```css
-#hero {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url("assets/img/hero.jpg") center/cover no-repeat;
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 20px;
-}
-
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: #fff;
-  font-weight: 300;
-}
-```
-
-Hero text is always white (no theme variable) because it sits on the dark overlay.
-
-## Service / Feature Cards
-
-Yellow left border is the signature pattern. No rounded corners. No shadow by default.
-Hover: lift with shadow.
+## Layout
 
 ```css
-.service-card {
-  background: var(--bg-primary);
-  padding: 40px 30px;
-  border-left: 4px solid var(--primary-yellow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.service-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.service-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 15px;
-  color: var(--text-primary);
-}
-
-.service-card p {
-  color: var(--text-secondary);
-  line-height: 1.8;
-}
-```
-
-The 4px yellow left border is the only decoration. No border-radius on cards.
-
-## CTA Button
-
-Yellow fill, black text. Hover inverts to transparent with yellow text.
-
-```css
-.cta-button {
-  display: inline-block;
-  background: var(--primary-yellow);
-  color: #000;
-  padding: 15px 40px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
-  border: 2px solid var(--primary-yellow);
-  transition: all 0.3s ease;
-}
-
-.cta-button:hover {
-  background: transparent;
-  color: var(--primary-yellow);
-}
-```
-
-No border-radius. Square corners. The invert-on-hover is the only interactive state.
-
-## Language / Theme Toggle Buttons
-
-Rectangular, bordered. Active state uses yellow fill.
-
-```css
-.lang-btn, .theme-toggle {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 2px solid var(--text-primary);
-  padding: 8px 16px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  font-family: "Montserrat", sans-serif;
-  transition: all 0.3s ease;
-}
-
-.lang-btn:hover, .theme-toggle:hover {
-  background: var(--bg-secondary);
-}
-
-.lang-btn.active {
-  background: var(--primary-yellow);
-  border-color: var(--primary-yellow);
-  color: #000;
-}
-```
-
-## Section Layout
-
-Alternating background: `--bg-secondary` and `--bg-primary`. 100px vertical padding on each section. Max width 1200px centered.
-
-```css
-section {
-  padding: 100px 0;
-}
-
-section:nth-child(even) {
-  background: var(--bg-secondary);
-}
-
-section:nth-child(odd) {
-  background: var(--bg-primary);
-}
-
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
-
-section h2 {
-  text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 60px;
-  color: var(--text-primary);
-}
 ```
 
-## Grid Patterns
+| Element | Dimension |
+|---------|-----------|
+| Sections | 100px vertical padding |
+| Section headings | centered, 60px margin-bottom |
+| Cards grid | 2-column, 40px gap |
+| Links grid | auto-fit, minmax(280px, 1fr), 30px gap, max-width 800px |
+| Why-us grid | 3-column (left / center-image / right), 60px gap |
 
-Services / cards: 2-column grid desktop, 1-column mobile.
+Sections alternate: `--bg-secondary` / `--bg-primary`.
+
+## Hero
+
+Full viewport. Dark overlay on background image. White text — not affected by theme toggle.
 
 ```css
-.services-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
+min-height: 100vh;
+background:
+  linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+  url("...") center/cover no-repeat;
+```
+
+## Cards
+
+Yellow left border is the signature element. No border-radius. No shadow at rest.
+
+```css
+/* Default */
+background: var(--bg-primary);
+padding: 40px 30px;
+border-left: 4px solid var(--primary-yellow);
+
+/* Hover */
+transform: translateY(-5px);
+box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+```
+
+Link cards use the same pattern — `text-decoration: none; color: inherit; display: block`.
+
+## CTA Button
+
+```css
+/* Default */
+background: var(--primary-yellow);
+color: #000;
+padding: 15px 40px;
+font-weight: 600;
+font-size: 1.1rem;
+border: 2px solid var(--primary-yellow);
+
+/* Hover — inverts */
+background: transparent;
+color: var(--primary-yellow);
+```
+
+No border-radius. Square corners.
+
+## Toggle Controls
+
+Fixed top-right. Rectangular bordered buttons.
+
+```css
+.controls {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 15px;
 }
 
-@media (max-width: 768px) {
-  .services-grid { grid-template-columns: 1fr; }
-  .hero-title { font-size: 2.5rem; }
-  section h2 { font-size: 2rem; }
-}
+/* Language / theme buttons */
+background: var(--bg-primary);
+color: var(--text-primary);
+border: 2px solid var(--text-primary);
+padding: 8px 16px;
+font-weight: 600;
+font-size: 14px;
+
+/* Active language */
+background: var(--primary-yellow);
+border-color: var(--primary-yellow);
+color: #000;
 ```
+
+Theme icon: sun/moon toggle, only `.active` icon is `display: inline`.
+
+## Circle Brand Element
+
+Only rounded element in the design. Everything else is square.
+
+```css
+width: 200px;
+height: 200px;
+background: #fff;
+border-radius: 50%;
+padding: 20px;
+border: 2px solid #333;
+box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+```
+
+Also used for the why-us center image (same pattern, 200px).
 
 ## Footer
 
-Always black background, white text, yellow links.
+Always `#000` background, `#fff` text, yellow links.
 
 ```css
 footer {
@@ -236,8 +176,6 @@ footer {
 
 footer a {
   color: var(--primary-yellow);
-  text-decoration: none;
-  transition: opacity 0.3s ease;
 }
 
 footer a:hover {
@@ -246,48 +184,35 @@ footer a:hover {
 }
 ```
 
-## Circle Logo / Brand Element
-
-200px circle, white background, 2px border `#333`, soft shadow. Centers the logo image.
+## Skip Link (Accessibility)
 
 ```css
-.logo-container {
-  width: 200px;
-  height: 200px;
-  background: #fff;
-  border-radius: 50%;
-  padding: 20px;
-  border: 2px solid #333;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+position: fixed;
+top: -100px;
+background: var(--primary-yellow);
+color: #000;
+padding: 10px 20px;
+font-weight: 600;
+border-radius: 0 0 4px 4px;
+
+/* On focus */
+top: 0;
 ```
 
-This circle with logo is the only rounded element in the design. Everything else is square.
+## Responsive
 
-## Forbidden
+| Breakpoint | Changes |
+|-----------|---------|
+| 1024px | Why-us grid gap shrinks, circle shrinks to 180px |
+| 768px | Single column grids, hero title 2.5rem, sections 60px padding, smaller controls |
+| 480px | Hero title 1.8rem, card padding 30px 20px, circle 120px, controls wrap |
+
+## Constraints
 
 - No border-radius on cards, buttons, or sections
-- No colors other than yellow (`#f4cb00`), black, white, and grays
+- No colors other than yellow (#f4cb00), black, white, and grays
 - No shadow without a hover trigger
 - No font other than Montserrat
 - No section without the alternating background pattern
-- Never use yellow as text color on white background (contrast fails)
-
-## Reproduction Checklist
-
-When generating StudioWebux-theme pages from scratch:
-
-1. Google Fonts: `Montserrat` weights 300, 400, 600, 700
-2. Copy `:root` and `[data-theme="dark"]` blocks exactly
-3. Hero: full-viewport, 50% black overlay on image, white text
-4. Section pattern: 100px padding, 2.5rem centered h2, alternating bg
-5. Cards: 4px yellow left border, no border-radius, translateY hover
-6. CTA button: yellow fill, 2px yellow border, hover inverts
-7. Footer: always `#000` bg, yellow links
-8. Controls (lang + theme): fixed top-right, bordered rect buttons
-9. Circle logo element only rounded shape
-10. Max-width 1200px container with 20px side padding
+- Never use yellow as text on white background (contrast fails)
+- Circle element is the only rounded shape

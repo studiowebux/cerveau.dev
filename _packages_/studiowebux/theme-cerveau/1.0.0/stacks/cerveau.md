@@ -1,232 +1,303 @@
 # Theme: Cerveau
 
-Monochrome developer tool aesthetic. Used in the Cerveau brain management UI
-(`_ui_/internal/server/`) and the Ezra AI agent web UI.
+Monochrome. Negative space creates hierarchy. No color as decoration. Borders and spacing define structure. The UI disappears — only the content matters.
 
-Principle: negative space creates hierarchy. No color as decoration. Borders and
-spacing define structure. The UI disappears — only the content matters.
-
-## Color Tokens
+## Palette
 
 ```css
 :root {
   --bg: #fafafa;
-  --bg-editor: #ffffff;
+  --bg-panel: #ffffff;
   --text: #111111;
   --text-secondary: #444444;
   --text-tertiary: #666666;
   --border: #e5e5e5;
   --surface: #f5f5f5;
+  --accent: #111111;
   --error: #dc2626;
   --error-bg: #fef2f2;
-  /* diff/status indicators */
   --added: #16a34a;
   --modified: #b45309;
   --removed: #dc2626;
+  --identical: #666666;
 }
 
 [data-theme="dark"] {
   --bg: #0a0a0a;
-  --bg-editor: #111111;
+  --bg-panel: #111111;
   --text: #f0f0f0;
   --text-secondary: #d4d4d4;
   --text-tertiary: #a3a3a3;
   --border: #2a2a2a;
   --surface: #1a1a1a;
+  --accent: #f0f0f0;
   --error: #f87171;
   --error-bg: #1c0a0a;
+  --added: #4ade80;
+  --modified: #fbbf24;
+  --removed: #f87171;
+  --identical: #a3a3a3;
 }
 ```
 
-No accent color. `--text` inverted on `--bg` is the only "color" used for highlights.
-Status indicators (added/modified/removed) are the only hues in the palette and
-appear only in diff/changelog contexts.
+Accent = text color. No separate brand color. Status hues only in diff/status contexts.
+
+### Dark mode
+
+CSS uses two layers: `@media (prefers-color-scheme: dark)` as default, `[data-theme="dark"]` as manual override. Toggle persisted to `localStorage` key `brain-ui-theme`.
+
+```js
+const saved = localStorage.getItem('brain-ui-theme');
+if (saved === 'dark' || saved === 'light') {
+  document.documentElement.setAttribute('data-theme', saved);
+} else {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+}
+```
+
+No inline `<head>` script — the CSS `@media` rule handles initial paint. JS sets the attribute after DOM ready for toggle state tracking.
 
 ## Typography
 
 ```css
 --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
---font-mono: "Berkeley Mono", "SF Mono", "IBM Plex Mono", "JetBrains Mono", "Fira Code", monospace;
---radius: 6px;
+--font-mono: "Berkeley Mono", "SF Mono", "IBM Plex Mono", "JetBrains Mono", monospace;
 ```
 
-Font sizes (match the standard protocol scale):
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--font-size-xs` | 0.625rem | Badges, micro labels, status indicators |
-| `--font-size-sm` | 0.75rem | Captions, secondary meta, timestamps |
-| `--font-size-base` | 0.875rem | Body text, interactive elements, inputs |
-| `--font-size-lg` | 1rem | Section titles, panel headers |
+| Token | Size | Use |
+|-------|------|-----|
+| `--font-size-xs` | 0.625rem | Badges, labels, timestamps, code |
+| `--font-size-sm` | 0.75rem | Captions, list items, buttons |
+| `--font-size-base` | 0.875rem | Body text, inputs |
+| `--font-size-lg` | 1rem | Section headings |
 | `--font-size-xl` | 1.25rem | Page headings |
-| `--font-size-xxl` | 1.5rem | Hero values, display numbers |
 
-Body: `font-size-base`, line-height 1.5, color `--text-secondary`.
-Headings: `--text`, font-weight 600.
-Code/mono: `--font-mono`, `font-size-sm`, `--surface` background, `--border` border.
+Body: `--font-sans`, `--font-size-base`, `--text`. Headings: weight 600. Code/mono: `--font-mono`, `--font-size-xs`, `--surface` bg, `--border` border.
+
+Font smoothing: `-webkit-font-smoothing: antialiased`.
 
 ## Layout
 
-Sidebar: `220px` fixed width. Content: remaining width. Header: `44px` height.
-
 ```css
-header {
-  height: 44px;
-  padding: 0 0.75rem;
-  border-block-end: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg);
-}
-
-.sidebar {
-  width: 220px;
-  border-inline-end: 1px solid var(--border);
-  background: var(--bg);
-}
-
-.content {
-  flex: 1;
-  background: var(--bg-editor);
-  overflow: auto;
-}
+--sidebar-width: 220px;
+--tab-height: 2.25rem;
+--radius: 4px;
 ```
 
-No colored header backgrounds. No gradients. One pixel borders define all boundaries.
+| Element | Dimension |
+|---------|-----------|
+| Sidebar | 220px fixed, border-inline-end |
+| Tab bar | 2.25rem height, border-block-end |
+| Content | flex: 1, overflow hidden |
+| File tree pane | 240px fixed, border-inline-end |
+| Session list pane | 280px fixed, border-inline-end |
+
+Full viewport height (`100vh`), no body scroll. All panels flex column. All boundaries: `1px solid var(--border)`.
 
 ## Buttons
 
 ```css
-button {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  padding: 0.3rem 0.625rem;
-  font-size: var(--font-size-sm);
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-family: var(--font-sans);
-}
+/* Default (.btn) */
+background: transparent;
+border: 1px solid var(--border);
+color: var(--text-secondary);
+padding: 0.3rem 0.625rem;
+font-size: var(--font-size-sm);
+border-radius: var(--radius);
 
-button:hover {
-  color: var(--text);
-  background: var(--surface);
-}
+/* Hover */
+color: var(--text);
+border-color: var(--text-secondary);
 
-button.active, button[aria-pressed="true"] {
-  color: var(--bg);
-  background: var(--text);
-  border-color: var(--text);
-}
+/* Primary (.btn-primary) */
+background: var(--text);
+color: var(--bg);
+border-color: var(--text);
+
+/* Primary hover */
+opacity: 0.85;
 ```
-
-No filled primary buttons. Active state = inverted (text on bg). Never use yellow, blue, or any brand color on buttons.
 
 ## Tabs
 
 ```css
-.tabs {
-  display: flex;
-  border-block-end: 1px solid var(--border);
-  gap: 0;
-}
+/* Default (.tab) */
+background: none;
+border: none;
+border-block-end: 1.5px solid transparent;
+padding: 0 1rem;
+font-size: var(--font-size-sm);
+color: var(--text-tertiary);
+height: 100%;
+margin-block-end: -1px;
 
-.tab {
-  padding: 0.5rem 0.75rem;
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  background: transparent;
-  border: none;
-  border-block-end: 1.5px solid transparent;
-  cursor: pointer;
-}
+/* Hover */
+color: var(--text-secondary);
 
-.tab:hover {
-  color: var(--text-secondary);
-}
-
-.tab.active {
-  color: var(--text);
-  border-block-end-color: var(--text);
-}
+/* Active (.tab.active) */
+color: var(--text);
+border-block-end-color: var(--text);
 ```
 
-No background on tabs. No rounded corners on tabs. Only the bottom border changes.
-
-## Message / Chat Bubbles (Ezra-style)
+## Inputs
 
 ```css
-.message {
-  padding: 0.625rem 0.875rem;
-  max-width: 85%;
-  border-radius: var(--radius);
-  font-size: var(--font-size-base);
-  line-height: 1.5;
-}
+background: var(--bg-panel);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+padding: 0.35rem 0.5rem;
+font-size: var(--font-size-sm);
+font-family: var(--font-sans);
+color: var(--text);
 
-.message.user {
-  background: var(--surface);
-  align-self: flex-end;
-  border-end-end-radius: 2px; /* flatten right corner */
-}
-
-.message.assistant {
-  border: 1px solid var(--border);
-  align-self: flex-start;
-  border-end-start-radius: 2px; /* flatten left corner */
-}
-
-.message.error {
-  background: var(--error-bg);
-  border: 1px solid var(--error);
-  color: var(--error);
-}
+/* Focus */
+border-color: var(--text-secondary);
+outline: none;
 ```
 
-## Status Indicators
+## List Items (sidebar, file tree, session list)
 
 ```css
-.status-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--text-tertiary);
-}
+/* Default */
+padding: 0.375rem 0.75rem;
+font-size: var(--font-size-sm);
+color: var(--text-secondary);
+cursor: pointer;
 
-.status-dot.connected {
-  background: var(--text); /* no green — stays monochrome */
-}
-
-/* Use added/modified/removed only for diff contexts */
-.diff-added    { color: var(--added); }
-.diff-modified { color: var(--modified); }
-.diff-removed  { color: var(--removed); }
+/* Hover & Active */
+background: var(--surface);
+color: var(--text);
 ```
 
-## Dark Mode Toggle
+No border-radius. Hover reveals secondary actions (delete, rebuild) via `opacity: 0 → 1`.
 
-Toggle sits in the header. Icon-only (sun/moon SVG), no label. Persists to `localStorage`. Applies `data-theme="dark"` on `<html>`.
+## Tables
 
-## Forbidden
+```css
+/* Header */
+padding: 0.4rem 0.6rem;
+color: var(--text-tertiary);
+font-size: var(--font-size-xs);
+font-weight: 500;
+border-block-end: 1px solid var(--border);
 
-- No colored backgrounds on toolbars or headers
-- No shadows heavier than `0 1px 2px rgba(0,0,0,0.06)` in light mode
-- No border-radius larger than `var(--radius)` (6px) — never pill buttons
-- No `#000` pure black or `#fff` pure white in light mode (use `#111` / `#fafafa`)
-- No accent color (blue, purple, green) outside of diff contexts
+/* Cell */
+padding: 0.35rem 0.6rem;
+font-family: var(--font-mono);
+font-size: var(--font-size-xs);
+color: var(--text-secondary);
+border-block-end: 1px solid var(--border);
+```
+
+## Badges & Tags
+
+```css
+font-size: var(--font-size-xs);
+color: var(--text-tertiary);
+padding: 0.1rem 0.3rem;
+border: 1px solid var(--border);
+border-radius: var(--radius);
+```
+
+Emphasized badge: `color: var(--text); border-color: var(--accent)`.
+
+## Code Blocks
+
+```css
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+padding: 0.5rem 0.75rem;
+font-family: var(--font-mono);
+font-size: var(--font-size-xs);
+line-height: 1.55;
+```
+
+Inline code: same font/bg, `padding: 0.1em 0.35em`, `border-radius: 3px`.
+
+## Modal
+
+```css
+/* Overlay */
+background: rgb(0 0 0 / 0.45);
+position: fixed; inset: 0;
+
+/* Box */
+background: var(--bg-panel);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+padding: 1.5rem;
+width: 22rem;
+```
+
+## Collapsible Sections (details/summary)
+
+```css
+border: 1px solid var(--border);
+border-radius: var(--radius);
+background: var(--surface);
+
+/* Summary */
+padding: 0.3rem 0.6rem;
+font-size: var(--font-size-xs);
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.06em;
+```
+
+Marker hidden. Open state adds `border-block-end` on summary.
+
+## Error & Success States
+
+```css
+/* Error */
+color: var(--error);
+background: var(--error-bg);
+padding: 0.4rem 0.6rem;
+border-radius: var(--radius);
+
+/* Success */
+color: var(--added);
+```
+
+## Status Colors
+
+| Semantic | Light | Dark |
+|----------|-------|------|
+| Added / success | #16a34a | #4ade80 |
+| Modified / warning | #b45309 | #fbbf24 |
+| Removed / error | #dc2626 | #f87171 |
+| Identical / muted | #666666 | #a3a3a3 |
+
+## Scrollbar
+
+```css
+width: 5px; height: 5px;
+track: transparent;
+thumb: var(--border), border-radius 2px;
+```
+
+## Autocomplete / Dropdown
+
+```css
+background: var(--bg-panel);
+border: 1px solid var(--border);
+border-radius: var(--radius);
+box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+max-height: 10rem;
+overflow-y: auto;
+```
+
+Items: `padding: 0.35rem 0.5rem`, mono font, hover = `var(--surface)`.
+
+## Constraints
+
+- No colored backgrounds on chrome (sidebar, header, tab bar, toolbar)
+- No shadows except dropdowns (`0 4px 12px rgb(0 0 0 / 0.12)`)
+- No radius larger than 4px
+- No pure `#000` or `#fff` — use palette values
+- No accent color — `--accent` equals `--text`
 - No gradients
-- No animations beyond `transition: color 0.15s ease, background 0.15s ease`
-
-## Reproduction Checklist
-
-When generating Cerveau-theme UI from scratch:
-
-1. Copy the `:root` and `[data-theme="dark"]` blocks verbatim
-2. Use Inter for all text, Berkeley Mono for code
-3. Sidebar 220px, header 44px, one-pixel borders everywhere
-4. Buttons: transparent with `--border`, active state inverts
-5. Tabs: text-only, active gets 1.5px bottom border
-6. No accent color anywhere except diff status
-7. Dark mode toggle in header, persisted to localStorage
-8. Font smoothing on body: `-webkit-font-smoothing: antialiased`
+- No animations except hover transitions
+- Hover reveals actions — never visible by default
