@@ -22,9 +22,24 @@ Discord: https://discord.gg/BG5Erm9fNv
 | **Protocol-Driven Workflow** | Four phases. Boot → Work → Write Back → Close. Zero drift between sessions.                                  |
 | **Zero Footprint**           | No files added to your project repos. The brain lives outside your code. Your codebase stays clean.          |
 | **Bring Your Own Rules**     | No rules ship by default. Generate stack, practice, and workflow rules with a single Claude prompt.          |
+| **Marketplace**              | Browse and install community packages (workflows, practices, agents) into any brain. Filter by text, tag, or org. |
+| **Shell Completions**        | Tab-tab support for all commands, brain names, packages, tags, and orgs. Includes `cerveau cd` shell wrapper. |
+| **Boot from Anywhere**       | `cerveau boot <name>` launches Claude Code in any brain from any directory. No `cd` needed.                  |
+| **Backup & Restore**         | `cerveau backup` archives `~/.cerveau/`, `~/.claude/`, and MDPlanner data. Selective scope with flags.       |
 | **Open Source**              | AGPL-3.0. Self-host everything. MDPlanner runs in a container. No external dependencies required.            |
 | **Agent Support**            | Define custom agents in YAML. Declare which agents each brain loads. Agents live in the protocol.            |
 | **Skills Support**           | Reusable skill definitions (slash commands) shared across all brains from the protocol.                      |
+
+## Quick Start
+
+```bash
+curl -fsSL https://cerveau.dev/install.sh | bash   # install
+cerveau spawn MyApp /path/to/myapp                  # create a brain
+cerveau boot MyApp                                  # launch Claude Code
+
+# Optional: enable tab-tab
+eval "$(cerveau completion zsh)"                    # add to .zshrc
+```
 
 ## Documentation
 
