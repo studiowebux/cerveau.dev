@@ -103,6 +103,16 @@ cd __CODEBASE_ABS__
 # How to run tests
 ```
 
+## CI Checks
+
+<!-- Fill in during first brain session. These commands run before git push
+     when the studiowebux/github package is installed. Must mirror the CI pipeline. -->
+
+```bash
+cd __CODEBASE_ABS__
+# List every CI command here — the pre-push hook reads this block
+```
+
 ## Release Checklist
 
 <!-- Fill in during first brain session. Adapt steps to the project's version strategy. -->

@@ -146,11 +146,6 @@ func cmdBackup(args []string) {
 		}
 	}
 	fmt.Println()
-	if scope.claude {
-		fmt.Println("  Tip: ~/.claude/ includes session history and can be large.")
-		fmt.Println("  Use --cerveau to backup only Cerveau + MDPlanner data (much faster).")
-		fmt.Println()
-	}
 	fmt.Println("This may take a few seconds...")
 	fmt.Println()
 
