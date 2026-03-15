@@ -165,22 +165,30 @@ Usage: cerveau <command> [args]
 
 Commands:
   spawn <name> <project> [--packages p1,p2]   Create a new brain (default: studiowebux/core)
+  boot <name> [claude-args...]                  Launch Claude Code inside a brain
   rebuild [name]                                Rebuild brain from packages
   update                                        Download the latest Cerveau packages
-  marketplace list                              List available packages
+  marketplace list [filter] [--tag t] [--org o] List available packages (with optional filter)
   marketplace info <org/pkg>                    Show package details
   marketplace install <org/pkg> <brain>         Install a package into a brain
   marketplace uninstall <org/pkg> <brain>       Remove a package from a brain
   status <name>                                 Show brain status
   list                                          List all brains
   validate <name>                               Check for remaining placeholders
+  dir brain|code <name>                         Print brain or codebase path
+  cd brain|code <name>                          Navigate to brain or codebase directory
+  completion <zsh|bash>                         Output shell completions
   install-statusline                            Deploy statusline.sh to ~/.claude/
   version                                       Show installed version
   help                                          Show this help
 
-Workflow:
+Quick start:
   curl -fsSL https://cerveau.dev/install.sh | bash
   cerveau spawn MyApp /path/to/myapp
-  cd ~/.cerveau/_brains_/myapp-brain && claude`)
+  cerveau boot MyApp
+
+Shell completions (tab-tab):
+  eval "$(cerveau completion zsh)"    # add to .zshrc
+  eval "$(cerveau completion bash)"   # add to .bashrc`)
 	fmt.Println()
 }

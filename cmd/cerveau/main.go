@@ -12,6 +12,15 @@ func main() {
 		return
 	}
 
+	// Hidden: dynamic completions endpoint (used by shell completion scripts)
+	if os.Args[1] == "--completions" {
+		if len(os.Args) < 3 {
+			fatal("Usage: cerveau --completions <commands|brains|packages|tags|orgs>")
+		}
+		cmdCompletions(os.Args[2])
+		return
+	}
+
 	switch os.Args[1] {
 	case "spawn":
 		if len(os.Args) < 4 {
@@ -19,6 +28,18 @@ func main() {
 		}
 		packages := parsePackagesFlag(os.Args[4:])
 		cmdSpawn(os.Args[2], os.Args[3], packages)
+
+	case "boot":
+		if len(os.Args) < 3 {
+			fatal("Usage: cerveau boot <name> [claude-args...]")
+		}
+		cmdBoot(os.Args[2], os.Args[3:])
+
+	case "dir":
+		if len(os.Args) < 4 {
+			fatal("Usage: cerveau dir brain|code <name>")
+		}
+		cmdDir(os.Args[2], os.Args[3])
 
 	case "rebuild":
 		name := ""
@@ -36,7 +57,7 @@ func main() {
 		}
 		switch os.Args[2] {
 		case "list":
-			cmdMarketplaceList()
+			cmdMarketplaceList(os.Args[3:])
 		case "info":
 			if len(os.Args) < 4 {
 				fatal("Usage: cerveau marketplace info <org/pkg>")
@@ -55,6 +76,12 @@ func main() {
 		default:
 			fatal("Unknown marketplace command: " + os.Args[2])
 		}
+
+	case "completion":
+		if len(os.Args) < 3 {
+			fatal("Usage: cerveau completion <zsh|bash>")
+		}
+		cmdCompletion(os.Args[2])
 
 	case "status":
 		if len(os.Args) < 3 {

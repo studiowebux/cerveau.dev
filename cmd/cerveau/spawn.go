@@ -131,9 +131,9 @@ func doSpawn(name, project, dest string, packages []string) error {
 	// Auto-wire MCP
 	autoWireMCP()
 
-	fmt.Println("Done. Launch Claude Code from the brain directory:")
+	fmt.Println("Done. Launch Claude Code:")
 	fmt.Println()
-	fmt.Printf("  cd %s && claude\n", dest)
+	fmt.Printf("  cerveau boot %s\n", name)
 	fmt.Println()
 	fmt.Println("Then type 'boot' to configure the brain.")
 	fmt.Println()

@@ -134,3 +134,47 @@ func TestMarketplaceUninstall_NoOpWhenNotInstalled(t *testing.T) {
 		t.Errorf("packages changed unexpectedly: %v", cfg.Brains[0].Packages)
 	}
 }
+
+// ── cmdMarketplaceList (with filters) ───────────────────────────────────────
+
+func TestMarketplaceList_NoFilter(t *testing.T) {
+	setupMarketplaceEnv(t)
+	// Should not panic
+	cmdMarketplaceList(nil)
+}
+
+func TestMarketplaceList_TextFilter(t *testing.T) {
+	setupMarketplaceEnv(t)
+	// Should not panic — filters by free text
+	cmdMarketplaceList([]string{"minimal"})
+}
+
+func TestMarketplaceList_TagFilter(t *testing.T) {
+	setupMarketplaceEnv(t)
+	// Should not panic — filters by tag
+	cmdMarketplaceList([]string{"--tag", "docs"})
+}
+
+func TestMarketplaceList_OrgFilter(t *testing.T) {
+	setupMarketplaceEnv(t)
+	// Should not panic — filters by org
+	cmdMarketplaceList([]string{"--org", "studiowebux"})
+}
+
+func TestMarketplaceList_NoMatch(t *testing.T) {
+	setupMarketplaceEnv(t)
+	// Should not panic — no matching packages
+	cmdMarketplaceList([]string{"nonexistent-package-xyz"})
+}
+
+func TestMarketplaceList_TagEqualsFormat(t *testing.T) {
+	setupMarketplaceEnv(t)
+	// --tag=docs format
+	cmdMarketplaceList([]string{"--tag=docs"})
+}
+
+func TestMarketplaceList_OrgEqualsFormat(t *testing.T) {
+	setupMarketplaceEnv(t)
+	// --org=studiowebux format
+	cmdMarketplaceList([]string{"--org=studiowebux"})
+}
