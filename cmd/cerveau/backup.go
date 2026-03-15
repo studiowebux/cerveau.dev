@@ -76,10 +76,6 @@ var cerveauAllowPaths = map[string]bool{
 	"version.txt":        true,
 }
 
-// MDPlanner data allowlist — only the data directory.
-var mdplannerAllowPaths = map[string]bool{
-	"data": true,
-}
 
 func cmdBackup(args []string) {
 	scope := parseBackupFlags(args)

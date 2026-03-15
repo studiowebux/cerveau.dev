@@ -86,8 +86,6 @@ var allCommands = []string{
 	"version",
 }
 
-var marketplaceSubcommands = []string{"list", "info", "install", "uninstall"}
-var cdTargets = []string{"brain", "code"}
 
 const zshCompletion = `#compdef cerveau
 # Cerveau CLI completions for zsh
