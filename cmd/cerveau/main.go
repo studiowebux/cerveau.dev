@@ -77,6 +77,15 @@ func main() {
 			fatal("Unknown marketplace command: " + os.Args[2])
 		}
 
+	case "backup":
+		cmdBackup(os.Args[2:])
+
+	case "restore":
+		if len(os.Args) < 3 {
+			fatal("Usage: cerveau restore <archive.tar.gz> [--cerveau] [--mdplanner] [--claude]")
+		}
+		cmdRestore(os.Args[2], os.Args[3:])
+
 	case "completion":
 		if len(os.Args) < 3 {
 			fatal("Usage: cerveau completion <zsh|bash>")

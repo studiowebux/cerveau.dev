@@ -68,6 +68,7 @@ func cmdCompletions(kind string) {
 }
 
 var allCommands = []string{
+	"backup",
 	"boot",
 	"cd",
 	"completion",
@@ -77,6 +78,7 @@ var allCommands = []string{
 	"list",
 	"marketplace",
 	"rebuild",
+	"restore",
 	"spawn",
 	"status",
 	"update",
@@ -105,7 +107,7 @@ _cerveau() {
   local -a commands brains packages
 
   if (( CURRENT == 2 )); then
-    commands=(boot cd completion dir help install-statusline list marketplace rebuild spawn status update validate version)
+    commands=(backup boot cd completion dir help install-statusline list marketplace rebuild restore spawn status update validate version)
     _describe 'command' commands
     return
   fi
@@ -156,6 +158,16 @@ _cerveau() {
         esac
       fi
       ;;
+    backup)
+      _arguments '--all[Backup everything]' '--cerveau[Backup ~/.cerveau]' '--mdplanner[Backup MDPlanner data]' '--claude[Backup ~/.claude]' '-o[Output path]:file:_files'
+      ;;
+    restore)
+      if (( CURRENT == 3 )); then
+        _files -g '*.tar.gz'
+      else
+        _arguments '--cerveau[Restore cerveau only]' '--mdplanner[Restore MDPlanner only]' '--claude[Restore claude only]'
+      fi
+      ;;
     completion)
       if (( CURRENT == 3 )); then
         local -a shells=(zsh bash)
@@ -190,7 +202,7 @@ _cerveau() {
   local cur prev words cword
   _init_completion || return
 
-  local commands="boot cd completion dir help install-statusline list marketplace rebuild spawn status update validate version"
+  local commands="backup boot cd completion dir help install-statusline list marketplace rebuild restore spawn status update validate version"
   local marketplace_sub="list info install uninstall"
   local cd_targets="brain code"
 
@@ -254,6 +266,18 @@ _cerveau() {
             esac
             ;;
         esac
+      fi
+      ;;
+    backup)
+      if [[ "$cur" == --* ]] || [[ "$cur" == -* ]]; then
+        COMPREPLY=($(compgen -W "--all --cerveau --mdplanner --claude -o" -- "$cur"))
+      fi
+      ;;
+    restore)
+      if (( cword == 2 )); then
+        COMPREPLY=($(compgen -f -X '!*.tar.gz' -- "$cur"))
+      elif [[ "$cur" == --* ]]; then
+        COMPREPLY=($(compgen -W "--cerveau --mdplanner --claude" -- "$cur"))
       fi
       ;;
     completion)

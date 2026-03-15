@@ -149,6 +149,35 @@ cerveau diff MyApp
 
 Useful for reviewing customizations made to a brain after spawning.
 
+### backup
+
+Create a backup archive of your Cerveau environment.
+
+```bash
+cerveau backup                        # backup everything (default)
+cerveau backup --cerveau              # ~/.cerveau/ only
+cerveau backup --mdplanner            # MDPlanner data only (~/.cerveau/data/)
+cerveau backup --claude               # ~/.claude/ only
+cerveau backup --cerveau --claude     # combine flags
+cerveau backup --all -o /tmp/bk.tar.gz  # custom output path
+```
+
+The archive includes a `manifest.json` with metadata (timestamp, version, sections). The `cerveau` binary is excluded — reinstall via `cerveau update`.
+
+For a consistent MDPlanner backup, stop the container first.
+
+### restore
+
+Restore from a backup archive.
+
+```bash
+cerveau restore backup-2026-03-15.tar.gz              # restore everything in archive
+cerveau restore backup-2026-03-15.tar.gz --claude      # restore only ~/.claude/
+cerveau restore backup-2026-03-15.tar.gz --mdplanner   # restore only MDPlanner data
+```
+
+Restore shows what will be overwritten and asks for confirmation before proceeding.
+
 ### dir
 
 Print the absolute path to a brain or its codebase directory. Output is a single line with no decoration — designed for scripting and piping.

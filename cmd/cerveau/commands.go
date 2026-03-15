@@ -177,6 +177,8 @@ Commands:
   validate <name>                               Check for remaining placeholders
   dir brain|code <name>                         Print brain or codebase path
   cd brain|code <name>                          Navigate to brain or codebase directory
+  backup [--all|--cerveau|--mdplanner|--claude] Create a backup archive
+  restore <archive> [--cerveau|--claude|...]    Restore from a backup archive
   completion <zsh|bash>                         Output shell completions
   install-statusline                            Deploy statusline.sh to ~/.claude/
   version                                       Show installed version
