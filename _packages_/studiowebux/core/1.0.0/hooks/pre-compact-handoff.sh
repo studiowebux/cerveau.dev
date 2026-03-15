@@ -28,12 +28,12 @@ Before this compaction, you should have written a [progress] note to mdplanner.
 If you did not, write one NOW before continuing with other work.
 EOF
 
-# Replace timestamp placeholder (cross-platform: BSD + GNU sed)
+# Replace timestamp placeholder (cross-platform: GNU sed, busybox sed, BSD sed)
 TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-if sed --version >/dev/null 2>&1; then
-  sed -i "s/__TIMESTAMP__/$TIMESTAMP/" "$HANDOFF"
+if sed -i "s/__TIMESTAMP__/$TIMESTAMP/" "$HANDOFF" 2>/dev/null; then
+  : # GNU or busybox sed — worked
 else
-  sed -i '' "s/__TIMESTAMP__/$TIMESTAMP/" "$HANDOFF"
+  sed -i '' "s/__TIMESTAMP__/$TIMESTAMP/" "$HANDOFF"  # BSD sed (macOS)
 fi
 
 # Notify the user that the handoff file was written (PreCompact has no decision control)
