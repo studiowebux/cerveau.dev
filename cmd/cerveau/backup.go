@@ -64,16 +64,21 @@ func parseBackupFlags(args []string) backupScope {
 // Directories/files to skip during backup.
 // Cerveau: allowlist of directories/files worth backing up.
 // Everything else (bin, cmd, docs, install.sh, etc.) is reinstallable via cerveau update.
+// Note: "data" (MDPlanner) is NOT included here — it's a separate section via --mdplanner.
 var cerveauAllowPaths = map[string]bool{
 	"_brains_":           true,
 	"_configs_":          true,
 	"_packages_":         true,
 	"_templates_":        true,
 	"_scripts_":          true,
-	"data":               true,
 	".env":               true,
 	"docker-compose.yml": true,
 	"version.txt":        true,
+}
+
+// MDPlanner data allowlist — only the data directory.
+var mdplannerAllowPaths = map[string]bool{
+	"data": true,
 }
 
 func cmdBackup(args []string) {
@@ -99,8 +104,9 @@ func cmdBackup(args []string) {
 
 	if scope.cerveau {
 		sections = append(sections, section{"cerveau", cerveauDir, "cerveau", cerveauAllowPaths})
-	} else if scope.mdplanner {
-		sections = append(sections, section{"mdplanner", mdplannerDir, "cerveau/data", nil})
+	}
+	if scope.mdplanner {
+		sections = append(sections, section{"mdplanner", cerveauDir, "cerveau", mdplannerAllowPaths})
 	}
 	if scope.claude {
 		sections = append(sections, section{"claude", claudeDir, "claude", nil})
@@ -131,10 +137,24 @@ func cmdBackup(args []string) {
 	fmt.Println("Sections to backup:")
 	for _, sec := range sections {
 		if dirExists(sec.src) {
-			fmt.Printf("  %-12s %s\n", sec.name, sec.src)
+			detail := ""
+			switch sec.name {
+			case "cerveau":
+				detail = " (brains, configs, packages, .env)"
+			case "mdplanner":
+				detail = " (MDPlanner data only)"
+			case "claude":
+				detail = " (settings, keybindings, MCP config, session history — can be large)"
+			}
+			fmt.Printf("  %-12s %s%s\n", sec.name, sec.src, detail)
 		}
 	}
 	fmt.Println()
+	if scope.claude {
+		fmt.Println("  Tip: ~/.claude/ includes session history and can be large.")
+		fmt.Println("  Use --cerveau to backup only Cerveau + MDPlanner data (much faster).")
+		fmt.Println()
+	}
 	fmt.Println("This may take a few seconds...")
 	fmt.Println()
 
