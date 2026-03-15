@@ -45,6 +45,61 @@
         {"name": "minimaldoc-writer.md", "type": "agents"}
       ],
       "tags": ["docs", "minimaldoc"]
+    },
+    {
+      "name": "theme-cerveau",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/theme-cerveau/1.0.0",
+      "description": "Monochrome theme — grayscale palette, no accent color, borders and spacing define hierarchy",
+      "files": [
+        {"name": "cerveau.md", "type": "stacks"}
+      ],
+      "tags": ["theme", "monochrome", "light-dark"]
+    },
+    {
+      "name": "theme-dockward",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/theme-dockward/1.0.0",
+      "description": "Dark-only theme — GitHub-dark palette, monospace typography, semantic colors for log levels and status",
+      "files": [
+        {"name": "dockward.md", "type": "stacks"}
+      ],
+      "tags": ["theme", "dark", "monospace"]
+    },
+    {
+      "name": "theme-minimaldoc",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/theme-minimaldoc/1.0.0",
+      "description": "Neutral theme — content-first, blue accent, generous line-height, system sans-serif",
+      "files": [
+        {"name": "minimaldoc.md", "type": "stacks"}
+      ],
+      "tags": ["theme", "neutral", "light-dark"]
+    },
+    {
+      "name": "theme-studiowebux",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/theme-studiowebux/1.0.0",
+      "description": "High-contrast theme — yellow accent on black/white, square corners, Montserrat typography",
+      "files": [
+        {"name": "studiowebux.md", "type": "stacks"}
+      ],
+      "tags": ["theme", "high-contrast", "light-dark"]
+    },
+    {
+      "name": "theme-zurm",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/theme-zurm/1.0.0",
+      "description": "Dark theme — deep navy-black with purple accent, vivid ANSI palette",
+      "files": [
+        {"name": "zurm.md", "type": "stacks"}
+      ],
+      "tags": ["theme", "dark", "purple"]
     }
   ]
 }
