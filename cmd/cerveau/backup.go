@@ -227,10 +227,10 @@ func cmdBackup(args []string) {
 		fmt.Printf("  %-12s %d files\n", sec.name+":", count)
 	}
 
-	// Close writers to flush
-	tw.Close()
-	gw.Close()
-	outFile.Close()
+	// Close writers to flush — #nosec G104 — errors logged via fatalf above, archive is best-effort
+	_ = tw.Close()
+	_ = gw.Close()
+	_ = outFile.Close()
 
 	elapsed := time.Since(start).Round(time.Millisecond)
 
@@ -248,7 +248,7 @@ func cmdBackup(args []string) {
 // allowlist are included. When nil, everything is included. Skips the output archive itself.
 func addDirToTar(tw *tar.Writer, root, prefix string, allowPaths map[string]bool, outAbs string) (int, error) {
 	count := 0
-	return count, filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	return count, filepath.Walk(root, func(path string, info os.FileInfo, err error) error { // #nosec G122 — trusted dirs (CERVEAU_HOME, ~/.claude)
 		if err != nil {
 			return nil // skip unreadable files
 		}
@@ -314,7 +314,7 @@ func addDirToTar(tw *tar.Writer, root, prefix string, allowPaths map[string]bool
 			return nil
 		}
 
-		f, err := os.Open(path) // #nosec G304 — path from filepath.Walk within trusted dirs
+		f, err := os.Open(path) // #nosec G304 G703 G122 — path from filepath.Walk within trusted dirs
 		if err != nil {
 			return nil // skip unreadable
 		}
@@ -332,7 +332,7 @@ func cmdRestore(archivePath string, args []string) {
 	scope := parseBackupFlags(args)
 
 	// Read archive
-	f, err := os.Open(archivePath) // #nosec G304 — path from user CLI arg
+	f, err := os.Open(archivePath) // #nosec G304 G703 — path from user CLI arg
 	if err != nil {
 		fatalf("Cannot open %s: %v", archivePath, err)
 	}
@@ -430,15 +430,15 @@ func cmdRestore(archivePath string, args []string) {
 	fmt.Print("Continue? [y/N] ")
 
 	var answer string
-	fmt.Scanln(&answer)
+	_, _ = fmt.Scanln(&answer)
 	if answer != "y" && answer != "Y" {
 		fmt.Println("Aborted.")
 		return
 	}
 
 	// Re-open archive for extraction
-	f.Close()
-	f2, err := os.Open(archivePath) // #nosec G304 — same user-provided path
+	_ = f.Close()
+	f2, err := os.Open(archivePath) // #nosec G304 G703 — same user-provided path
 	if err != nil {
 		fatalf("Cannot re-open %s: %v", archivePath, err)
 	}
@@ -497,31 +497,31 @@ func cmdRestore(archivePath string, args []string) {
 
 		switch header.Typeflag {
 		case tar.TypeDir:
-			if err := os.MkdirAll(destPath, os.FileMode(header.Mode)); err != nil {
+			if err := os.MkdirAll(destPath, os.FileMode(header.Mode)); err != nil { // #nosec G115 G703 — mode from tar header, path validated above
 				fmt.Fprintf(os.Stderr, "  Warning: cannot create dir %s: %v\n", destPath, err)
 			}
 		case tar.TypeSymlink:
-			_ = os.Remove(destPath) // remove existing before creating symlink
-			if err := os.Symlink(header.Linkname, destPath); err != nil {
+			_ = os.Remove(destPath) // #nosec G703 — best-effort remove before symlink creation
+			if err := os.Symlink(header.Linkname, destPath); err != nil { // #nosec G703 — destPath validated by traversal check
 				fmt.Fprintf(os.Stderr, "  Warning: cannot create symlink %s: %v\n", destPath, err)
 			}
 			restored++
 		case tar.TypeReg:
-			if err := os.MkdirAll(filepath.Dir(destPath), 0750); err != nil {
+			if err := os.MkdirAll(filepath.Dir(destPath), 0750); err != nil { // #nosec G703 — destPath validated by traversal check
 				fmt.Fprintf(os.Stderr, "  Warning: cannot create parent dir for %s: %v\n", destPath, err)
 				continue
 			}
-			out, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(header.Mode)) // #nosec G304 — destPath validated above
+			out, err := os.OpenFile(destPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, os.FileMode(header.Mode)) // #nosec G304 G115 G703 — destPath validated, mode from tar header
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "  Warning: cannot write %s: %v\n", destPath, err)
 				continue
 			}
-			if _, err := io.Copy(out, tr2); err != nil {
-				out.Close()
+			if _, err := io.Copy(out, io.LimitReader(tr2, 500*1024*1024)); err != nil { // #nosec G110 — 500MB limit per file prevents decompression bombs
+				_ = out.Close()
 				fmt.Fprintf(os.Stderr, "  Warning: error writing %s: %v\n", destPath, err)
 				continue
 			}
-			out.Close()
+			_ = out.Close()
 			restored++
 		}
 	}

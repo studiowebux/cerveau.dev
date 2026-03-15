@@ -47,7 +47,7 @@ func cmdBoot(name string, extraArgs []string) {
 	argv := append([]string{filepath.Base(claudePath)}, extraArgs...)
 
 	// Replace process with claude
-	if err := syscall.Exec(claudePath, argv, os.Environ()); err != nil { // #nosec G204 — claudePath from LookPath, argv from user CLI args
+	if err := syscall.Exec(claudePath, argv, os.Environ()); err != nil { // #nosec G204 G702 — claudePath from LookPath, argv from user CLI args
 		fatalf("Cannot exec claude: %v", err)
 	}
 }
