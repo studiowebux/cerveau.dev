@@ -66,6 +66,7 @@ func TestParseBackupFlags_Output(t *testing.T) {
 
 func TestCmdBackup_CreatesArchive(t *testing.T) {
 	home := setupTestHome(t)
+	t.Setenv("HOME", t.TempDir()) // prevent touching real ~/.claude
 
 	// Create mock cerveau structure
 	writeFile(t, filepath.Join(home, "version.txt"), "1.2.0")
@@ -94,6 +95,7 @@ func TestCmdBackup_CreatesArchive(t *testing.T) {
 
 func TestCmdBackup_MdplannerOnly(t *testing.T) {
 	home := setupTestHome(t)
+	t.Setenv("HOME", t.TempDir()) // prevent touching real ~/.claude
 
 	writeFile(t, filepath.Join(home, "version.txt"), "1.2.0")
 	writeFile(t, filepath.Join(home, "data", "tasks.json"), `[]`)
