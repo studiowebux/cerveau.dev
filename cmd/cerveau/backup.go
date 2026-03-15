@@ -14,9 +14,9 @@ import (
 
 // backupManifest is written to the root of the archive.
 type backupManifest struct {
-	Timestamp string   `json:"timestamp"`
-	Version   string   `json:"version"`
-	Sections  []string `json:"sections"`
+	Timestamp string            `json:"timestamp"`
+	Version   string            `json:"version"`
+	Sections  []string          `json:"sections"`
 	Paths     map[string]string `json:"paths"`
 }
 
@@ -61,6 +61,15 @@ func parseBackupFlags(args []string) backupScope {
 	return s
 }
 
+// Directories/files to skip during backup.
+// Cerveau: binary (reinstall via update), backups dir (don't backup backups).
+var cerveauSkipPaths = map[string]bool{
+	"bin/cerveau": true,
+	"backups":     true,
+}
+
+var claudeSkipPaths = map[string]bool{}
+
 func cmdBackup(args []string) {
 	scope := parseBackupFlags(args)
 
@@ -75,20 +84,20 @@ func cmdBackup(args []string) {
 
 	// Build section list
 	type section struct {
-		name   string
-		src    string
-		prefix string
+		name     string
+		src      string
+		prefix   string
+		skipPaths map[string]bool
 	}
 	var sections []section
 
 	if scope.cerveau {
-		sections = append(sections, section{"cerveau", cerveauDir, "cerveau"})
+		sections = append(sections, section{"cerveau", cerveauDir, "cerveau", cerveauSkipPaths})
 	} else if scope.mdplanner {
-		// mdplanner only — include just data/
-		sections = append(sections, section{"mdplanner", mdplannerDir, "cerveau/data"})
+		sections = append(sections, section{"mdplanner", mdplannerDir, "cerveau/data", nil})
 	}
 	if scope.claude {
-		sections = append(sections, section{"claude", claudeDir, "claude"})
+		sections = append(sections, section{"claude", claudeDir, "claude", claudeSkipPaths})
 	}
 
 	// Validate at least one section has data
@@ -111,12 +120,27 @@ func cmdBackup(args []string) {
 		}
 	}
 
+	// Show what will be backed up
+	fmt.Println()
+	fmt.Println("Sections to backup:")
+	for _, sec := range sections {
+		if dirExists(sec.src) {
+			fmt.Printf("  %-12s %s\n", sec.name, sec.src)
+		}
+	}
+	fmt.Println()
+	fmt.Println("This may take a few seconds...")
+	fmt.Println()
+
 	// Output path
 	outPath := scope.output
 	if outPath == "" {
 		ts := time.Now().Format("2006-01-02-150405")
 		outPath = fmt.Sprintf("cerveau-backup-%s.tar.gz", ts)
 	}
+
+	// Skip the output file itself if it's inside a backed-up directory
+	outAbs, _ := filepath.Abs(outPath)
 
 	// Create archive
 	outFile, err := os.Create(outPath) // #nosec G304 — path from user CLI arg
@@ -167,12 +191,13 @@ func cmdBackup(args []string) {
 	}
 
 	// Add each section
+	start := time.Now()
 	totalFiles := 0
 	for _, sec := range sections {
 		if !dirExists(sec.src) {
 			continue
 		}
-		count, err := addDirToTar(tw, sec.src, sec.prefix)
+		count, err := addDirToTar(tw, sec.src, sec.prefix, sec.skipPaths, outAbs)
 		if err != nil {
 			fatalf("Error archiving %s: %v", sec.name, err)
 		}
@@ -185,28 +210,60 @@ func cmdBackup(args []string) {
 	gw.Close()
 	outFile.Close()
 
+	elapsed := time.Since(start).Round(time.Millisecond)
+
 	// Report size
 	info, err := os.Stat(outPath)
 	if err == nil {
-		fmt.Printf("\nBackup created: %s (%s)\n", outPath, humanSize(info.Size()))
+		fmt.Printf("\nBackup created: %s (%s) in %s\n", outPath, humanSize(info.Size()), elapsed)
 	} else {
-		fmt.Printf("\nBackup created: %s\n", outPath)
+		fmt.Printf("\nBackup created: %s in %s\n", outPath, elapsed)
 	}
 }
 
 // addDirToTar walks a directory and adds all files/dirs to the tar writer under the given prefix.
-// Returns the number of files added. Skips the cerveau binary to save space.
-func addDirToTar(tw *tar.Writer, root, prefix string) (int, error) {
+// Returns the number of files added. Skips paths in skipPaths and the output archive itself.
+func addDirToTar(tw *tar.Writer, root, prefix string, skipPaths map[string]bool, outAbs string) (int, error) {
 	count := 0
 	return count, filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return nil // skip unreadable files
 		}
 
-		// Skip the cerveau binary — reinstall via cerveau update
 		rel, _ := filepath.Rel(root, path)
-		if rel == filepath.Join("bin", "cerveau") {
-			return nil
+
+		// Skip excluded paths
+		if skipPaths != nil {
+			// Check if this path or any parent component is in the skip list
+			parts := strings.Split(rel, string(filepath.Separator))
+			if len(parts) > 0 && skipPaths[parts[0]] {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+			if skipPaths[rel] {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+		}
+
+		// Skip backup archives (*.tar.gz) in the root of the section
+		if !info.IsDir() && strings.HasSuffix(info.Name(), ".tar.gz") {
+			dir := filepath.Dir(rel)
+			if dir == "." {
+				return nil
+			}
+		}
+
+		// Skip the output file itself
+		if outAbs != "" {
+			absPath, _ := filepath.Abs(path)
+			if absPath == outAbs {
+				return nil
+			}
 		}
 
 		// Build archive path
@@ -277,8 +334,6 @@ func cmdRestore(archivePath string, args []string) {
 	var manifest backupManifest
 	foundManifest := false
 
-	// We need to re-read the archive for extraction, so buffer the entire thing
-	// Instead, do a single pass: read manifest first entry, then extract
 	for {
 		header, err := tr.Next()
 		if err == io.EOF {
