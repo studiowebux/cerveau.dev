@@ -62,13 +62,19 @@ func parseBackupFlags(args []string) backupScope {
 }
 
 // Directories/files to skip during backup.
-// Cerveau: binary (reinstall via update), backups dir (don't backup backups).
-var cerveauSkipPaths = map[string]bool{
-	"bin/cerveau": true,
-	"backups":     true,
+// Cerveau: allowlist of directories/files worth backing up.
+// Everything else (bin, cmd, docs, install.sh, etc.) is reinstallable via cerveau update.
+var cerveauAllowPaths = map[string]bool{
+	"_brains_":           true,
+	"_configs_":          true,
+	"_packages_":         true,
+	"_templates_":        true,
+	"_scripts_":          true,
+	"data":               true,
+	".env":               true,
+	"docker-compose.yml": true,
+	"version.txt":        true,
 }
-
-var claudeSkipPaths = map[string]bool{}
 
 func cmdBackup(args []string) {
 	scope := parseBackupFlags(args)
@@ -84,20 +90,20 @@ func cmdBackup(args []string) {
 
 	// Build section list
 	type section struct {
-		name     string
-		src      string
-		prefix   string
-		skipPaths map[string]bool
+		name       string
+		src        string
+		prefix     string
+		allowPaths map[string]bool // nil = include everything
 	}
 	var sections []section
 
 	if scope.cerveau {
-		sections = append(sections, section{"cerveau", cerveauDir, "cerveau", cerveauSkipPaths})
+		sections = append(sections, section{"cerveau", cerveauDir, "cerveau", cerveauAllowPaths})
 	} else if scope.mdplanner {
 		sections = append(sections, section{"mdplanner", mdplannerDir, "cerveau/data", nil})
 	}
 	if scope.claude {
-		sections = append(sections, section{"claude", claudeDir, "claude", claudeSkipPaths})
+		sections = append(sections, section{"claude", claudeDir, "claude", nil})
 	}
 
 	// Validate at least one section has data
@@ -197,7 +203,7 @@ func cmdBackup(args []string) {
 		if !dirExists(sec.src) {
 			continue
 		}
-		count, err := addDirToTar(tw, sec.src, sec.prefix, sec.skipPaths, outAbs)
+		count, err := addDirToTar(tw, sec.src, sec.prefix, sec.allowPaths, outAbs)
 		if err != nil {
 			fatalf("Error archiving %s: %v", sec.name, err)
 		}
@@ -222,8 +228,9 @@ func cmdBackup(args []string) {
 }
 
 // addDirToTar walks a directory and adds all files/dirs to the tar writer under the given prefix.
-// Returns the number of files added. Skips paths in skipPaths and the output archive itself.
-func addDirToTar(tw *tar.Writer, root, prefix string, skipPaths map[string]bool, outAbs string) (int, error) {
+// Returns the number of files added. When allowPaths is non-nil, only top-level entries in the
+// allowlist are included. When nil, everything is included. Skips the output archive itself.
+func addDirToTar(tw *tar.Writer, root, prefix string, allowPaths map[string]bool, outAbs string) (int, error) {
 	count := 0
 	return count, filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -232,17 +239,10 @@ func addDirToTar(tw *tar.Writer, root, prefix string, skipPaths map[string]bool,
 
 		rel, _ := filepath.Rel(root, path)
 
-		// Skip excluded paths
-		if skipPaths != nil {
-			// Check if this path or any parent component is in the skip list
+		// Allowlist filter: only include top-level entries that are in the list
+		if allowPaths != nil && rel != "." {
 			parts := strings.Split(rel, string(filepath.Separator))
-			if len(parts) > 0 && skipPaths[parts[0]] {
-				if info.IsDir() {
-					return filepath.SkipDir
-				}
-				return nil
-			}
-			if skipPaths[rel] {
+			if len(parts) > 0 && !allowPaths[parts[0]] {
 				if info.IsDir() {
 					return filepath.SkipDir
 				}
