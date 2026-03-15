@@ -95,7 +95,41 @@ func cmdUpdate() {
 	fmt.Println()
 }
 
-// applyUpdate copies files from src to dest, skipping protected paths.
+// Runtime paths to copy during update. Only these top-level entries are
+// transferred from the downloaded archive to CERVEAU_HOME. Everything else
+// (cmd/, docs/, install.sh, go.mod, LICENSE, README, .github/) is discarded.
+var updateAllowPaths = map[string]bool{
+	"_packages_":         true,
+	"_templates_":        true,
+	"_scripts_":          true,
+	"_configs_":          true,
+	"docker-compose.yml": true,
+	".env.example":       true,
+	"version.txt":        true,
+}
+
+// User data that must never be overwritten by an update.
+var updatePreserved = map[string]bool{
+	".env": true,
+	filepath.Join("_configs_", "brains.json"):        true,
+	filepath.Join("_configs_", "registry.local.json"): true,
+}
+
+// Top-level directories that are never touched by update — pure user data.
+var updateNeverTouch = map[string]bool{
+	"_brains_": true,
+	"data":     true,
+	"backups":  true,
+}
+
+// Prefixes within allowed directories that are never touched.
+var updateNeverTouchPrefixes = []string{
+	filepath.Join("_packages_", "_local_") + string(filepath.Separator),
+}
+
+// applyUpdate copies only runtime files from src to dest.
+// User data (.env, brains.json, registry.local.json, _brains_/, _local_ packages,
+// data/) is never touched.
 func applyUpdate(src, dest string) error {
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error { // #nosec G122 — trusted temp dir from extractTarGz
 		if err != nil {
@@ -107,23 +141,38 @@ func applyUpdate(src, dest string) error {
 			return nil
 		}
 
-		// Skip protected paths
-		if strings.HasPrefix(rel, filepath.Join("_brains_")+string(filepath.Separator)) &&
-			rel != filepath.Join("_brains_", ".gitkeep") {
-			return nil
-		}
-		if strings.HasPrefix(rel, filepath.Join("_packages_", "_local_")+string(filepath.Separator)) {
+		parts := strings.SplitN(rel, string(filepath.Separator), 2)
+		topLevel := parts[0]
+
+		// Never touch user data directories
+		if updateNeverTouch[topLevel] {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 
-		// Skip preserved files
-		preserved := map[string]bool{
-			".env": true,
-			filepath.Join("_configs_", "brains.json"):          true,
-			filepath.Join("_configs_", "registry.local.json"):   true,
-		}
-		if preserved[rel] {
+		// Allowlist: only copy top-level entries that are runtime files
+		if !updateAllowPaths[topLevel] {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
 			return nil
+		}
+
+		// Protect individual user data files
+		if updatePreserved[rel] {
+			return nil
+		}
+
+		// Protect prefixes within allowed directories (_packages_/_local_/)
+		for _, prefix := range updateNeverTouchPrefixes {
+			if strings.HasPrefix(rel, prefix) {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
 		}
 
 		target := filepath.Join(dest, rel)
