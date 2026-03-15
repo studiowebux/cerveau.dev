@@ -106,7 +106,7 @@ func cmdBackup(args []string) {
 		sections = append(sections, section{"cerveau", cerveauDir, "cerveau", cerveauAllowPaths})
 	}
 	if scope.mdplanner {
-		sections = append(sections, section{"mdplanner", cerveauDir, "cerveau", mdplannerAllowPaths})
+		sections = append(sections, section{"mdplanner", mdplannerDir, "cerveau/data", nil})
 	}
 	if scope.claude {
 		sections = append(sections, section{"claude", claudeDir, "claude", nil})

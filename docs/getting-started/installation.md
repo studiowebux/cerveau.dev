@@ -107,17 +107,25 @@ cerveau update
 
 Or from inside a brain session: `/update`
 
-## Backup
+## Backup & Restore
 
-Create a full backup of your environment:
+Create a backup of your environment:
 
 ```bash
-cerveau backup                    # everything: ~/.cerveau/ + ~/.claude/
-cerveau backup --cerveau          # brains, configs, and packages only
+cerveau backup                    # everything (default)
+cerveau backup --cerveau          # brains, configs, packages, .env
 cerveau backup --mdplanner        # MDPlanner data only
+cerveau backup --claude           # ~/.claude/ (can be large)
 ```
 
-Restore with `cerveau restore <archive.tar.gz>`. See [CLI Reference](../reference/makefile.md) for all options.
+Restore from a backup:
+
+```bash
+cerveau restore backup.tar.gz              # restore all sections in archive
+cerveau restore backup.tar.gz --cerveau    # restore only cerveau section
+```
+
+See [CLI Reference](../reference/makefile.md) for all options.
 
 ## Next
 

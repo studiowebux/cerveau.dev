@@ -154,15 +154,22 @@ Useful for reviewing customizations made to a brain after spawning.
 Create a backup archive of your Cerveau environment.
 
 ```bash
-cerveau backup                        # backup everything (default)
-cerveau backup --cerveau              # ~/.cerveau/ only
-cerveau backup --mdplanner            # MDPlanner data only (~/.cerveau/data/)
-cerveau backup --claude               # ~/.claude/ only
-cerveau backup --cerveau --claude     # combine flags
-cerveau backup --all -o /tmp/bk.tar.gz  # custom output path
+cerveau backup                              # backup everything (default: --all)
+cerveau backup --cerveau                    # brains, configs, packages, .env
+cerveau backup --mdplanner                  # MDPlanner data only (~/.cerveau/data/)
+cerveau backup --claude                     # ~/.claude/ (can be large — includes session history)
+cerveau backup --cerveau --mdplanner        # combine flags
+cerveau backup --all -o /tmp/bk.tar.gz     # custom output path
 ```
 
-The archive includes a `manifest.json` with metadata (timestamp, version, sections). The `cerveau` binary is excluded — reinstall via `cerveau update`.
+| Flag | What's included |
+|------|----------------|
+| `--all` | Everything (default when no flags) |
+| `--cerveau` | `~/.cerveau/` brains, configs, packages, .env (excludes MDPlanner data) |
+| `--mdplanner` | `~/.cerveau/data/` only |
+| `--claude` | `~/.claude/` (settings, keybindings, MCP config, session history) |
+
+The archive includes a `manifest.json` with metadata (timestamp, version, sections). Runtime files (`bin/`, `cmd/`, `docs/`) are excluded — reinstall via `cerveau update`.
 
 For a consistent MDPlanner backup, stop the container first.
 
