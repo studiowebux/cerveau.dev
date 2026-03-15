@@ -9,25 +9,25 @@ paths:
 GitHub Actions workflow for building and deploying MinimalDoc-powered
 documentation sites to GitHub Pages.
 
-## Why clone + build
+## Install method
 
-`go install github.com/studiowebux/minimaldoc@latest` fails because the Go
-module root has no `main` package. The binary entry point is
-`cmd/minimaldoc/main.go`. Clone the repo and build locally.
+Use `go install` with the full subpackage path and a pinned version:
+
+```bash
+go install github.com/studiowebux/minimaldoc/cmd/minimaldoc@v1.6.0
+```
 
 ## Workflow template
 
 ```yaml
-name: Docs
+name: Deploy Documentation
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - "docs/**"
-      - "CHANGELOG.md"
-      - ".github/workflows/docs.yml"
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -41,69 +41,41 @@ concurrency:
 
 jobs:
   build:
-    name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Checkout MinimalDoc
-        uses: actions/checkout@v4
-        with:
-          repository: studiowebux/minimaldoc
-          path: minimaldoc-src
+      - uses: actions/checkout@v6
 
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
-          cache: true
-          cache-dependency-path: minimaldoc-src/go.sum
+          go-version: '1.26'
 
-      - name: Build MinimalDoc
-        run: cd minimaldoc-src && go build -o ../minimaldoc ./cmd/minimaldoc/
+      - name: Install MinimalDoc
+        run: go install github.com/studiowebux/minimaldoc/cmd/minimaldoc@v1.6.0
 
-      - name: Build docs
-        run: ./minimaldoc build docs -o _site
+      - name: Build Documentation
+        run: minimaldoc build docs -o public
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: ./public/
 
   deploy:
-    name: Deploy
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 ```
 
-## Step order matters
+## Notes
 
-1. Checkout project repo first
-2. Checkout MinimalDoc into `minimaldoc-src/`
-3. Setup Go AFTER both checkouts so `cache-dependency-path` resolves
-4. Build the binary from `./cmd/minimaldoc/`
-5. Run `./minimaldoc build docs -o <output-dir>`
-
-## GitHub Pages setup
-
-Enable GitHub Pages in repo settings with source set to "GitHub Actions". The
-workflow needs `pages: write` and `id-token: write` permissions.
-
-## Build command
-
-Positional arguments: `./minimaldoc build <source-dir> -o <output-dir>`
-
-The source directory defaults to `docs/`. The output directory is what gets
-uploaded as the Pages artifact.
+- Pin the minimaldoc version — do not use `@latest` in CI
+- Build command: `minimaldoc build <source-dir> -o <output-dir>`
+- Enable GitHub Pages in repo settings with source set to "GitHub Actions"
+- The workflow needs `pages: write` and `id-token: write` permissions

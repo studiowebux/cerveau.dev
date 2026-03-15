@@ -18,13 +18,6 @@ BRAIN_NAME=$(basename "$BRAIN_DIR")
 # --- Share context % with hooks via temp file ---
 echo "$PCT" > "/tmp/claude-ctx-${BRAIN_NAME}.pct"
 
-# --- Model from brain settings.json ---
-MODEL="?"
-SETTINGS="${BRAIN_DIR}/.claude/settings.json"
-if [ -f "$SETTINGS" ]; then
-  MODEL=$(jq -r '.model // "?"' "$SETTINGS")
-fi
-
 # --- Codebase path + branch from local-dev.md ---
 LOCAL_DEV="${BRAIN_DIR}/.claude/rules/workflow/local-dev.md"
 CODEBASE="n/a"
@@ -70,5 +63,5 @@ fi
 # --- Output (2 lines) ---
 BRANCH_SUFFIX=""
 [ -n "$BRANCH" ] && BRANCH_SUFFIX=" ${DIM}(${RESET}${CYAN}${BRANCH}${RESET}${DIM})${RESET}"
-echo -e "${CYAN}${BRAIN_NAME}${RESET}  ${DIM}codebase:${RESET} ${CODEBASE}${BRANCH_SUFFIX}  ${DIM}model:${RESET} ${MODEL}"
+echo -e "${CYAN}${BRAIN_NAME}${RESET}  ${DIM}codebase:${RESET} ${CODEBASE}${BRANCH_SUFFIX}"
 echo -e "${BAR_COLOR}${BAR}${RESET} ${PCT}%  ${DIM}cost:${RESET} ${YELLOW}${COST_FMT}${RESET}${VERSION_SUFFIX}"

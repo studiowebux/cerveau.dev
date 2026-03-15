@@ -53,11 +53,14 @@ landing:
         description: "One command installs the protocol, starts MDPlanner, and registers MCP globally."
         code: "curl -fsSL https://cerveau.dev/install.sh | bash"
       - title: "Create a Brain"
-        description: "Spawn a brain for your project. Zero files added to your codebase."
-        code: "cerveau spawn MyApp /path/to/myapp"
+        description: "Spawn a brain for your project. Zero files added to your codebase. For an existing project, clone the repo first, then point spawn at it."
+        code: "cerveau spawn MyApp /tmp/MyApp"
       - title: "Launch"
         description: "Open the brain session. Claude boots with full context automatically."
         code: "cd ~/.cerveau/_brains_/myapp-brain && claude"
+      - title: "Boot"
+        description: "Type 'boot' inside the session. Claude reads the rules, fills local-dev.md, and configures MDPlanner state."
+        code: "boot"
 
   features:
     title: "Why Cerveau.dev?"

@@ -8,6 +8,10 @@ MDPlanner is the single source of truth for tasks, notes, decisions, and
 progress. It runs in a container and exposes an MCP endpoint that Claude connects
 to.
 
+> [MDPlanner.dev](https://mdplanner.dev) — actively maintained and growing fast. Expect new features regularly (maybe too regularly).
+
+
+
 ## Container Setup
 
 If you used `curl -fsSL https://cerveau.dev/install.sh | bash`, MDPlanner is
@@ -20,7 +24,7 @@ cd ~/.cerveau
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` — generate a token with `openssl rand -hex 32` and paste it in:
 
 ```env
 MDPLANNER_MCP_TOKEN=replace-with-a-random-secret
@@ -32,12 +36,6 @@ MDPLANNER_BACKUP_INTERVAL=24   # daily backups
 `MDPLANNER_CERVEAU_DIR` points to the Cerveau root inside the container.
 The `docker-compose.yml` mounts `~/.cerveau/` at `/cerveau` and `~/.claude` at
 `/root/.claude`, so the path above works out of the box.
-
-Generate a token:
-
-```bash
-openssl rand -hex 32
-```
 
 ### Initialize the Data Directory
 

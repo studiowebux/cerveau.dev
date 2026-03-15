@@ -91,7 +91,7 @@ brain-specific config: MCP project name, server URL, person IDs, active
 milestone, and Brain Memory.
 
 **`stack/` and `practices/` ship empty.** You generate rules for your own
-stack and practices — see [Writing Rules](../02-guides/02-writing-rules.md).
+stack and practices — see [Writing Rules](../guides/writing-rules.md).
 
 **Your code lives anywhere.** The brain's `settings.json` uses an absolute path
 in `additionalDirectories` to point at your project repo — git submodule,
