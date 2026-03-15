@@ -9,7 +9,10 @@ What happens when you launch your first session.
 ## Launch
 
 ```bash
-cd ~/.cerveau/_brains_/myapp-brain && claude
+cerveau boot MyApp
+
+# Or manually:
+# cd ~/.cerveau/_brains_/myapp-brain && claude
 ```
 
 ## Phase 1 — Boot
@@ -53,7 +56,8 @@ Same flow as the first:
 
 ```bash
 cerveau spawn ApiServer /path/to/api --packages studiowebux/core
-cd ~/.cerveau/_brains_/apiserver-brain && claude
+cerveau boot ApiServer
+# Or: cd ~/.cerveau/_brains_/apiserver-brain && claude
 # then type: boot
 ```
 

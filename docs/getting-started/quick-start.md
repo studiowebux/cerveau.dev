@@ -186,6 +186,12 @@ eval "$(cerveau completion zsh)"    # .zshrc
 eval "$(cerveau completion bash)"   # .bashrc
 ```
 
+Or manually without the `boot` command:
+
+```bash
+cd ~/.cerveau/_brains_/myapp-brain && claude
+```
+
 ---
 
 ## Step 5 — Boot
