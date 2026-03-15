@@ -122,6 +122,17 @@
         {"name": "theme-extractor.md", "type": "agents"}
       ],
       "tags": ["design", "agent", "extraction"]
+    },
+    {
+      "name": "github",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/github/1.0.0",
+      "description": "Pre-push CI gate — runs linters and tests before allowing git push (Go, Node.js)",
+      "files": [
+        {"name": "pre-push-ci.sh", "type": "hooks"}
+      ],
+      "tags": ["ci", "hooks", "github"]
     }
   ]
 }
