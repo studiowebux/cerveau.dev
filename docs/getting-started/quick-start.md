@@ -27,7 +27,7 @@ curl -s http://localhost:8003/health
 # expected: {"status":"ok"}
 ```
 
-**Set up MDPlanner people.** Open the MDPlanner UI at `http://localhost:8003` and create at least two people: yourself (the project owner) and Claude (the AI agent). Their IDs are used to populate the People Registry in `local-dev.md` during first boot — without them, Claude cannot assign tasks or track ownership correctly. See [MDPlanner Setup](../guides/mdplanner.md) for details.
+**Set up MDPlanner people (skip if using `core-local`).** Open the MDPlanner UI at `http://localhost:8003` and create at least two people: yourself (the project owner) and Claude (the AI agent). Their IDs are used to populate the People Registry in `local-dev.md` during first boot — without them, Claude cannot assign tasks or track ownership correctly. See [MDPlanner Setup](../guides/mdplanner.md) for details.
 
 ---
 
@@ -144,15 +144,22 @@ See [Writing Rules](../guides/writing-rules.md) for more prompts.
 ## Step 3 — Spawn a Brain
 
 ```bash
-# Core only (default — omitting --packages also defaults to studiowebux/core)
+# Core with MDPlanner (default — omitting --packages also defaults to studiowebux/core)
 cerveau spawn MyApp /absolute/path/to/your/code --packages studiowebux/core
+
+# Core with local files (no MDPlanner server needed)
+cerveau spawn MyApp /absolute/path/to/your/code --packages studiowebux/core-local
 
 # Core + your local package
 cerveau spawn MyApp /absolute/path/to/your/code --packages studiowebux/core,_local_/golang-stack
 ```
 
 :::warning
-`studiowebux/core` must always be included. It provides the session protocol, hooks, and boot rules that everything else depends on. A brain without it won't function correctly.
+A core package must always be included. Choose one:
+- **`studiowebux/core`** — requires MDPlanner MCP for tasks, notes, and milestones
+- **`studiowebux/core-local`** — stores tasks, notes, and milestones as local markdown files in the brain directory (no server required)
+
+Both provide the same session protocol, hooks, boot rules, and discipline. They differ only in where data is stored. Do not install both — pick one.
 :::
 
 This spawns the brain, wires MCP (already global from the install), and rebuilds selective rules in one step.
