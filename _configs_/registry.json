@@ -33,6 +33,38 @@
       "tags": ["core", "protocol"]
     },
     {
+      "name": "core-local",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/core-local/1.0.0",
+      "description": "File-based brain protocol — same workflow as core but stores tasks, notes, and milestones as local markdown files instead of requiring mdplanner",
+      "files": [
+        {"name": "CLAUDE.md", "type": "claude"},
+        {"name": "code-discipline.md", "type": "rules"},
+        {"name": "goal-discipline.md", "type": "rules"},
+        {"name": "phase-boot.md", "type": "rules"},
+        {"name": "phase-close.md", "type": "rules"},
+        {"name": "phase-work.md", "type": "rules"},
+        {"name": "local-dev.md", "type": "workflows", "realFile": true},
+        {"name": "context.md", "type": "workflows", "realFile": true},
+        {"name": "local-tasks.md", "type": "workflows"},
+        {"name": "checkpoint-counter.sh", "type": "hooks"},
+        {"name": "commit-validator.sh", "type": "hooks"},
+        {"name": "context-warning.sh", "type": "hooks"},
+        {"name": "post-edit-reminder.sh", "type": "hooks"},
+        {"name": "pre-compact-handoff.sh", "type": "hooks"},
+        {"name": "session-context.sh", "type": "hooks"},
+        {"name": "marketplace/SKILL.md", "type": "skills"},
+        {"name": "release/SKILL.md", "type": "skills"},
+        {"name": "update/SKILL.md", "type": "skills"},
+        {"name": "architecture.md", "type": "templates"},
+        {"name": "decision-record.md", "type": "templates"},
+        {"name": "feature-spec.md", "type": "templates"},
+        {"name": "project-overview.md", "type": "templates"}
+      ],
+      "tags": ["core", "protocol", "local", "offline"]
+    },
+    {
       "name": "minimaldoc",
       "org": "studiowebux",
       "version": "1.0.0",

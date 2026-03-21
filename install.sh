@@ -2,6 +2,11 @@
 # Cerveau installer — single-command setup.
 # Usage: curl -fsSL https://cerveau.dev/install.sh | bash
 #    or: bash install.sh
+#
+# Options (env vars):
+#   CERVEAU_HOME    Install directory (default: ~/.cerveau)
+#   MCP_PORT        MDPlanner port (default: 8003)
+#   SKIP_MDPLANNER  Set to 1 to skip MDPlanner setup (for core-local users)
 set -euo pipefail
 
 CERVEAU_HOME="${CERVEAU_HOME:-$HOME/.cerveau}"
@@ -9,6 +14,7 @@ GITHUB_REPO="studiowebux/cerveau.dev"
 MCP_PORT="${MCP_PORT:-8003}"
 MCP_URL="http://localhost:${MCP_PORT}/mcp"
 BIN_DIR="$CERVEAU_HOME/bin"
+SKIP_MDPLANNER="${SKIP_MDPLANNER:-0}"
 
 # ── Dependency check ──────────────────────────────────────────────────────────
 for cmd in curl jq claude; do
@@ -18,21 +24,30 @@ for cmd in curl jq claude; do
   }
 done
 
-# Detect container runtime: prefer podman, fall back to docker
-if command -v podman >/dev/null 2>&1; then
-  RUNTIME="podman"
-  COMPOSE="podman compose"
-elif command -v docker >/dev/null 2>&1; then
-  RUNTIME="docker"
-  COMPOSE="docker compose"
-else
-  echo "Error: 'podman' or 'docker' is required but neither is installed."
-  exit 1
+# Detect container runtime (required only when MDPlanner is enabled)
+RUNTIME=""
+COMPOSE=""
+if [ "$SKIP_MDPLANNER" != "1" ]; then
+  if command -v podman >/dev/null 2>&1; then
+    RUNTIME="podman"
+    COMPOSE="podman compose"
+  elif command -v docker >/dev/null 2>&1; then
+    RUNTIME="docker"
+    COMPOSE="docker compose"
+  else
+    echo "Error: 'podman' or 'docker' is required but neither is installed."
+    echo "  To install without MDPlanner: SKIP_MDPLANNER=1 bash install.sh"
+    exit 1
+  fi
 fi
 
 echo ""
 echo "Installing Cerveau to $CERVEAU_HOME"
-echo "  Container runtime: $RUNTIME"
+if [ "$SKIP_MDPLANNER" = "1" ]; then
+  echo "  Mode: local-only (MDPlanner skipped)"
+else
+  echo "  Container runtime: $RUNTIME"
+fi
 echo ""
 
 # ── Download to /tmp, copy only runtime files ────────────────────────────────
@@ -122,59 +137,68 @@ else
   echo "  Install Go and run: cd $CERVEAU_HOME && go build -o $BIN_DIR/cerveau ./cmd/cerveau/"
 fi
 
-# ── MCP token ─────────────────────────────────────────────────────────────────
-ENV_FILE="$CERVEAU_HOME/.env"
-if [ -f "$ENV_FILE" ] && grep -q "^MDPLANNER_MCP_TOKEN=." "$ENV_FILE"; then
-  TOKEN=$(grep '^MDPLANNER_MCP_TOKEN=' "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]')
-  echo "  Reusing existing MCP token"
-else
-  TOKEN=$(head -c 256 /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | head -c 32)
-  SECRET_KEY=$($RUNTIME run --rm ghcr.io/studiowebux/mdplanner:latest keygen-secret 2>/dev/null | grep '^[0-9a-f]\{64\}$')
-  cat > "$ENV_FILE" <<ENVEOF
+# ── MDPlanner setup (skipped when SKIP_MDPLANNER=1) ──────────────────────────
+if [ "$SKIP_MDPLANNER" != "1" ]; then
+
+  # MCP token
+  ENV_FILE="$CERVEAU_HOME/.env"
+  if [ -f "$ENV_FILE" ] && grep -q "^MDPLANNER_MCP_TOKEN=." "$ENV_FILE"; then
+    TOKEN=$(grep '^MDPLANNER_MCP_TOKEN=' "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]')
+    echo "  Reusing existing MCP token"
+  else
+    TOKEN=$(head -c 256 /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | head -c 32)
+    SECRET_KEY=$($RUNTIME run --rm ghcr.io/studiowebux/mdplanner:latest keygen-secret 2>/dev/null | grep '^[0-9a-f]\{64\}$')
+    cat > "$ENV_FILE" <<ENVEOF
 MDPLANNER_MCP_TOKEN=${TOKEN}
 MDPLANNER_SECRET_KEY=${SECRET_KEY}
 MDPLANNER_CACHE=1
 MDPLANNER_CERVEAU_DIR=/cerveau
 ENVEOF
-  echo "  Generated .env → $ENV_FILE"
-fi
+    echo "  Generated .env → $ENV_FILE"
+  fi
 
-# ── Initialize data directory ─────────────────────────────────────────────────
-mkdir -p "$CERVEAU_HOME/data" "$CERVEAU_HOME/backups"
+  # Initialize data directory
+  mkdir -p "$CERVEAU_HOME/data" "$CERVEAU_HOME/backups"
 
-if [ ! -f "$CERVEAU_HOME/data/projects.json" ]; then
-  echo "  Initializing MDPlanner data directory..."
-  $RUNTIME run --rm -v "$CERVEAU_HOME/data:/data" \
-    ghcr.io/studiowebux/mdplanner:latest init /data
-  echo "  Data directory initialized"
+  if [ ! -f "$CERVEAU_HOME/data/projects.json" ]; then
+    echo "  Initializing MDPlanner data directory..."
+    $RUNTIME run --rm -v "$CERVEAU_HOME/data:/data" \
+      ghcr.io/studiowebux/mdplanner:latest init /data
+    echo "  Data directory initialized"
+  else
+    echo "  Data directory already initialized"
+  fi
+
+  # Start MDPlanner
+  echo "  Starting MDPlanner..."
+  if [ "$RUNTIME" = "podman" ]; then
+    podman pull ghcr.io/studiowebux/mdplanner:latest --quiet 2>/dev/null || true
+    (cd "$CERVEAU_HOME" && $COMPOSE up -d)
+  else
+    (cd "$CERVEAU_HOME" && $COMPOSE up -d --pull always --quiet-pull)
+  fi
+
+  echo "  Waiting for MDPlanner to be ready..."
+  for i in $(seq 1 20); do
+    curl -sf "http://localhost:${MCP_PORT}/" >/dev/null 2>&1 && break
+    sleep 2
+  done
+  curl -sf "http://localhost:${MCP_PORT}/" >/dev/null 2>&1 \
+    || echo "  Warning: MDPlanner may still be starting — check: $COMPOSE -f $CERVEAU_HOME/docker-compose.yml logs"
+
+  # Register MCP globally
+  echo "  Registering MDPlanner MCP (user scope)..."
+  claude mcp add --transport http --scope user mdplanner "$MCP_URL" \
+    --header "Authorization: Bearer ${TOKEN}" 2>/dev/null \
+    || echo "  Warning: MCP registration failed. Run manually:
+      claude mcp add --transport http --scope user mdplanner $MCP_URL \\
+        --header 'Authorization: Bearer ${TOKEN}'"
+
 else
-  echo "  Data directory already initialized"
+  echo "  MDPlanner skipped (SKIP_MDPLANNER=1)"
+  echo "  Use studiowebux/core-local when spawning brains"
+  mkdir -p "$CERVEAU_HOME/backups"
 fi
-
-# ── Start MDPlanner ───────────────────────────────────────────────────────────
-echo "  Starting MDPlanner..."
-if [ "$RUNTIME" = "podman" ]; then
-  podman pull ghcr.io/studiowebux/mdplanner:latest --quiet 2>/dev/null || true
-  (cd "$CERVEAU_HOME" && $COMPOSE up -d)
-else
-  (cd "$CERVEAU_HOME" && $COMPOSE up -d --pull always --quiet-pull)
-fi
-
-echo "  Waiting for MDPlanner to be ready..."
-for i in $(seq 1 20); do
-  curl -sf "http://localhost:${MCP_PORT}/" >/dev/null 2>&1 && break
-  sleep 2
-done
-curl -sf "http://localhost:${MCP_PORT}/" >/dev/null 2>&1 \
-  || echo "  Warning: MDPlanner may still be starting — check: $COMPOSE -f $CERVEAU_HOME/docker-compose.yml logs"
-
-# ── Register MCP globally ─────────────────────────────────────────────────────
-echo "  Registering MDPlanner MCP (user scope)..."
-claude mcp add --transport http --scope user mdplanner "$MCP_URL" \
-  --header "Authorization: Bearer ${TOKEN}" 2>/dev/null \
-  || echo "  Warning: MCP registration failed. Run manually:
-    claude mcp add --transport http --scope user mdplanner $MCP_URL \\
-      --header 'Authorization: Bearer ${TOKEN}'"
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 VERSION=$(cat "$CERVEAU_HOME/version.txt" 2>/dev/null || echo "unknown")
@@ -198,7 +222,11 @@ esac
 
 echo "Create your first brain:"
 echo ""
-echo "  cerveau spawn MyApp /path/to/myapp"
+if [ "$SKIP_MDPLANNER" = "1" ]; then
+  echo "  cerveau spawn MyApp /path/to/myapp --packages studiowebux/core-local"
+else
+  echo "  cerveau spawn MyApp /path/to/myapp"
+fi
 echo ""
 echo "Then:"
 echo ""

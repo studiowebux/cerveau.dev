@@ -12,7 +12,7 @@ jq --version         # brew install jq  /  apt install jq
 claude --version     # Claude Code CLI
 ```
 
-**Container runtime** — `podman` or `docker` (with Compose support). The installer auto-detects whichever is available, preferring podman.
+**Container runtime** — `podman` or `docker` (with Compose support). The installer auto-detects whichever is available, preferring podman. Not required when using `SKIP_MDPLANNER=1`.
 
 `gh` (GitHub CLI) is optional — needed for PR workflows only.
 
@@ -43,6 +43,16 @@ curl -s http://localhost:8003/health
 # expected: {"status":"ok"}
 ```
 
+### Without MDPlanner
+
+If you prefer file-based task management (no server, no container runtime), skip the MDPlanner setup:
+
+```bash
+SKIP_MDPLANNER=1 curl -fsSL https://cerveau.dev/install.sh | bash
+```
+
+This installs the packages and CLI but skips steps 3–5. Use `studiowebux/core-local` instead of `studiowebux/core` when spawning brains.
+
 ## Directory Layout
 
 Everything lives in `~/.cerveau/` — your project repos are never touched:
@@ -71,6 +81,7 @@ The brain links to your code via `additionalDirectories` in its `settings.json`.
 | -------- | ------- | ----------- |
 | `CERVEAU_HOME` | `~/.cerveau` | Where Cerveau installs packages, brains, and config |
 | `MCP_PORT` | `8003` | Port MDPlanner listens on |
+| `SKIP_MDPLANNER` | `0` | Set to `1` to skip MDPlanner setup (container, MCP token, MCP registration) |
 
 Set these before running the installer to override the defaults:
 
