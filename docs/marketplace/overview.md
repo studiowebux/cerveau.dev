@@ -140,7 +140,7 @@ cerveau marketplace info studiowebux/core@1.0.0 # show specific version
 Every file is symlinked by default. To customize a file from an installed
 package:
 
-1. Delete the symlink in the brain (e.g. `rm brain/.claude/hooks/commit-validator.sh`)
+1. Delete the symlink in the brain (e.g. `rm brain/.claude/hooks/context-warning.sh`)
 2. Place your own version as a real file at the same path
 3. Run `cerveau rebuild` — it preserves real files and skips the symlink
 

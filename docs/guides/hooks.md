@@ -7,7 +7,7 @@ title: Hooks
 Hooks enforce the protocol automatically. They run at specific Claude Code
 lifecycle events and fire regardless of whether Claude remembers the rules.
 
-All hooks live in `_packages_/studiowebux/core/1.0.0/hooks/` and are symlinked wholesale into
+All hooks live in `_packages_/studiowebux/core/<version>/hooks/` and are symlinked wholesale into
 every brain.
 
 ## Hooks Overview
@@ -16,9 +16,8 @@ every brain.
 |---|---|---|
 | `session-context.sh` | Session start | Reminds Claude to run Phase 1 Boot |
 | `checkpoint-counter.sh` | Every tool call | Fires a checkpoint reminder every 20 tool calls |
-| `context-warning.sh` | Every tool call (once at 90%+) | Warns Claude to write `HANDOFF.md`, a progress note, and stop new work |
+| `context-warning.sh` | Every tool call (once at 80%+) | Warns Claude to write `HANDOFF.md`, a progress note, and stop new work |
 | `post-edit-reminder.sh` | After file edits | Reminds Claude to finish the current task before starting new work |
-| `commit-validator.sh` | Before Bash tool (git commit) | Validates conventional commit format; scans staged files for secrets |
 | `pre-compact-handoff.sh` | Before context compaction | Writes `HANDOFF.md` automatically so the next session can resume cleanly |
 
 ## Hook Details
@@ -39,18 +38,9 @@ long work sessions.
 Fires after file edits. Reminds Claude to finish the current task before
 starting new work. Enforces the one-task-at-a-time rule.
 
-### commit-validator
-
-Fires on `PreToolUse` when a Bash `git commit` command is detected. Checks:
-
-1. **Conventional commit format** — `type: subject` (feat, fix, chore, docs, test, refactor, etc.)
-2. **Secret patterns** — scans staged files for `sk-`, `ghp_`, `AKIA`, `password=` patterns
-
-Blocks the commit if either check fails.
-
 ### context-warning
 
-Fires on every `PostToolUse`. Reads the context percentage written by the status line to `/tmp/claude-ctx-<brain>.pct`. When usage hits 90% or more, fires once per session and instructs Claude to:
+Fires on every `PostToolUse`. Reads the context percentage written by the status line to `/tmp/claude-ctx-<brain>.pct`. When usage hits 80% or more, fires once per session and instructs Claude to:
 
 1. Write `HANDOFF.md` in the brain directory with three sections: current state (task IDs, branch, last commit), next step (one sentence), and key facts not yet in MDPlanner
 2. Write a `[progress]` note to MDPlanner summarizing the session

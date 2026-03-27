@@ -65,10 +65,6 @@ After implementing a task:
 4. Add progress comment to the MDPlanner task
 5. Move task to Pending Review in MDPlanner (owner moves to Done after verification)
 
-The `commit-validator` hook blocks commits that:
-- Don't follow conventional commit format
-- Have staged files containing secret patterns
-
 ### Conventional Commits
 
 ```

@@ -21,7 +21,6 @@ Full annotated layout of a Cerveau installation (`~/.cerveau/`).
 │   │   │       │   └── project-overview.md
 │   │   │       ├── hooks/               # Hook scripts (wholesale symlink in brains)
 │   │   │       │   ├── checkpoint-counter.sh
-│   │   │       │   ├── commit-validator.sh
 │   │   │       │   ├── context-warning.sh
 │   │   │       │   ├── post-edit-reminder.sh
 │   │   │       │   ├── pre-compact-handoff.sh

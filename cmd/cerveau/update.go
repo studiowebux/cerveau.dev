@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -76,8 +77,17 @@ func cmdUpdate() {
 		fatalf("Error: Failed to apply update: %v", err)
 	}
 
+	// Self-update binary from latest GitHub release
+	fmt.Println("  Updating CLI binary...")
+	if err := selfUpdateBinary(); err != nil {
+		fmt.Printf("  Warning: binary update failed: %v\n", err)
+		fmt.Println("  You can rebuild manually: go build -ldflags \"-X main.Version=$(git describe --tags --always)\" -o $(which cerveau) ./cmd/cerveau/")
+	} else {
+		fmt.Println("  CLI binary updated.")
+	}
+
 	fmt.Println()
-	fmt.Printf("Cerveau updated. Rebuild your CLI to pick up the new version.\n")
+	fmt.Println("Cerveau updated.")
 
 	// Auto-rebuild all brains
 	fmt.Println("  Rebuilding all brains...")
@@ -204,6 +214,64 @@ func checkRemovedFiles(old, new Registry) []string {
 		}
 	}
 	return removed
+}
+
+// selfUpdateBinary downloads the latest release binary from GitHub and replaces
+// the currently running executable.
+func selfUpdateBinary() error {
+	goos := runtime.GOOS
+	goarch := runtime.GOARCH
+	binaryURL := fmt.Sprintf("https://github.com/studiowebux/cerveau.dev/releases/latest/download/cerveau-%s-%s", goos, goarch)
+
+	client := &http.Client{Timeout: 60 * time.Second}
+	resp, err := client.Get(binaryURL) // #nosec G107 — URL is constructed from constants
+	if err != nil {
+		return fmt.Errorf("download failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("download failed (HTTP %d)", resp.StatusCode)
+	}
+
+	// Find current binary path
+	exe, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("cannot find current binary: %w", err)
+	}
+	exe, err = filepath.EvalSymlinks(exe)
+	if err != nil {
+		return fmt.Errorf("cannot resolve binary path: %w", err)
+	}
+
+	// Write to temp file next to the binary, then atomic rename
+	tmpFile, err := os.CreateTemp(filepath.Dir(exe), "cerveau-update-*")
+	if err != nil {
+		return fmt.Errorf("cannot create temp file: %w", err)
+	}
+	tmpPath := tmpFile.Name()
+
+	_, err = io.Copy(tmpFile, resp.Body)
+	closeErr := tmpFile.Close()
+	if err != nil {
+		os.Remove(tmpPath)
+		return fmt.Errorf("write failed: %w", err)
+	}
+	if closeErr != nil {
+		os.Remove(tmpPath)
+		return fmt.Errorf("close failed: %w", closeErr)
+	}
+
+	if err := os.Chmod(tmpPath, 0755); err != nil { // #nosec G302 — executable binary
+		os.Remove(tmpPath)
+		return fmt.Errorf("chmod failed: %w", err)
+	}
+
+	if err := os.Rename(tmpPath, exe); err != nil {
+		os.Remove(tmpPath)
+		return fmt.Errorf("replace failed: %w", err)
+	}
+
+	return nil
 }
 
 // extractTarGz extracts a .tar.gz stream to dest, stripping stripComponents
