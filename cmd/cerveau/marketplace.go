@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -69,20 +70,47 @@ func cmdMarketplaceList(args []string) {
 		return
 	}
 
+	// Group by qualified ID, collect versions
+	type pkgGroup struct {
+		qid         string
+		description string
+		tags        []string
+		versions    []string
+	}
+	seen := map[string]int{} // qid → index in groups
+	var groups []pkgGroup
 	for _, p := range matched {
-		fmt.Printf("  %-40s v%-8s %s\n", p.QualifiedID(), p.Version, p.Description)
-		if len(p.Tags) > 0 {
-			fmt.Printf("  %-40s          tags: %s\n", "", strings.Join(p.Tags, ", "))
+		qid := p.QualifiedID()
+		if idx, ok := seen[qid]; ok {
+			groups[idx].versions = append(groups[idx].versions, p.Version)
+		} else {
+			seen[qid] = len(groups)
+			groups = append(groups, pkgGroup{
+				qid:         qid,
+				description: p.Description,
+				tags:        p.Tags,
+				versions:    []string{p.Version},
+			})
+		}
+	}
+
+	for _, g := range groups {
+		// Sort versions descending (simple string sort; works for semver with same digit count)
+		sort.Sort(sort.Reverse(sort.StringSlice(g.versions)))
+		verStr := strings.Join(g.versions, ", ")
+		fmt.Printf("  %-40s [%s]  %s\n", g.qid, verStr, g.description)
+		if len(g.tags) > 0 {
+			fmt.Printf("  %-40s          tags: %s\n", "", strings.Join(g.tags, ", "))
 		}
 	}
 	fmt.Println()
 }
 
-func cmdMarketplaceInfo(qualifiedID string) {
+func cmdMarketplaceInfo(ref string) {
 	reg := loadMergedRegistry()
-	pkg := findPackage(reg, qualifiedID)
+	pkg := resolvePackageRef(reg, ref)
 	if pkg == nil {
-		fatalf("Package %q not found. Run: cerveau marketplace list", qualifiedID)
+		fatalf("Package %q not found. Run: cerveau marketplace list", ref)
 	}
 
 	fmt.Println()
@@ -93,6 +121,17 @@ func cmdMarketplaceInfo(qualifiedID string) {
 	if len(pkg.Tags) > 0 {
 		fmt.Printf("  Tags:        %s\n", strings.Join(pkg.Tags, ", "))
 	}
+
+	// Show all available versions
+	all := findAllVersions(reg, pkg.QualifiedID())
+	if len(all) > 1 {
+		var vers []string
+		for _, p := range all {
+			vers = append(vers, p.Version)
+		}
+		fmt.Printf("  Available:   %s\n", strings.Join(vers, ", "))
+	}
+
 	fmt.Println()
 	fmt.Printf("  Files (%d):\n", len(pkg.Files))
 	for _, f := range pkg.Files {
@@ -105,13 +144,33 @@ func cmdMarketplaceInfo(qualifiedID string) {
 	fmt.Println()
 }
 
-func cmdMarketplaceInstall(qualifiedID, brainName string) {
+func cmdMarketplaceInstall(ref, brainName string) {
 	reg := loadMergedRegistry()
 
-	// Validate package
-	pkg := findPackage(reg, qualifiedID)
-	if pkg == nil {
-		fatalf("Package %q not found. Run: cerveau marketplace list", qualifiedID)
+	// Parse org/name@version
+	qid, ver := parseQualifiedRef(ref)
+
+	// Resolve package
+	var pkg *Package
+	if ver != "" {
+		pkg = findPackageVersion(reg, qid, ver)
+		if pkg == nil {
+			// Show available versions to help the user
+			all := findAllVersions(reg, qid)
+			if len(all) > 0 {
+				var vers []string
+				for _, p := range all {
+					vers = append(vers, p.Version)
+				}
+				fatalf("Version %q not found for %s. Available: %s", ver, qid, strings.Join(vers, ", "))
+			}
+			fatalf("Package %q not found. Run: cerveau marketplace list", ref)
+		}
+	} else {
+		pkg = findPackage(reg, qid)
+		if pkg == nil {
+			fatalf("Package %q not found. Run: cerveau marketplace list", qid)
+		}
 	}
 
 	// Validate package files exist on disk
@@ -140,16 +199,27 @@ func cmdMarketplaceInstall(qualifiedID, brainName string) {
 		fatalf("Brain %q not found in brains.json. Run: cerveau list", brainName)
 	}
 
-	// Check if already installed
-	if contains(brain.Packages, qualifiedID) {
-		fmt.Printf("  Already installed: %s in %s\n", qualifiedID, brainName)
+	newRef := versionedRef(*pkg)
+
+	// Check if this exact version is already installed
+	if contains(brain.Packages, newRef) {
+		fmt.Printf("  Already installed: %s in %s\n", newRef, brainName)
 		return
 	}
 
+	// Enforce one version at a time: remove any existing version of this package
+	for i, entry := range brain.Packages {
+		if installedBaseID(entry) == qid {
+			fmt.Printf("  Replacing %s with %s\n", entry, newRef)
+			brain.Packages = append(brain.Packages[:i], brain.Packages[i+1:]...)
+			break
+		}
+	}
+
 	// Add package and save
-	brain.Packages = append(brain.Packages, qualifiedID)
+	brain.Packages = append(brain.Packages, newRef)
 	saveBrainsConfig(cfg)
-	fmt.Printf("  Added %s to %s\n", qualifiedID, brainName)
+	fmt.Printf("  Added %s to %s\n", newRef, brainName)
 
 	// Rebuild
 	fmt.Println("  Rebuilding rules...")
@@ -157,7 +227,7 @@ func cmdMarketplaceInstall(qualifiedID, brainName string) {
 	fmt.Println("Done.")
 }
 
-func cmdMarketplaceUninstall(qualifiedID, brainName string) {
+func cmdMarketplaceUninstall(ref, brainName string) {
 	cfg := loadBrainsConfig()
 
 	var brain *Brain
@@ -171,22 +241,23 @@ func cmdMarketplaceUninstall(qualifiedID, brainName string) {
 		fatalf("Brain %q not found in brains.json. Run: cerveau list", brainName)
 	}
 
-	// Find and remove
+	// Match by base qualified ID so "org/name" uninstalls regardless of version
+	qid, _ := parseQualifiedRef(ref)
 	found := false
-	for i, p := range brain.Packages {
-		if p == qualifiedID {
+	for i, entry := range brain.Packages {
+		if installedBaseID(entry) == qid {
+			fmt.Printf("  Removing %s from %s\n", entry, brainName)
 			brain.Packages = append(brain.Packages[:i], brain.Packages[i+1:]...)
 			found = true
 			break
 		}
 	}
 	if !found {
-		fmt.Printf("  Package %s is not installed in %s\n", qualifiedID, brainName)
+		fmt.Printf("  Package %s is not installed in %s\n", qid, brainName)
 		return
 	}
 
 	saveBrainsConfig(cfg)
-	fmt.Printf("  Removed %s from %s\n", qualifiedID, brainName)
 
 	// Rebuild to clean up stale symlinks
 	fmt.Println("  Rebuilding rules...")

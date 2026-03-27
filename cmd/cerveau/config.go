@@ -121,7 +121,17 @@ func loadRegistryFile(path string) Registry {
 	return reg
 }
 
+// parseQualifiedRef splits "org/name@version" into ("org/name", "version").
+// If no @version suffix, version is empty.
+func parseQualifiedRef(ref string) (qualifiedID, version string) {
+	if at := strings.LastIndex(ref, "@"); at > 0 {
+		return ref[:at], ref[at+1:]
+	}
+	return ref, ""
+}
+
 // findPackage looks up a package by qualified ID ("org/name") in the registry.
+// Returns the first match (use findPackageVersion for exact version).
 func findPackage(reg Registry, qualifiedID string) *Package {
 	for i := range reg.Packages {
 		if reg.Packages[i].QualifiedID() == qualifiedID {
@@ -130,6 +140,50 @@ func findPackage(reg Registry, qualifiedID string) *Package {
 	}
 	return nil
 }
+
+// findPackageVersion looks up a package by qualified ID and exact version.
+func findPackageVersion(reg Registry, qualifiedID, version string) *Package {
+	for i := range reg.Packages {
+		if reg.Packages[i].QualifiedID() == qualifiedID && reg.Packages[i].Version == version {
+			return &reg.Packages[i]
+		}
+	}
+	return nil
+}
+
+// resolvePackageRef resolves "org/name" or "org/name@version" to a package.
+// Without version: returns the first match. With version: returns exact match.
+func resolvePackageRef(reg Registry, ref string) *Package {
+	qid, ver := parseQualifiedRef(ref)
+	if ver != "" {
+		return findPackageVersion(reg, qid, ver)
+	}
+	return findPackage(reg, qid)
+}
+
+// findAllVersions returns all registry entries for a given qualified ID.
+func findAllVersions(reg Registry, qualifiedID string) []Package {
+	var result []Package
+	for _, p := range reg.Packages {
+		if p.QualifiedID() == qualifiedID {
+			result = append(result, p)
+		}
+	}
+	return result
+}
+
+// versionedRef returns "org/name@version".
+func versionedRef(pkg Package) string {
+	return pkg.QualifiedID() + "@" + pkg.Version
+}
+
+// installedBaseID extracts the base qualified ID from a brain package entry.
+// Handles both "org/name" (legacy) and "org/name@version" formats.
+func installedBaseID(entry string) string {
+	qid, _ := parseQualifiedRef(entry)
+	return qid
+}
+
 
 // resolveFilePath returns the absolute path to a package file on disk.
 func resolveFilePath(pkg Package, file PackageFile) string {

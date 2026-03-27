@@ -76,13 +76,8 @@ func cmdUpdate() {
 		fatalf("Error: Failed to apply update: %v", err)
 	}
 
-	version := "unknown"
-	if data, err := os.ReadFile(filepath.Join(home, "version.txt")); err == nil { // #nosec G304 — home is CERVEAU_HOME
-		version = strings.TrimSpace(string(data))
-	}
-
 	fmt.Println()
-	fmt.Printf("Cerveau %s updated.\n", version)
+	fmt.Printf("Cerveau updated. Rebuild your CLI to pick up the new version.\n")
 
 	// Auto-rebuild all brains
 	fmt.Println("  Rebuilding all brains...")
@@ -105,7 +100,6 @@ var updateAllowPaths = map[string]bool{
 	"_configs_":          true,
 	"docker-compose.yml": true,
 	".env.example":       true,
-	"version.txt":        true,
 }
 
 // User data that must never be overwritten by an update.

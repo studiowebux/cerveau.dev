@@ -60,19 +60,33 @@ func main() {
 			cmdMarketplaceList(os.Args[3:])
 		case "info":
 			if len(os.Args) < 4 {
-				fatal("Usage: cerveau marketplace info <org/pkg>")
+				fatal("Usage: cerveau marketplace info <org/pkg[@version]>")
 			}
 			cmdMarketplaceInfo(os.Args[3])
 		case "install":
 			if len(os.Args) < 5 {
-				fatal("Usage: cerveau marketplace install <org/pkg> <brain>")
+				fatal("Usage: cerveau marketplace install <org/pkg[@ver],...> <brain>")
 			}
-			cmdMarketplaceInstall(os.Args[3], os.Args[4])
+			brainName := os.Args[len(os.Args)-1]
+			refs := strings.Split(strings.Join(os.Args[3:len(os.Args)-1], ","), ",")
+			for _, ref := range refs {
+				ref = strings.TrimSpace(ref)
+				if ref != "" {
+					cmdMarketplaceInstall(ref, brainName)
+				}
+			}
 		case "uninstall":
 			if len(os.Args) < 5 {
-				fatal("Usage: cerveau marketplace uninstall <org/pkg> <brain>")
+				fatal("Usage: cerveau marketplace uninstall <org/pkg,...> <brain>")
 			}
-			cmdMarketplaceUninstall(os.Args[3], os.Args[4])
+			brainName := os.Args[len(os.Args)-1]
+			refs := strings.Split(strings.Join(os.Args[3:len(os.Args)-1], ","), ",")
+			for _, ref := range refs {
+				ref = strings.TrimSpace(ref)
+				if ref != "" {
+					cmdMarketplaceUninstall(ref, brainName)
+				}
+			}
 		default:
 			fatal("Unknown marketplace command: " + os.Args[2])
 		}

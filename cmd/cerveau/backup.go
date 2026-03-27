@@ -73,7 +73,6 @@ var cerveauAllowPaths = map[string]bool{
 	"_scripts_":          true,
 	".env":               true,
 	"docker-compose.yml": true,
-	"version.txt":        true,
 }
 
 
@@ -180,15 +179,9 @@ func cmdBackup(args []string) {
 		paths[sec.name] = sec.src
 	}
 
-	version := "unknown"
-	versionFile := filepath.Join(cerveauDir, "version.txt")
-	if data, err := os.ReadFile(versionFile); err == nil { // #nosec G304 — CERVEAU_HOME path
-		version = strings.TrimSpace(string(data))
-	}
-
 	manifest := backupManifest{
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
-		Version:   version,
+		Version:   Version,
 		Sections:  sectionNames,
 		Paths:     paths,
 	}

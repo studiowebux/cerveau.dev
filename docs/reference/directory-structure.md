@@ -77,7 +77,6 @@ Full annotated layout of a Cerveau installation (`~/.cerveau/`).
 │   └── cerveau                          # CLI binary (spawn, rebuild, update, marketplace, etc.)
 │
 ├── .env                                 # MCP token + config (preserved across updates)
-├── version.txt                          # Installed Cerveau version
 ├── cerveau-package.json                 # Version manifest
 ├── install.sh                           # Installer script
 └── docker-compose.yml                   # MDPlanner container

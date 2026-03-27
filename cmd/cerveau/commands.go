@@ -148,13 +148,13 @@ func cmdInstallStatusline() {
 	fmt.Printf("Installed: %s\n", dest)
 }
 
+// Version is set at build time via -ldflags:
+//
+//	go build -ldflags "-X main.Version=$(git describe --tags --always)" ./cmd/cerveau/
+var Version = "dev"
+
 func cmdVersion() {
-	versionFile := filepath.Join(cerveauHome(), "version.txt")
-	if data, err := os.ReadFile(versionFile); err == nil { // #nosec G304 — path from CERVEAU_HOME
-		fmt.Printf("cerveau %s\n", strings.TrimSpace(string(data)))
-	} else {
-		fmt.Println("cerveau (version unknown)")
-	}
+	fmt.Printf("cerveau %s\n", Version)
 }
 
 func cmdHelp() {
@@ -169,9 +169,9 @@ Commands:
   rebuild [name]                                Rebuild brain from packages
   update                                        Download the latest Cerveau packages
   marketplace list [filter] [--tag t] [--org o] List available packages (with optional filter)
-  marketplace info <org/pkg>                    Show package details
-  marketplace install <org/pkg> <brain>         Install a package into a brain
-  marketplace uninstall <org/pkg> <brain>       Remove a package from a brain
+  marketplace info <org/pkg[@version]>           Show package details
+  marketplace install <org/pkg[@ver],...> <brain>  Install package(s) into a brain
+  marketplace uninstall <org/pkg,...> <brain>    Remove package(s) from a brain
   status <name>                                 Show brain status
   list                                          List all brains
   validate <name>                               Check for remaining placeholders

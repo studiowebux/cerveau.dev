@@ -8,8 +8,6 @@ set -euo pipefail
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 HANDOFF="$PROJECT_DIR/HANDOFF.md"
-VERSION_FILE="$HOME/.cerveau/version.txt"
-
 context=""
 
 # Load handoff if it exists (left by PreCompact hook)
@@ -21,15 +19,16 @@ if [ -f "$HANDOFF" ]; then
 $handoff_content"
 fi
 
-# Non-blocking version check (2s timeout, best-effort)
-if [ -f "$VERSION_FILE" ]; then
-  local_version=$(cat "$VERSION_FILE" 2>/dev/null | tr -d '[:space:]')
-  remote_version=$(curl -sf --max-time 2 "https://cerveau.dev/version.txt" 2>/dev/null | tr -d '[:space:]' || true)
-  if [ -n "$remote_version" ] && [ "$local_version" != "$remote_version" ]; then
+# Non-blocking version check: local cerveau version vs latest GitHub release
+# Set CERVEAU_SKIP_UPDATE_CHECK=1 to disable
+if [ "${CERVEAU_SKIP_UPDATE_CHECK:-0}" != "1" ] && command -v cerveau >/dev/null 2>&1; then
+  local_version=$(cerveau version 2>/dev/null | sed 's/^cerveau //' | tr -d '[:space:]')
+  remote_version=$(curl -sf --max-time 2 "https://api.github.com/repos/studiowebux/cerveau.dev/releases/latest" 2>/dev/null | grep -o '"tag_name":"[^"]*"' | head -1 | sed 's/"tag_name":"//;s/"//' || true)
+  if [ -n "$remote_version" ] && [ -n "$local_version" ] && [ "$local_version" != "$remote_version" ]; then
     context="$context
 
 ## Cerveau Update Available
-Local version: $local_version — Remote version: $remote_version
+Local: $local_version — Latest: $remote_version
 Run \`cerveau update\` to update."
   fi
 fi

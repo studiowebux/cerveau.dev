@@ -71,11 +71,10 @@ RUNTIME_PATHS=(
   "_configs_"
   "docker-compose.yml"
   ".env.example"
-  "version.txt"
 )
 
 # Files that always overwrite (runtime, not user data)
-for item in "_templates_" "_scripts_" "docker-compose.yml" ".env.example" "version.txt"; do
+for item in "_templates_" "_scripts_" "docker-compose.yml" ".env.example"; do
   src="$STAGING/$item"
   dest="$CERVEAU_HOME/$item"
   [ ! -e "$src" ] && continue
@@ -126,11 +125,12 @@ if curl -sfL "$BINARY_URL" -o "$BIN_DIR/cerveau" 2>/dev/null; then
   echo "  CLI → $BIN_DIR/cerveau"
 elif command -v go >/dev/null 2>&1 && [ -f "$STAGING/go.mod" ]; then
   echo "  Pre-built binary not available, building from source..."
-  if (cd "$STAGING" && go build -o "$BIN_DIR/cerveau" ./cmd/cerveau/) 2>/dev/null; then
-    echo "  CLI → $BIN_DIR/cerveau (built from source)"
+  LOCAL_VERSION="local-$(date +%Y%m%d)"
+  if (cd "$STAGING" && go build -ldflags "-X main.Version=$LOCAL_VERSION" -o "$BIN_DIR/cerveau" ./cmd/cerveau/) 2>/dev/null; then
+    echo "  CLI → $BIN_DIR/cerveau (built from source, $LOCAL_VERSION)"
   else
     echo "  Warning: Build from source failed. Install manually:"
-    echo "    cd $CERVEAU_HOME && go build -o $BIN_DIR/cerveau ./cmd/cerveau/"
+    echo "    cd $CERVEAU_HOME && go build -ldflags \"-X main.Version=$LOCAL_VERSION\" -o $BIN_DIR/cerveau ./cmd/cerveau/"
   fi
 else
   echo "  Warning: Could not install cerveau CLI (no release binary, no Go compiler)."
@@ -201,10 +201,8 @@ else
 fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
-VERSION=$(cat "$CERVEAU_HOME/version.txt" 2>/dev/null || echo "unknown")
-
 echo ""
-echo "Cerveau ${VERSION} installed."
+echo "Cerveau installed."
 echo ""
 
 # PATH hint

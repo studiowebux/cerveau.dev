@@ -69,7 +69,6 @@ func TestCmdBackup_CreatesArchive(t *testing.T) {
 	t.Setenv("HOME", t.TempDir()) // prevent touching real ~/.claude
 
 	// Create mock cerveau structure
-	writeFile(t, filepath.Join(home, "version.txt"), "1.2.0")
 	writeFile(t, filepath.Join(home, "_configs_", "brains.json"), `{"brains":[]}`)
 	writeFile(t, filepath.Join(home, "data", "tasks.json"), `[]`)
 	writeFile(t, filepath.Join(home, ".env"), "TOKEN=abc")
@@ -85,8 +84,8 @@ func TestCmdBackup_CreatesArchive(t *testing.T) {
 
 	// Verify manifest
 	manifest := readManifestFromArchive(t, outPath)
-	if manifest.Version != "1.2.0" {
-		t.Errorf("manifest version = %q, want 1.2.0", manifest.Version)
+	if manifest.Version != Version {
+		t.Errorf("manifest version = %q, want %q", manifest.Version, Version)
 	}
 	if len(manifest.Sections) != 1 || manifest.Sections[0] != "cerveau" {
 		t.Errorf("manifest sections = %v, want [cerveau]", manifest.Sections)
@@ -97,7 +96,6 @@ func TestCmdBackup_MdplannerOnly(t *testing.T) {
 	home := setupTestHome(t)
 	t.Setenv("HOME", t.TempDir()) // prevent touching real ~/.claude
 
-	writeFile(t, filepath.Join(home, "version.txt"), "1.2.0")
 	writeFile(t, filepath.Join(home, "data", "tasks.json"), `[]`)
 	writeFile(t, filepath.Join(home, "data", "notes.json"), `[]`)
 
