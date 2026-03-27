@@ -35,7 +35,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
-          go build -o cerveau-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/cerveau/
+          go build -ldflags "-X main.Version=${{ github.ref_name }}" -o cerveau-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/cerveau/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

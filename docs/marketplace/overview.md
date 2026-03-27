@@ -43,6 +43,15 @@ can each publish their own `core` package without conflict.
 - **`studiowebux`** — official packages, updated from upstream via `cerveau update`
 - **`_local_`** — your private packages, never touched by updates
 
+### Core Packages
+
+Cerveau ships two base protocol packages — pick one per brain:
+
+- **`studiowebux/core`** — full brain protocol with MDPlanner integration. Tasks, notes, and milestones are stored in MDPlanner (requires server + MCP).
+- **`studiowebux/core-local`** — same session phases, discipline rules, hooks, skills, and templates, but stores everything as local markdown files. No server, no container, fully offline.
+
+Both provide identical code discipline, goal discipline, commit flow, and session management. The only difference is where task state lives.
+
 ## Package Types
 
 The `type` field on each file determines where it gets symlinked in the brain:
@@ -59,6 +68,19 @@ The `type` field on each file determines where it gets symlinked in the brain:
 | `templates` | `templates/` | `templates/` |
 | `claude` | `claude/` | `.claude/` |
 
+## Versioning
+
+Each package can have multiple versions in the registry. Brains pin exactly one
+version per package — installing a different version replaces the previous one
+automatically.
+
+Package references use the `org/name[@version]` format:
+
+- `studiowebux/core` — resolves to the first available version
+- `studiowebux/core@1.0.0` — pins to an exact version
+
+Brains store versioned refs (e.g. `studiowebux/core@1.0.0`) in `brains.json`.
+
 ## Installing Packages
 
 ### On spawn
@@ -66,6 +88,7 @@ The `type` field on each file determines where it gets symlinked in the brain:
 ```bash
 cerveau spawn MyApp /path/to/code
 cerveau spawn MyApp /path/to/code --packages studiowebux/core,studiowebux/minimaldoc
+cerveau spawn MyApp /path/to/code --packages studiowebux/core@1.0.0
 ```
 
 Without `--packages`, the default is `studiowebux/core`.
@@ -74,7 +97,12 @@ Without `--packages`, the default is `studiowebux/core`.
 
 ```bash
 cerveau marketplace install studiowebux/minimaldoc MyApp
+cerveau marketplace install studiowebux/core@2.0.0 MyApp          # upgrade to v2
+cerveau marketplace install studiowebux/minimaldoc,studiowebux/github MyApp  # multiple
 ```
+
+Install accepts comma-separated package refs. If another version of the same
+package is already installed, it is replaced automatically.
 
 ### From Claude Code
 
@@ -86,23 +114,26 @@ cerveau marketplace install studiowebux/minimaldoc MyApp
 
 ```bash
 cerveau marketplace uninstall studiowebux/minimaldoc MyApp
+cerveau marketplace uninstall studiowebux/minimaldoc,studiowebux/github MyApp  # multiple
 ```
 
-This removes the package from `brains.json` and cleans up symlinks on rebuild.
+Uninstall matches by base `org/name` regardless of installed version. It removes
+the package from `brains.json` and cleans up symlinks on rebuild.
 
 ## Browsing
 
 ```bash
-cerveau marketplace list                        # all packages
+cerveau marketplace list                        # all packages (grouped by name, all versions shown)
 cerveau marketplace list theme                  # free-text search
 cerveau marketplace list --tag design           # filter by tag
 cerveau marketplace list --org studiowebux      # filter by org
 cerveau marketplace list --org _local_          # show only local packages
-cerveau marketplace info studiowebux/core       # show package details
+cerveau marketplace info studiowebux/core       # show package details (latest)
+cerveau marketplace info studiowebux/core@1.0.0 # show specific version
 ```
 
-`list` shows packages from both `registry.json` and `registry.local.json`. Filters are case-insensitive.
-`info` shows the full file list with types.
+`list` groups packages by `org/name` and shows all available versions in brackets.
+`info` shows the full file list with types and lists all available versions.
 
 ## Customizing Package Files
 

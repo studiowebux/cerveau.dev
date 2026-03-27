@@ -43,7 +43,7 @@ curl -s http://localhost:8003/health
 # expected: {"status":"ok"}
 ```
 
-### Without MDPlanner
+### Without MDPlanner (core-local)
 
 If you prefer file-based task management (no server, no container runtime), skip the MDPlanner setup:
 
@@ -51,7 +51,13 @@ If you prefer file-based task management (no server, no container runtime), skip
 SKIP_MDPLANNER=1 curl -fsSL https://cerveau.dev/install.sh | bash
 ```
 
-This installs the packages and CLI but skips steps 3–5. Use `studiowebux/core-local` instead of `studiowebux/core` when spawning brains.
+This installs the packages and CLI but skips steps 3–5. Use `studiowebux/core-local` instead of `studiowebux/core` when spawning brains:
+
+```bash
+cerveau spawn MyApp /path/to/code --packages studiowebux/core-local
+```
+
+`core-local` provides the same session phases, discipline rules, hooks, skills, and templates as `core`, but stores tasks, notes, and milestones as local markdown files inside the brain directory. No MDPlanner server, no container runtime, no network dependency — everything works offline.
 
 ## Directory Layout
 
@@ -65,7 +71,6 @@ Everything lives in `~/.cerveau/` — your project repos are never touched:
   _scripts_/        ← helper scripts
   bin/cerveau       ← CLI binary
   .env              ← MDPLANNER_MCP_TOKEN (preserved across updates)
-  version.txt       ← installed version
   docker-compose.yml
 ```
 
@@ -82,6 +87,7 @@ The brain links to your code via `additionalDirectories` in its `settings.json`.
 | `CERVEAU_HOME` | `~/.cerveau` | Where Cerveau installs packages, brains, and config |
 | `MCP_PORT` | `8003` | Port MDPlanner listens on |
 | `SKIP_MDPLANNER` | `0` | Set to `1` to skip MDPlanner setup (container, MCP token, MCP registration) |
+| `CERVEAU_SKIP_UPDATE_CHECK` | `0` | Set to `1` to disable the automatic version check at session start |
 
 Set these before running the installer to override the defaults:
 

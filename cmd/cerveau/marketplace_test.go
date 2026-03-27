@@ -55,7 +55,7 @@ func setupMarketplaceEnv(t *testing.T) string {
 				Name:     "TestApp",
 				Path:     "_brains_/testapp-brain",
 				Codebase: "/tmp/test",
-				Packages: []string{"studiowebux/core"},
+				Packages: []string{"studiowebux/core@1.0.0"},
 			},
 		},
 	}
@@ -83,8 +83,8 @@ func TestMarketplaceInstall_AddsPackage(t *testing.T) {
 	if brain == nil {
 		t.Fatal("TestApp brain not found")
 	}
-	if !contains(brain.Packages, "studiowebux/minimaldoc") {
-		t.Error("minimaldoc not added to brain packages")
+	if !contains(brain.Packages, "studiowebux/minimaldoc@1.0.0") {
+		t.Errorf("minimaldoc not added to brain packages, got: %v", brain.Packages)
 	}
 }
 
@@ -97,12 +97,12 @@ func TestMarketplaceInstall_SkipsIfAlreadyInstalled(t *testing.T) {
 	cfg := loadBrainsConfig()
 	count := 0
 	for _, pkg := range cfg.Brains[0].Packages {
-		if pkg == "studiowebux/core" {
+		if installedBaseID(pkg) == "studiowebux/core" {
 			count++
 		}
 	}
 	if count != 1 {
-		t.Errorf("core appears %d times, expected 1", count)
+		t.Errorf("core appears %d times, expected 1, packages: %v", count, cfg.Brains[0].Packages)
 	}
 }
 
@@ -118,7 +118,13 @@ func TestMarketplaceUninstall_RemovesPackage(t *testing.T) {
 	cmdMarketplaceUninstall("studiowebux/minimaldoc", "TestApp")
 
 	cfg := loadBrainsConfig()
-	if contains(cfg.Brains[0].Packages, "studiowebux/minimaldoc") {
+	hasMinimaldoc := false
+	for _, pkg := range cfg.Brains[0].Packages {
+		if installedBaseID(pkg) == "studiowebux/minimaldoc" {
+			hasMinimaldoc = true
+		}
+	}
+	if hasMinimaldoc {
 		t.Error("minimaldoc should have been removed")
 	}
 }

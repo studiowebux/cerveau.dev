@@ -197,7 +197,6 @@ func TestApplyUpdate_CopiesFiles(t *testing.T) {
 	src := t.TempDir()
 	dest := t.TempDir()
 
-	writeFile(t, filepath.Join(src, "version.txt"), "2.0.0")
 	writeFile(t, filepath.Join(src, "_configs_", "registry.json"), `{"version":"2.0.0"}`)
 
 	err := applyUpdate(src, dest)
@@ -205,12 +204,12 @@ func TestApplyUpdate_CopiesFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	data, err := os.ReadFile(filepath.Join(dest, "version.txt"))
+	data, err := os.ReadFile(filepath.Join(dest, "_configs_", "registry.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(data) != "2.0.0" {
-		t.Errorf("version.txt = %q, want 2.0.0", string(data))
+	if string(data) != `{"version":"2.0.0"}` {
+		t.Errorf("registry.json = %q, want {\"version\":\"2.0.0\"}", string(data))
 	}
 }
 
@@ -224,8 +223,6 @@ func TestApplyUpdate_SkipsProtectedPaths(t *testing.T) {
 	writeFile(t, filepath.Join(src, ".env"), "NEW_TOKEN=abc")
 	writeFile(t, filepath.Join(src, "_configs_", "brains.json"), `{"brains":[]}`)
 	writeFile(t, filepath.Join(src, "_configs_", "registry.local.json"), `{"version":"1.0.0"}`)
-	writeFile(t, filepath.Join(src, "version.txt"), "2.0.0")
-
 	// Pre-create protected files in dest
 	writeFile(t, filepath.Join(dest, ".env"), "OLD_TOKEN=xyz")
 	writeFile(t, filepath.Join(dest, "_configs_", "brains.json"), `{"brains":[{"name":"keep"}]}`)
@@ -257,11 +254,6 @@ func TestApplyUpdate_SkipsProtectedPaths(t *testing.T) {
 		t.Error("_packages_/_local_ content was copied — should be protected")
 	}
 
-	// version.txt SHOULD be copied
-	data, _ = os.ReadFile(filepath.Join(dest, "version.txt"))
-	if string(data) != "2.0.0" {
-		t.Errorf("version.txt should be updated, got %q", string(data))
-	}
 }
 
 func TestApplyUpdate_NeverTouchesBrains(t *testing.T) {
@@ -321,7 +313,6 @@ func TestApplyUpdate_NeverTouchesData(t *testing.T) {
 
 	writeFile(t, filepath.Join(dest, "data", "tasks.json"), "my tasks")
 	writeFile(t, filepath.Join(src, "data", "tasks.json"), "overwritten")
-	writeFile(t, filepath.Join(src, "version.txt"), "2.0.0")
 
 	err := applyUpdate(src, dest)
 	if err != nil {
@@ -344,7 +335,6 @@ func TestApplyUpdate_SkipsNonRuntimeFiles(t *testing.T) {
 	writeFile(t, filepath.Join(src, "install.sh"), "#!/bin/bash")
 	writeFile(t, filepath.Join(src, "LICENSE"), "AGPL")
 	writeFile(t, filepath.Join(src, "README.md"), "readme")
-	writeFile(t, filepath.Join(src, "version.txt"), "2.0.0")
 
 	err := applyUpdate(src, dest)
 	if err != nil {
@@ -357,11 +347,6 @@ func TestApplyUpdate_SkipsNonRuntimeFiles(t *testing.T) {
 		if fileExists(full) || dirExists(full) {
 			t.Errorf("non-runtime file/dir should not be copied: %s", path)
 		}
-	}
-
-	// version.txt should be copied
-	if !fileExists(filepath.Join(dest, "version.txt")) {
-		t.Error("version.txt should be copied")
 	}
 }
 

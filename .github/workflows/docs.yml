@@ -6,7 +6,6 @@ on:
     paths:
       - 'docs/**'
       - 'install.sh'
-      - 'version.txt'
       - '.github/workflows/docs.yml'
   workflow_dispatch:
 
@@ -38,7 +37,6 @@ jobs:
           minimaldoc build docs -o public
           cp docs/ecosystem.html public/ecosystem.html
           cp install.sh public/install.sh
-          cp version.txt public/version.txt
           echo "cerveau.dev" > public/CNAME
 
       - name: Upload artifact

@@ -57,12 +57,16 @@ func doSpawn(name, project, dest string, packages []string) error {
 		fmt.Printf("  Created project directory: %s\n", projAbs)
 	}
 
-	// Validate all packages exist in registry
-	for _, pkgID := range packages {
-		if findPackage(reg, pkgID) == nil {
-			return fmt.Errorf("package %q not found in registry. Run: cerveau marketplace list", pkgID)
+	// Validate all packages exist in registry and resolve to versioned refs
+	var resolvedPkgs []string
+	for _, pkgRef := range packages {
+		pkg := resolvePackageRef(reg, pkgRef)
+		if pkg == nil {
+			return fmt.Errorf("package %q not found in registry. Run: cerveau marketplace list", pkgRef)
 		}
+		resolvedPkgs = append(resolvedPkgs, versionedRef(*pkg))
 	}
+	packages = resolvedPkgs
 
 	fmt.Printf("Creating brain: %s\n", dest)
 	fmt.Printf("Codebase:       %s\n", projAbs)

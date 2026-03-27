@@ -52,17 +52,17 @@ func rebuildBrain(reg Registry, brain Brain) {
 	totalFiles := 0
 	totalLines := 0
 
-	for _, pkgID := range brain.Packages {
-		pkg := findPackage(reg, pkgID)
+	for _, pkgRef := range brain.Packages {
+		pkg := resolvePackageRef(reg, pkgRef)
 		if pkg == nil {
-			fmt.Fprintf(os.Stderr, "  Warning: package %q not found in registry — skipped\n", pkgID)
+			fmt.Fprintf(os.Stderr, "  Warning: package %q not found in registry — skipped\n", pkgRef)
 			continue
 		}
 
 		pkgFiles, pkgLines := installPackageFiles(brainAbs, *pkg)
 		totalFiles += pkgFiles
 		totalLines += pkgLines
-		fmt.Printf("  %s v%s — %d files (%d lines)\n", pkgID, pkg.Version, pkgFiles, pkgLines)
+		fmt.Printf("  %s v%s — %d files (%d lines)\n", pkg.QualifiedID(), pkg.Version, pkgFiles, pkgLines)
 	}
 
 	fmt.Printf("  TOTAL: %d files, %d lines\n\n", totalFiles, totalLines)

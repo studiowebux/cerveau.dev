@@ -33,6 +33,36 @@
       "tags": ["core", "protocol"]
     },
     {
+      "name": "core",
+      "org": "studiowebux",
+      "version": "2.0.0",
+      "path": "_packages_/studiowebux/core/2.0.0",
+      "description": "Base brain protocol — session phases, discipline rules, hooks, skills, and templates (removed commit-validator hook, lowered handoff threshold to 80%)",
+      "files": [
+        {"name": "CLAUDE.md", "type": "claude"},
+        {"name": "code-discipline.md", "type": "rules"},
+        {"name": "goal-discipline.md", "type": "rules"},
+        {"name": "phase-boot.md", "type": "rules"},
+        {"name": "phase-close.md", "type": "rules"},
+        {"name": "phase-work.md", "type": "rules"},
+        {"name": "local-dev.md", "type": "workflows", "realFile": true},
+        {"name": "mdplanner-tasks.md", "type": "workflows"},
+        {"name": "checkpoint-counter.sh", "type": "hooks"},
+        {"name": "context-warning.sh", "type": "hooks"},
+        {"name": "post-edit-reminder.sh", "type": "hooks"},
+        {"name": "pre-compact-handoff.sh", "type": "hooks"},
+        {"name": "session-context.sh", "type": "hooks"},
+        {"name": "marketplace/SKILL.md", "type": "skills"},
+        {"name": "release/SKILL.md", "type": "skills"},
+        {"name": "update/SKILL.md", "type": "skills"},
+        {"name": "architecture.md", "type": "templates"},
+        {"name": "decision-record.md", "type": "templates"},
+        {"name": "feature-spec.md", "type": "templates"},
+        {"name": "project-overview.md", "type": "templates"}
+      ],
+      "tags": ["core", "protocol"]
+    },
+    {
       "name": "core-local",
       "org": "studiowebux",
       "version": "1.0.0",
@@ -50,6 +80,37 @@
         {"name": "local-tasks.md", "type": "workflows"},
         {"name": "checkpoint-counter.sh", "type": "hooks"},
         {"name": "commit-validator.sh", "type": "hooks"},
+        {"name": "context-warning.sh", "type": "hooks"},
+        {"name": "post-edit-reminder.sh", "type": "hooks"},
+        {"name": "pre-compact-handoff.sh", "type": "hooks"},
+        {"name": "session-context.sh", "type": "hooks"},
+        {"name": "marketplace/SKILL.md", "type": "skills"},
+        {"name": "release/SKILL.md", "type": "skills"},
+        {"name": "update/SKILL.md", "type": "skills"},
+        {"name": "architecture.md", "type": "templates"},
+        {"name": "decision-record.md", "type": "templates"},
+        {"name": "feature-spec.md", "type": "templates"},
+        {"name": "project-overview.md", "type": "templates"}
+      ],
+      "tags": ["core", "protocol", "local", "offline"]
+    },
+    {
+      "name": "core-local",
+      "org": "studiowebux",
+      "version": "2.0.0",
+      "path": "_packages_/studiowebux/core-local/2.0.0",
+      "description": "File-based brain protocol — same workflow as core but stores tasks, notes, and milestones as local markdown files instead of requiring mdplanner (removed commit-validator hook, lowered handoff threshold to 80%)",
+      "files": [
+        {"name": "CLAUDE.md", "type": "claude"},
+        {"name": "code-discipline.md", "type": "rules"},
+        {"name": "goal-discipline.md", "type": "rules"},
+        {"name": "phase-boot.md", "type": "rules"},
+        {"name": "phase-close.md", "type": "rules"},
+        {"name": "phase-work.md", "type": "rules"},
+        {"name": "local-dev.md", "type": "workflows", "realFile": true},
+        {"name": "context.md", "type": "workflows", "realFile": true},
+        {"name": "local-tasks.md", "type": "workflows"},
+        {"name": "checkpoint-counter.sh", "type": "hooks"},
         {"name": "context-warning.sh", "type": "hooks"},
         {"name": "post-edit-reminder.sh", "type": "hooks"},
         {"name": "pre-compact-handoff.sh", "type": "hooks"},
@@ -154,17 +215,6 @@
         {"name": "theme-extractor.md", "type": "agents"}
       ],
       "tags": ["design", "agent", "extraction"]
-    },
-    {
-      "name": "github",
-      "org": "studiowebux",
-      "version": "1.0.0",
-      "path": "_packages_/studiowebux/github/1.0.0",
-      "description": "Pre-push CI gate — runs linters and tests before allowing git push (Go, Node.js)",
-      "files": [
-        {"name": "pre-push-ci.sh", "type": "hooks"}
-      ],
-      "tags": ["ci", "hooks", "github"]
     }
   ]
 }
