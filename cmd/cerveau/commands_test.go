@@ -28,6 +28,7 @@ func TestCmdInstallStatusline_CopiesScript(t *testing.T) {
 	// Redirect HOME to a temp dir so we don't overwrite the real ~/.claude/statusline.sh
 	fakeHome := t.TempDir()
 	t.Setenv("HOME", fakeHome)
+	t.Setenv("CLAUDE_CONFIG_DIR", "")
 
 	// Create source template
 	src := filepath.Join(cerveauHome, "_templates_", "statusline.sh")
@@ -49,6 +50,24 @@ func TestCmdInstallStatusline_CopiesScript(t *testing.T) {
 	info, _ := os.Stat(dest)
 	if info.Mode().Perm()&0111 == 0 {
 		t.Error("statusline.sh should be executable")
+	}
+}
+
+func TestCmdInstallStatusline_RespectsClaudeConfigDir(t *testing.T) {
+	cerveauHome := setupTestHome(t)
+
+	fakeConfigDir := t.TempDir()
+	t.Setenv("CLAUDE_CONFIG_DIR", fakeConfigDir)
+
+	// Create source template
+	src := filepath.Join(cerveauHome, "_templates_", "statusline.sh")
+	writeFile(t, src, "#!/bin/bash\necho 'status'\n")
+
+	cmdInstallStatusline()
+
+	dest := filepath.Join(fakeConfigDir, "statusline.sh")
+	if !fileExists(dest) {
+		t.Fatal("statusline.sh was not installed to CLAUDE_CONFIG_DIR")
 	}
 }
 

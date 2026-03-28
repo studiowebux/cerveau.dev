@@ -128,12 +128,7 @@ func cmdInstallStatusline() {
 		fatal("Error: statusline.sh not found at " + src)
 	}
 
-	home, err := os.UserHomeDir()
-	if err != nil {
-		fatal("Cannot determine home directory: " + err.Error())
-	}
-
-	destDir := filepath.Join(home, ".claude")
+	destDir := claudeConfigDir()
 	_ = os.MkdirAll(destDir, 0750)
 	dest := filepath.Join(destDir, "statusline.sh")
 

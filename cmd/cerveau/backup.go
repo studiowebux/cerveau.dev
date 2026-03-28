@@ -81,11 +81,7 @@ func cmdBackup(args []string) {
 
 	// Resolve paths
 	cerveauDir := cerveauHome()
-	home, err := os.UserHomeDir()
-	if err != nil {
-		fatal("Cannot determine home directory: " + err.Error())
-	}
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeConfigDir()
 	mdplannerDir := filepath.Join(cerveauDir, "data")
 
 	// Build section list
@@ -363,12 +359,8 @@ func cmdRestore(archivePath string, args []string) {
 	}
 
 	// Determine what to restore
-	home, err := os.UserHomeDir()
-	if err != nil {
-		fatal("Cannot determine home directory: " + err.Error())
-	}
 	cerveauDir := cerveauHome()
-	claudeDir := filepath.Join(home, ".claude")
+	claudeDir := claudeConfigDir()
 
 	type restoreTarget struct {
 		prefix  string

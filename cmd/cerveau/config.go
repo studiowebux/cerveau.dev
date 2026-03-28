@@ -73,6 +73,17 @@ func cerveauHome() string {
 	return filepath.Join(home, ".cerveau")
 }
 
+func claudeConfigDir() string {
+	if d := os.Getenv("CLAUDE_CONFIG_DIR"); d != "" {
+		return d
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fatal("Cannot determine home directory: " + err.Error())
+	}
+	return filepath.Join(home, ".claude")
+}
+
 func brainBaseDir() string { return filepath.Join(cerveauHome(), "_brains_") }
 func configsDir() string   { return filepath.Join(cerveauHome(), "_configs_") }
 func templatesDir() string { return filepath.Join(cerveauHome(), "_templates_") }
