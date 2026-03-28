@@ -88,6 +88,7 @@ The brain links to your code via `additionalDirectories` in its `settings.json`.
 | `MCP_PORT` | `8003` | Port MDPlanner listens on |
 | `SKIP_MDPLANNER` | `0` | Set to `1` to skip MDPlanner setup (container, MCP token, MCP registration) |
 | `CERVEAU_SKIP_UPDATE_CHECK` | `0` | Set to `1` to disable the automatic version check at session start |
+| `CERVEAU_SKIP_BINARY_UPDATE` | `0` | Set to `1` to skip CLI binary download during `cerveau update` (packages and configs are still updated) |
 
 Set these before running the installer to override the defaults:
 

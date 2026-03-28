@@ -78,12 +78,16 @@ func cmdUpdate() {
 	}
 
 	// Self-update binary from latest GitHub release
-	fmt.Println("  Updating CLI binary...")
-	if err := selfUpdateBinary(); err != nil {
-		fmt.Printf("  Warning: binary update failed: %v\n", err)
-		fmt.Println("  You can rebuild manually: go build -ldflags \"-X main.Version=$(git describe --tags --always)\" -o $(which cerveau) ./cmd/cerveau/")
+	if os.Getenv("CERVEAU_SKIP_BINARY_UPDATE") == "1" {
+		fmt.Println("  Binary update skipped (CERVEAU_SKIP_BINARY_UPDATE=1).")
 	} else {
-		fmt.Println("  CLI binary updated.")
+		fmt.Println("  Updating CLI binary...")
+		if err := selfUpdateBinary(); err != nil {
+			fmt.Printf("  Warning: binary update failed: %v\n", err)
+			fmt.Println("  You can rebuild manually: go build -ldflags \"-X main.Version=$(git describe --tags --always)\" -o $(which cerveau) ./cmd/cerveau/")
+		} else {
+			fmt.Println("  CLI binary updated.")
+		}
 	}
 
 	fmt.Println()
@@ -253,21 +257,21 @@ func selfUpdateBinary() error {
 	_, err = io.Copy(tmpFile, resp.Body)
 	closeErr := tmpFile.Close()
 	if err != nil {
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("write failed: %w", err)
 	}
 	if closeErr != nil {
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("close failed: %w", closeErr)
 	}
 
 	if err := os.Chmod(tmpPath, 0755); err != nil { // #nosec G302 — executable binary
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("chmod failed: %w", err)
 	}
 
 	if err := os.Rename(tmpPath, exe); err != nil {
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 		return fmt.Errorf("replace failed: %w", err)
 	}
 
