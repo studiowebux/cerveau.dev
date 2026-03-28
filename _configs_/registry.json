@@ -215,6 +215,17 @@
         {"name": "theme-extractor.md", "type": "agents"}
       ],
       "tags": ["design", "agent", "extraction"]
+    },
+    {
+      "name": "lspmcp",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/lspmcp/1.0.0",
+      "description": "LSP via MCP — rule file guiding Claude on when to use LSP tools (hover, definition, references, symbols, completions) instead of text search",
+      "files": [
+        {"name": "lsp-usage.md", "type": "rules"}
+      ],
+      "tags": ["lsp", "mcp", "tooling"]
     }
   ]
 }
