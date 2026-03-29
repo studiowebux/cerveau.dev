@@ -226,6 +226,28 @@
         {"name": "lsp-usage.md", "type": "rules"}
       ],
       "tags": ["lsp", "mcp", "tooling"]
+    },
+    {
+      "name": "lspmcp",
+      "org": "studiowebux",
+      "version": "1.1.0",
+      "path": "_packages_/studiowebux/lspmcp/1.1.0",
+      "description": "LSP via MCP — concise rule telling Claude when to use LSP tools instead of text search (streamlined from v1.0.0)",
+      "files": [
+        {"name": "lsp-usage.md", "type": "rules"}
+      ],
+      "tags": ["lsp", "mcp", "tooling"]
+    },
+    {
+      "name": "bujotui",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/bujotui/1.0.0",
+      "description": "Bujotui MCP — tells Claude when to use the bullet journal MCP server for daily logging, habits, collections, and future planning",
+      "files": [
+        {"name": "bujotui.md", "type": "rules"}
+      ],
+      "tags": ["mcp", "bujotui", "journal"]
     }
   ]
 }
