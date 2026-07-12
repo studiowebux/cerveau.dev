@@ -43,7 +43,7 @@ steps:
         from_secret: artifact_secret_key
       path_style: true
       acl: public-read
-      source: dist/*
+      source: dist
       target: /cerveau/${CI_COMMIT_TAG}/
 
   release-upload-latest:
@@ -61,7 +61,7 @@ steps:
         from_secret: artifact_secret_key
       path_style: true
       acl: public-read
-      source: dist/*
+      source: dist
       target: /cerveau/latest/
 
   release-index:
@@ -103,5 +103,5 @@ steps:
         from_secret: artifact_secret_key
       path_style: true
       acl: public-read
-      source: rootindex/*
+      source: rootindex
       target: /cerveau/
