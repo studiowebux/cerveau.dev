@@ -248,6 +248,17 @@
         {"name": "bujotui.md", "type": "rules"}
       ],
       "tags": ["mcp", "bujotui", "journal"]
+    },
+    {
+      "name": "markdown",
+      "org": "studiowebux",
+      "version": "1.0.0",
+      "path": "_packages_/studiowebux/markdown/1.0.0",
+      "description": "Markdown frontmatter rule — requires title/status/version frontmatter on .md files, with an exception for README/LICENSE/CHANGELOG and similar convention files",
+      "files": [
+        {"name": "markdown.md", "type": "rules"}
+      ],
+      "tags": ["markdown", "frontmatter", "docs"]
     }
   ]
 }
