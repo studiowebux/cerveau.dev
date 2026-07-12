@@ -29,79 +29,54 @@ steps:
         } > dist/index.html
 
   release-upload:
-    image: woodpeckerci/plugin-s3
-    settings:
-      endpoint:
-        from_secret: artifact_endpoint
-      region:
-        from_secret: artifact_region
-      bucket:
-        from_secret: artifact_bucket
-      access_key:
+    image: amazon/aws-cli
+    environment:
+      AWS_ACCESS_KEY_ID:
         from_secret: artifact_access_key
-      secret_key:
+      AWS_SECRET_ACCESS_KEY:
         from_secret: artifact_secret_key
-      path_style: true
-      acl: public-read
-      source: dist
-      target: /cerveau/${CI_COMMIT_TAG}/
-
-  release-upload-latest:
-    image: woodpeckerci/plugin-s3
-    settings:
-      endpoint:
+      ARTIFACT_ENDPOINT:
         from_secret: artifact_endpoint
-      region:
-        from_secret: artifact_region
-      bucket:
+      ARTIFACT_BUCKET:
         from_secret: artifact_bucket
-      access_key:
-        from_secret: artifact_access_key
-      secret_key:
-        from_secret: artifact_secret_key
-      path_style: true
-      acl: public-read
-      source: dist
-      target: /cerveau/latest/
+    commands:
+      - >
+        aws s3 cp dist/ "s3://${ARTIFACT_BUCKET}/cerveau/${CI_COMMIT_TAG}/"
+        --recursive --acl public-read --endpoint-url "${ARTIFACT_ENDPOINT}"
+      - >
+        aws s3 cp dist/ "s3://${ARTIFACT_BUCKET}/cerveau/latest/"
+        --recursive --acl public-read --endpoint-url "${ARTIFACT_ENDPOINT}"
 
   release-index:
-    image: golang:1.26
+    image: amazon/aws-cli
     environment:
+      AWS_ACCESS_KEY_ID:
+        from_secret: artifact_access_key
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: artifact_secret_key
       ARTIFACT_ENDPOINT:
         from_secret: artifact_endpoint
       ARTIFACT_BUCKET:
         from_secret: artifact_bucket
     commands:
       - mkdir -p rootindex
+      - >
+        aws s3api list-objects-v2 --bucket "${ARTIFACT_BUCKET}" --prefix cerveau/
+        --delimiter / --endpoint-url "${ARTIFACT_ENDPOINT}"
+        --query 'CommonPrefixes[].Prefix' --output text > /tmp/prefixes.txt
       - |
         {
           echo "<!DOCTYPE html><html><head><title>cerveau releases</title></head><body>"
           echo "<h1>Index of /cerveau/</h1>"
           echo "<pre>"
-          curl -s "${ARTIFACT_ENDPOINT}/${ARTIFACT_BUCKET}/?prefix=cerveau/&delimiter=/" \
-            | grep -o '<Prefix>[^<]*</Prefix>' \
-            | sed -e 's/<Prefix>cerveau\///' -e 's/<\/Prefix>//' -e 's#/##' \
+          tr '\t' '\n' < /tmp/prefixes.txt \
+            | sed -e 's#^cerveau/##' -e 's#/$##' \
             | sort -Vr \
             | while read -r v; do
                 [ -n "$v" ] && printf "<a href=\"%s/\">%s/</a>\n" "$v" "$v"
               done
           echo "</pre></body></html>"
         } > rootindex/index.html
-
-  release-index-upload:
-    image: woodpeckerci/plugin-s3
-    settings:
-      endpoint:
-        from_secret: artifact_endpoint
-      region:
-        from_secret: artifact_region
-      bucket:
-        from_secret: artifact_bucket
-      access_key:
-        from_secret: artifact_access_key
-      secret_key:
-        from_secret: artifact_secret_key
-      path_style: true
-      acl: public-read
-      source: rootindex
-      target: /cerveau/
+      - >
+        aws s3 cp rootindex/index.html "s3://${ARTIFACT_BUCKET}/cerveau/index.html"
+        --acl public-read --endpoint-url "${ARTIFACT_ENDPOINT}"
