@@ -1,0 +1,15 @@
+when:
+  - event: [push, pull_request]
+    branch: main
+
+steps:
+  lint-and-test:
+    image: golang:1.26
+    commands:
+      - go vet ./cmd/cerveau/
+      - go install honnef.co/go/tools/cmd/staticcheck@latest
+      - staticcheck ./cmd/cerveau/
+      - go install github.com/securego/gosec/v2/cmd/gosec@latest
+      - gosec ./cmd/cerveau/
+      - go test -v -race -count=1 ./cmd/cerveau/
+      - go build -o /dev/null ./cmd/cerveau/
