@@ -10,73 +10,18 @@ steps:
       - GOOS=darwin  GOARCH=arm64 go build -ldflags "-X main.Version=${CI_COMMIT_TAG}" -o dist/cerveau-darwin-arm64  ./cmd/cerveau/
       - GOOS=linux   GOARCH=amd64 go build -ldflags "-X main.Version=${CI_COMMIT_TAG}" -o dist/cerveau-linux-amd64   ./cmd/cerveau/
       - GOOS=linux   GOARCH=arm64 go build -ldflags "-X main.Version=${CI_COMMIT_TAG}" -o dist/cerveau-linux-arm64   ./cmd/cerveau/
-      - |
-        short_sha=$(printf '%s' "$CI_COMMIT_SHA" | cut -c1-7)
-        built=$(date -u +"%Y-%m-%d %H:%M UTC")
-        {
-          echo "<!DOCTYPE html><html><head><title>cerveau ${CI_COMMIT_TAG}</title></head><body>"
-          echo "<h1>Index of /cerveau/${CI_COMMIT_TAG}/</h1>"
-          echo "<pre>"
-          printf "%-28s %-24s %10s  %s\n" "Name" "Built" "Size" "SHA256"
-          printf "%-28s %-24s %10s  %s\n" "----" "-----" "----" "------"
-          for f in dist/*; do
-            name=$(basename "$f")
-            size=$(wc -c < "$f" | tr -d ' ')
-            sha=$(sha256sum "$f" | awk '{print $1}')
-            printf "<a href=\"%s\">%-28s</a> %-24s %10s  %s\n" "$name" "$name" "$built (${short_sha})" "$size" "$sha"
-          done
-          echo "</pre></body></html>"
-        } > dist/index.html
 
   release-upload:
-    image: amazon/aws-cli
+    image: curlimages/curl
     environment:
-      AWS_ACCESS_KEY_ID:
-        from_secret: artifact_access_key
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: artifact_secret_key
-      ARTIFACT_ENDPOINT:
-        from_secret: artifact_endpoint
-      ARTIFACT_BUCKET:
-        from_secret: artifact_bucket
+      WEBUX_PAGES_UPLOAD_PASSWORD:
+        from_secret: webux_pages_upload_password
     commands:
-      - >
-        aws s3 cp dist/ "s3://${ARTIFACT_BUCKET}/cerveau/${CI_COMMIT_TAG}/"
-        --recursive --acl public-read --endpoint-url "${ARTIFACT_ENDPOINT}"
-      - >
-        aws s3 cp dist/ "s3://${ARTIFACT_BUCKET}/cerveau/latest/"
-        --recursive --acl public-read --endpoint-url "${ARTIFACT_ENDPOINT}"
-
-  release-index:
-    image: amazon/aws-cli
-    environment:
-      AWS_ACCESS_KEY_ID:
-        from_secret: artifact_access_key
-      AWS_SECRET_ACCESS_KEY:
-        from_secret: artifact_secret_key
-      ARTIFACT_ENDPOINT:
-        from_secret: artifact_endpoint
-      ARTIFACT_BUCKET:
-        from_secret: artifact_bucket
-    commands:
-      - mkdir -p rootindex
-      - >
-        aws s3api list-objects-v2 --bucket "${ARTIFACT_BUCKET}" --prefix cerveau/
-        --delimiter / --endpoint-url "${ARTIFACT_ENDPOINT}"
-        --query 'CommonPrefixes[].Prefix' --output text > /tmp/prefixes.txt
       - |
-        {
-          echo "<!DOCTYPE html><html><head><title>cerveau releases</title></head><body>"
-          echo "<h1>Index of /cerveau/</h1>"
-          echo "<pre>"
-          tr '\t' '\n' < /tmp/prefixes.txt \
-            | sed -e 's#^cerveau/##' -e 's#/$##' \
-            | sort -Vr \
-            | while read -r v; do
-                [ -n "$v" ] && printf "<a href=\"%s/\">%s/</a>\n" "$v" "$v"
-              done
-          echo "</pre></body></html>"
-        } > rootindex/index.html
-      - >
-        aws s3 cp rootindex/index.html "s3://${ARTIFACT_BUCKET}/cerveau/index.html"
-        --acl public-read --endpoint-url "${ARTIFACT_ENDPOINT}"
+        for f in dist/*; do
+          name=$(basename "$f")
+          curl -sf -u "ci-uploader:${WEBUX_PAGES_UPLOAD_PASSWORD}" -T "$f" \
+            "http://webux-pages-write.webux-pages.svc.cluster.local:8082/artifacts/cerveau/${CI_COMMIT_TAG}/${name}"
+          curl -sf -u "ci-uploader:${WEBUX_PAGES_UPLOAD_PASSWORD}" -T "$f" \
+            "http://webux-pages-write.webux-pages.svc.cluster.local:8082/artifacts/cerveau/latest/${name}"
+        done
