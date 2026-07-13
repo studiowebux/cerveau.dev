@@ -16,12 +16,14 @@ steps:
     environment:
       WEBUX_PAGES_UPLOAD_PASSWORD:
         from_secret: webux_pages_upload_password
+      WEBUX_PAGES_UPLOAD_URL:
+        from_secret: webux_pages_upload_url
     commands:
       - |
         for f in dist/*; do
           name=$(basename "$f")
-          curl -sf -u "ci-uploader:${WEBUX_PAGES_UPLOAD_PASSWORD}" -T "$f" \
-            "http://webux-pages-write.webux-pages.svc.cluster.local:8082/artifacts/cerveau/${CI_COMMIT_TAG}/${name}"
-          curl -sf -u "ci-uploader:${WEBUX_PAGES_UPLOAD_PASSWORD}" -T "$f" \
-            "http://webux-pages-write.webux-pages.svc.cluster.local:8082/artifacts/cerveau/latest/${name}"
+          curl -sf -u "ci-uploader:$${WEBUX_PAGES_UPLOAD_PASSWORD}" -T "$f" \
+            "$${WEBUX_PAGES_UPLOAD_URL}/artifacts/cerveau/${CI_COMMIT_TAG}/$${name}"
+          curl -sf -u "ci-uploader:$${WEBUX_PAGES_UPLOAD_PASSWORD}" -T "$f" \
+            "$${WEBUX_PAGES_UPLOAD_URL}/artifacts/cerveau/latest/$${name}"
         done
