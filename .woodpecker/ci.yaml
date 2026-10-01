@@ -4,7 +4,7 @@ when:
 
 steps:
   lint-and-test:
-    image: golang:1.26
+    image: golang:1.27
     commands:
       - go vet ./cmd/cerveau/
       - go install honnef.co/go/tools/cmd/staticcheck@latest

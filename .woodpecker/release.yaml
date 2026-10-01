@@ -3,7 +3,7 @@ when:
 
 steps:
   release-build:
-    image: golang:1.26
+    image: golang:1.27
     commands:
       - mkdir -p dist
       - GOOS=darwin  GOARCH=amd64 go build -ldflags "-X main.Version=${CI_COMMIT_TAG}" -o dist/cerveau-darwin-amd64  ./cmd/cerveau/
